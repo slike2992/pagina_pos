@@ -1,43 +1,36 @@
-# Astro Starter Kit: Minimal
+# Sistema POS - landing comercial
+
+Sitio comercial independiente del POS operativo. Vive en `C:\Users\slike\Documents\Proyectos\pagina_pos` para mantener separada la pagina publica de la aplicacion Node.js/Express/EJS del POS actual.
+
+## Decision tecnica
+
+Se usa Astro porque esta primera etapa es una landing comercial estatica: hero, propuesta de valor, modulos, planes, comparador, FAQ y contacto. Astro permite HTML/CSS simple, excelente rendimiento, bajo costo de hosting en Cloudflare Pages/Vercel/Netlify y menos JavaScript de cliente que una app completa.
+
+Next.js sigue siendo una buena opcion cuando el sitio necesite rutas dinamicas complejas, autenticacion, checkout embebido con estado de servidor o contenido administrable desde backend. Para esta fase, Astro es mas directo y suficiente.
+
+## Alcance actual
+
+- Landing responsive para celular, tablet y escritorio.
+- Planes de referencia: Basico `$59.900`, Profesional `$89.900`, Empresarial `$149.900`.
+- Implementacion inicial sugerida: `$150.000`.
+- CTA a demo, contacto y WhatsApp.
+- Botones de plan preparados con atributos para conectar checkout futuro.
+- Formulario sin persistencia real por ahora.
+
+## Reglas de arquitectura
+
+- No se modifica el POS operativo desde esta landing.
+- No se crea base SQL Server para la landing.
+- La pagina no activa clientes ni suscripciones automaticamente.
+- El checkout futuro debe llamar a un backend SaaS central que cree ordenes, valide pagos/webhooks y aprovisione tenants.
+- Si se decide persistir leads antes del backend SaaS, primero debe documentarse el esquema y el flujo de tratamiento de datos.
+
+## Desarrollo local
 
 ```sh
-pnpm create astro@latest -- --template minimal
+pnpm install
+pnpm dev
+pnpm build
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
-
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
-
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `pnpm install`             | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+El proyecto requiere Node.js `>=22.12.0`.

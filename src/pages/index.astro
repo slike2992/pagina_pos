@@ -1,17 +1,112 @@
 ---
+const plans = [
+  {
+    name: "Basico",
+    price: "$59.900",
+    summary: "Para tiendas que necesitan vender, controlar caja y ordenar inventario.",
+    features: ["Ventas y caja", "Productos e inventario basico", "Reportes esenciales", "Soporte de arranque"],
+    cta: "Empezar con Basico",
+  },
+  {
+    name: "Profesional",
+    price: "$89.900",
+    summary: "Para negocios con mas usuarios, control operativo y reportes ampliados.",
+    features: ["Todo Basico", "Usuarios y permisos", "Inventario avanzado", "Compras y reportes ampliados"],
+    cta: "Solicitar Profesional",
+    highlighted: true,
+  },
+  {
+    name: "Empresarial",
+    price: "$149.900",
+    summary: "Para operaciones con varias sedes, permisos finos e integraciones futuras.",
+    features: ["Sucursales y cajas", "Permisos avanzados", "Dashboards de gestion", "Preparado para integraciones"],
+    cta: "Hablar de Empresarial",
+  },
+];
 
+const modules = [
+  ["Ventas rapidas", "Facturacion diaria, productos frecuentes y control de cantidades desde una pantalla clara."],
+  ["Caja", "Aperturas, cierres, movimientos y arqueos para saber que paso en cada turno."],
+  ["Inventarios", "Existencias, movimientos y alertas para evitar ventas sin stock o compras tardias."],
+  ["Reportes", "Ventas, rentabilidad, caja e inventario con lectura simple para tomar decisiones."],
+  ["Administracion", "Usuarios, roles, sucursales y parametros del negocio en un solo lugar."],
+  ["SaaS futuro", "Planes, suscripciones y activacion controlada cuando el backend central este listo."],
+];
+
+const comparisons = [
+  ["Ventas y caja", "Incluido", "Incluido", "Incluido"],
+  ["Inventario avanzado", "Basico", "Incluido", "Incluido"],
+  ["Usuarios y permisos", "Limitado", "Incluido", "Avanzado"],
+  ["Sucursales", "1", "Segun configuracion", "Multi-sede"],
+  ["Dashboards", "Esenciales", "Ampliados", "Gerenciales"],
+  ["Checkout automatico", "Futuro", "Futuro", "Futuro"],
+];
+
+const faqs = [
+  ["La compra queda automatica desde esta pagina?", "No. Esta primera version captura la intencion de compra o demo. La activacion real debe hacerla el backend SaaS despues de validar pago o aprobacion manual."],
+  ["Necesito comprar un dominio por cada cliente?", "No. La arquitectura recomendada usa una sola plataforma multi-tenant y separa cada empresa por tenant dentro del sistema."],
+  ["Puedo pedir implementacion inicial?", "Si. La implementacion inicial de referencia es de $150.000 para configuracion, parametrizacion y acompanamiento de arranque."],
+  ["Los precios ya son definitivos?", "Son precios de referencia comercial y deben validarse antes de publicarse formalmente."],
+];
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content="Sistema POS comercial para tiendas: ventas, caja, inventario, reportes y planes SaaS preparados para checkout futuro." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Sistema POS | Ventas, caja e inventario para tiendas</title>
+  </head>
+  <body>
+    <header class="site-header" aria-label="Navegacion principal">
+      <a class="brand" href="#inicio" aria-label="Sistema POS inicio"><span class="brand-mark">SP</span><span>Sistema POS</span></a>
+      <nav><a href="#modulos">Modulos</a><a href="#planes">Planes</a><a href="#comparador">Comparador</a><a href="#faq">FAQ</a></nav>
+      <a class="header-cta" href="#contacto">Agendar demo</a>
+    </header>
+
+    <main id="inicio">
+      <section class="hero section-band">
+        <div class="hero-copy">
+          <p class="eyebrow">POS web para tiendas en crecimiento</p>
+          <h1>Sistema POS</h1>
+          <p class="hero-lead">Vende, controla caja, ordena inventario y consulta reportes desde una plataforma preparada para evolucionar a SaaS multi-tenant.</p>
+          <div class="hero-actions" aria-label="Acciones principales"><a class="button primary" href="#contacto">Solicitar demo</a><a class="button secondary" href="https://wa.me/?text=Hola%2C%20quiero%20informacion%20sobre%20Sistema%20POS" rel="noreferrer">WhatsApp</a></div>
+          <dl class="hero-metrics" aria-label="Resumen comercial"><div><dt>Desde</dt><dd>$59.900</dd></div><div><dt>Implementacion</dt><dd>$150.000</dd></div><div><dt>Activacion</dt><dd>Asistida</dd></div></dl>
+        </div>
+
+        <div class="product-visual" aria-label="Vista ilustrativa del tablero POS">
+          <div class="screen-top"><span></span><strong>Venta en mostrador</strong><em>En linea</em></div>
+          <div class="pos-grid">
+            <section class="ticket-panel"><h2>Ticket actual</h2><div class="line-item"><span>Cafe premium</span><strong>$18.000</strong></div><div class="line-item"><span>Pan artesanal</span><strong>$7.500</strong></div><div class="line-item"><span>Bebida fria</span><strong>$6.900</strong></div><div class="total-row"><span>Total</span><strong>$32.400</strong></div></section>
+            <section class="stock-panel"><h2>Inventario</h2><div class="stock ok"><span>Arroz libra</span><strong>84</strong></div><div class="stock warn"><span>Azucar</span><strong>9</strong></div><div class="stock ok"><span>Aceite</span><strong>31</strong></div></section>
+            <section class="sales-panel"><h2>Ventas hoy</h2><strong>$1.284.600</strong><div class="bars" aria-hidden="true"><span style="height: 44%"></span><span style="height: 72%"></span><span style="height: 56%"></span><span style="height: 86%"></span><span style="height: 64%"></span></div></section>
+          </div>
+        </div>
+      </section>
+
+      <section class="value-section"><div class="section-heading"><p class="eyebrow">Propuesta de valor</p><h2>Operacion diaria clara, sin despliegues por cliente</h2></div><div class="value-grid"><article><span>01</span><h3>Listo para vender</h3><p>La experiencia comercial apunta a tiendas que necesitan caja, ventas e inventario desde el primer dia.</p></article><article><span>02</span><h3>Preparado para SaaS</h3><p>El flujo futuro separa planes, tenants y suscripciones sin crear instalaciones independientes por cliente.</p></article><article><span>03</span><h3>Compra controlada</h3><p>Los botones de plan dejan lista la intencion de checkout, pero la activacion espera backend, pago validado y aprovisionamiento.</p></article></div></section>
+
+      <section class="section-band" id="modulos"><div class="section-heading"><p class="eyebrow">Modulos</p><h2>Lo que una tienda necesita revisar todos los dias</h2></div><div class="module-grid">{modules.map(([title, text]) => (<article><h3>{title}</h3><p>{text}</p></article>))}</div></section>
+
+      <section class="plans-section" id="planes"><div class="section-heading"><p class="eyebrow">Planes</p><h2>Precios de referencia para validar comercialmente</h2><p>Todos los planes contemplan implementacion inicial sugerida de $150.000.</p></div><div class="plans-grid">{plans.map((plan) => (<article class:list={["plan-card", { highlighted: plan.highlighted }]} data-plan={plan.name.toLowerCase()} data-checkout-ready="pending-backend">{plan.highlighted && <span class="plan-badge">Recomendado</span>}<h3>{plan.name}</h3><p>{plan.summary}</p><div class="price"><strong>{plan.price}</strong><span>/ mes</span></div><ul>{plan.features.map((feature) => <li>{feature}</li>)}</ul><a class="button plan-button" href="#contacto">{plan.cta}</a></article>))}</div></section>
+
+      <section class="section-band comparison-section" id="comparador"><div class="section-heading"><p class="eyebrow">Comparador</p><h2>Diferencias principales entre planes</h2></div><div class="comparison-table" role="table" aria-label="Comparador de planes"><div class="comparison-row header" role="row"><span role="columnheader">Capacidad</span><span role="columnheader">Basico</span><span role="columnheader">Profesional</span><span role="columnheader">Empresarial</span></div>{comparisons.map(([feature, basic, pro, enterprise]) => (<div class="comparison-row" role="row"><span role="cell">{feature}</span><span role="cell">{basic}</span><span role="cell">{pro}</span><span role="cell">{enterprise}</span></div>))}</div></section>
+
+      <section class="checkout-section" id="checkout"><div><p class="eyebrow">Checkout futuro</p><h2>Preparado para compra, sin activar clientes automaticamente</h2></div><ol><li>El cliente selecciona plan y deja sus datos.</li><li>El backend SaaS crea orden cuando exista la API central.</li><li>La suscripcion se activa solo con pago confirmado o aprobacion manual.</li></ol></section>
+
+      <section class="section-band faq-section" id="faq"><div class="section-heading"><p class="eyebrow">FAQ</p><h2>Preguntas frecuentes</h2></div><div class="faq-list">{faqs.map(([question, answer]) => (<details><summary>{question}</summary><p>{answer}</p></details>))}</div></section>
+
+      <section class="contact-section" id="contacto"><div class="contact-copy"><p class="eyebrow">Demo y contacto</p><h2>Agenda una revision del flujo de ventas, caja e inventario</h2><p>Esta version no guarda leads en base de datos. El formulario queda listo para conectarse a una API cuando el backend SaaS este definido.</p></div><form name="lead-intent" method="post" action="#" data-future-endpoint="/api/leads"><label>Nombre<input type="text" name="name" autocomplete="name" placeholder="Tu nombre" /></label><label>Telefono o WhatsApp<input type="tel" name="phone" autocomplete="tel" placeholder="300 000 0000" /></label><label>Plan de interes<select name="plan"><option>Basico</option><option>Profesional</option><option>Empresarial</option></select></label><label>Mensaje<textarea name="message" rows="4" placeholder="Cuentanos que tipo de negocio tienes"></textarea></label><button class="button primary" type="submit">Enviar solicitud</button><a class="button secondary full" href="https://wa.me/?text=Hola%2C%20quiero%20agendar%20una%20demo%20de%20Sistema%20POS" rel="noreferrer">Continuar por WhatsApp</a></form></section>
+    </main>
+
+    <footer><span>Sistema POS</span><span>Landing separada del POS operativo. SaaS multi-tenant en preparacion.</span></footer>
+  </body>
 </html>
+
+<style>
+  :root{color-scheme:light;--ink:#18211f;--muted:#61706b;--line:#d9e3de;--paper:#fbfcf8;--soft:#eef5f0;--brand:#0f6b5f;--brand-strong:#094a45;--accent:#d35f32;--gold:#f2b84b;--blue:#2f6fa7;--white:#fff;--shadow:0 24px 70px rgba(24,33,31,.14)}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-width:320px;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.5}a{color:inherit;text-decoration:none}.site-header{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:14px clamp(18px,4vw,56px);border-bottom:1px solid rgba(217,227,222,.85);background:rgba(251,252,248,.92);backdrop-filter:blur(18px)}.brand{display:inline-flex;align-items:center;gap:10px;font-weight:800;white-space:nowrap}.brand-mark{display:grid;width:34px;height:34px;place-items:center;border-radius:8px;background:var(--brand);color:var(--white);font-size:.78rem}nav{display:flex;align-items:center;gap:clamp(12px,2vw,26px);color:var(--muted);font-size:.95rem}.header-cta{color:var(--brand-strong);font-weight:800;white-space:nowrap}.section-band,.value-section,.plans-section,.checkout-section,.contact-section{padding:clamp(52px,8vw,104px) clamp(18px,5vw,72px)}.section-band{background:var(--soft)}.hero{display:grid;grid-template-columns:minmax(0,.92fr) minmax(340px,1.08fr);align-items:center;gap:clamp(28px,5vw,74px);min-height:calc(100svh - 64px);padding-top:clamp(40px,6vw,76px);padding-bottom:clamp(32px,6vw,72px);background:linear-gradient(135deg,rgba(15,107,95,.14),rgba(211,95,50,.08)),var(--paper)}.eyebrow{margin:0 0 12px;color:var(--accent);font-size:.78rem;font-weight:900;letter-spacing:0;text-transform:uppercase}h1,h2,h3,p{margin-top:0}h1{max-width:720px;margin-bottom:18px;font-size:clamp(3.25rem,7vw,6.8rem);line-height:.95;letter-spacing:0}h2{margin-bottom:14px;font-size:clamp(2rem,4vw,3.7rem);line-height:1.04;letter-spacing:0}h3{margin-bottom:10px;font-size:1.15rem;letter-spacing:0}.hero-lead,.section-heading p,.contact-copy p{max-width:720px;color:var(--muted);font-size:clamp(1.05rem,1.6vw,1.28rem)}.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin:28px 0}.button{display:inline-flex;min-height:46px;align-items:center;justify-content:center;border:1px solid var(--brand);border-radius:8px;padding:12px 18px;font-weight:850;text-align:center}.button.primary{background:var(--brand);color:var(--white)}.button.secondary{background:var(--white);color:var(--brand-strong)}.button.full{width:100%}.hero-metrics{display:grid;max-width:660px;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0}.hero-metrics div,.value-grid article,.module-grid article,.plan-card,details{border:1px solid var(--line);border-radius:8px;background:var(--white)}.hero-metrics div{padding:14px}.hero-metrics dt{color:var(--muted);font-size:.82rem}.hero-metrics dd{margin:4px 0 0;font-size:1.18rem;font-weight:900}.product-visual{overflow:hidden;border:1px solid rgba(15,107,95,.18);border-radius:8px;background:#102522;box-shadow:var(--shadow)}.screen-top{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;padding:16px 18px;color:var(--white)}.screen-top span{width:12px;height:12px;border-radius:999px;background:var(--gold)}.screen-top em{color:#b9dad1;font-style:normal;font-size:.86rem}.pos-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:12px;padding:12px;background:#17332f}.pos-grid section{min-height:180px;border-radius:8px;background:var(--paper);padding:18px}.pos-grid h2{margin-bottom:16px;font-size:1rem;line-height:1.2}.ticket-panel{grid-row:span 2}.line-item,.stock,.total-row{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.line-item span,.stock span{color:var(--muted)}.total-row{margin-top:16px;border:0;font-size:1.35rem;font-weight:900}.stock strong{display:grid;min-width:42px;height:32px;place-items:center;border-radius:8px;color:var(--white)}.stock.ok strong{background:var(--brand)}.stock.warn strong{background:var(--accent)}.sales-panel strong{display:block;margin-bottom:18px;color:var(--blue);font-size:1.65rem}.bars{display:grid;height:104px;grid-template-columns:repeat(5,1fr);align-items:end;gap:9px}.bars span{border-radius:8px 8px 0 0;background:linear-gradient(180deg,var(--gold),var(--accent))}.section-heading{max-width:860px;margin-bottom:clamp(24px,4vw,42px)}.value-grid,.module-grid,.plans-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.value-grid article,.module-grid article,.plan-card{padding:22px}.value-grid span{color:var(--accent);font-weight:950}.value-grid p,.module-grid p,.plan-card p,.faq-list p,footer{color:var(--muted)}.plans-section{background:var(--paper)}.plan-card{position:relative;display:flex;min-height:100%;flex-direction:column}.plan-card.highlighted{border-color:var(--brand);box-shadow:var(--shadow)}.plan-badge{width:fit-content;margin-bottom:18px;border-radius:999px;background:rgba(211,95,50,.13);color:var(--accent);padding:6px 10px;font-size:.78rem;font-weight:900}.price{margin:10px 0 18px}.price strong{font-size:clamp(2rem,3vw,2.8rem)}.price span{color:var(--muted)}ul{display:grid;gap:10px;margin:0 0 22px;padding:0;list-style:none}li{position:relative;padding-left:22px}li::before{position:absolute;left:0;color:var(--brand);content:"✓";font-weight:900}.plan-button{margin-top:auto}.comparison-table{overflow:hidden;border:1px solid var(--line);border-radius:8px;background:var(--white)}.comparison-row{display:grid;grid-template-columns:1.35fr repeat(3,minmax(0,1fr));border-top:1px solid var(--line)}.comparison-row:first-child{border-top:0}.comparison-row span{padding:16px}.comparison-row span:first-child{font-weight:850}.comparison-row.header{background:#133b36;color:var(--white);font-weight:900}.checkout-section{display:grid;grid-template-columns:minmax(0,.9fr) minmax(280px,1.1fr);gap:28px;align-items:start;background:var(--brand-strong);color:var(--white)}.checkout-section .eyebrow,.checkout-section h2{color:var(--white)}.checkout-section ol{display:grid;gap:12px;margin:0;padding-left:22px}.checkout-section li{padding-left:4px}.checkout-section li::before{content:none}.faq-list{display:grid;gap:12px}details{padding:18px 20px}summary{cursor:pointer;font-weight:850}details p{margin:12px 0 0}.contact-section{display:grid;grid-template-columns:minmax(0,.95fr) minmax(320px,.75fr);gap:clamp(24px,5vw,64px);align-items:start}form{display:grid;gap:14px;border:1px solid var(--line);border-radius:8px;background:var(--white);padding:22px}label{display:grid;gap:7px;color:var(--ink);font-weight:800}input,select,textarea{width:100%;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);font:inherit;padding:12px 13px}textarea{resize:vertical}footer{display:flex;justify-content:space-between;gap:18px;padding:24px clamp(18px,5vw,72px);border-top:1px solid var(--line);background:var(--white)}footer span:first-child{color:var(--ink);font-weight:900}@media (max-width:980px){.site-header{align-items:flex-start}nav{display:none}.hero,.checkout-section,.contact-section{grid-template-columns:1fr}.hero{min-height:auto}.value-grid,.module-grid,.plans-grid{grid-template-columns:1fr 1fr}}@media (max-width:680px){.site-header{gap:12px;padding:12px 16px}.header-cta{font-size:.9rem}.section-band,.value-section,.plans-section,.checkout-section,.contact-section{padding:44px 16px}h1{font-size:clamp(3rem,18vw,4.2rem)}.hero-actions,.hero-metrics,.value-grid,.module-grid,.plans-grid{grid-template-columns:1fr}.button,.hero-actions a{width:100%}.product-visual{margin-inline:-2px}.pos-grid{grid-template-columns:1fr}.ticket-panel{grid-row:auto}.comparison-table{border:0;background:transparent}.comparison-row,.comparison-row.header{grid-template-columns:1fr;margin-bottom:10px;border:1px solid var(--line);border-radius:8px;background:var(--white);color:var(--ink)}.comparison-row.header{display:none}.comparison-row span{display:flex;justify-content:space-between;gap:14px;padding:12px 14px;border-top:1px solid var(--line)}.comparison-row span:first-child{border-top:0;background:#133b36;color:var(--white)}.comparison-row span:nth-child(2)::before{content:"Basico";color:var(--muted);font-weight:800}.comparison-row span:nth-child(3)::before{content:"Profesional";color:var(--muted);font-weight:800}.comparison-row span:nth-child(4)::before{content:"Empresarial";color:var(--muted);font-weight:800}footer{flex-direction:column}}
+</style>
