@@ -1,36 +1,66 @@
-# Sistema POS - landing comercial
+# Sistema POS - sitio comercial
 
-Sitio comercial independiente del POS operativo. Vive en `C:\Users\slike\Documents\Proyectos\pagina_pos` para mantener separada la pagina publica de la aplicacion Node.js/Express/EJS del POS actual.
+Landing comercial independiente del POS operativo. El proyecto vive en
+`C:\Users\slike\Documents\Proyectos\pagina_pos` y no comparte ejecución,
+despliegue ni persistencia con la aplicación Node.js/Express/EJS existente.
 
-## Decision tecnica
+## Decisión técnica
 
-Se usa Astro porque esta primera etapa es una landing comercial estatica: hero, propuesta de valor, modulos, planes, comparador, FAQ y contacto. Astro permite HTML/CSS simple, excelente rendimiento, bajo costo de hosting en Cloudflare Pages/Vercel/Netlify y menos JavaScript de cliente que una app completa.
+Se usa Astro porque el alcance actual es un sitio comercial mayoritariamente
+estático. Astro entrega HTML optimizado, procesa imágenes de forma responsiva y
+permite agregar interactividad puntual sin convertir toda la página en una
+aplicación cliente.
 
-Next.js sigue siendo una buena opcion cuando el sitio necesite rutas dinamicas complejas, autenticacion, checkout embebido con estado de servidor o contenido administrable desde backend. Para esta fase, Astro es mas directo y suficiente.
+Next.js sería apropiado cuando el sitio necesite autenticación, checkout con
+estado de servidor o un portal de clientes. Esas responsabilidades no deben
+incorporarse a esta landing hasta que exista el backend SaaS central.
 
 ## Alcance actual
 
-- Landing responsive para celular, tablet y escritorio.
-- Planes de referencia: Basico `$59.900`, Profesional `$89.900`, Empresarial `$149.900`.
-- Implementacion inicial sugerida: `$150.000`.
-- CTA a demo, contacto y WhatsApp.
-- Botones de plan preparados con atributos para conectar checkout futuro.
-- Formulario sin persistencia real por ahora.
+- Hero comercial con imagen propia y llamada a demostración.
+- Secciones de beneficios, producto, módulos y puesta en marcha.
+- Planes Básico, Profesional y Empresarial con comparador.
+- Preguntas frecuentes y contacto mediante WhatsApp.
+- Selección de plan conectada al formulario.
+- SEO básico, datos estructurados y metadatos sociales.
+- Navegación y diseño responsive para móvil, tablet y escritorio.
+- Sin base de datos, cookies de seguimiento ni persistencia de leads.
 
-## Reglas de arquitectura
+## Configuración
 
-- No se modifica el POS operativo desde esta landing.
-- No se crea base SQL Server para la landing.
-- La pagina no activa clientes ni suscripciones automaticamente.
-- El checkout futuro debe llamar a un backend SaaS central que cree ordenes, valide pagos/webhooks y aprovisione tenants.
-- Si se decide persistir leads antes del backend SaaS, primero debe documentarse el esquema y el flujo de tratamiento de datos.
+El enlace de WhatsApp usa la variable pública `PUBLIC_WHATSAPP_NUMBER`. Debe
+contener el número con indicativo de país y solo dígitos, por ejemplo:
+
+```env
+PUBLIC_WHATSAPP_NUMBER=573001234567
+```
+
+Sin esta variable, WhatsApp abre el selector de conversación con el mensaje
+preparado. No se debe publicar en producción sin definir el número comercial.
 
 ## Desarrollo local
 
+Requiere Node.js `>=22.12.0`.
+
 ```sh
 pnpm install
-pnpm dev
+pnpm dev --host 0.0.0.0
 pnpm build
+pnpm preview
 ```
 
-El proyecto requiere Node.js `>=22.12.0`.
+La opción `--host 0.0.0.0` permite revisar el sitio desde otro dispositivo en
+la misma red local.
+
+## Arquitectura y límites
+
+- La landing no modifica ni inicia el POS operativo.
+- No existe una base SQL Server para la página comercial.
+- La página no activa clientes, tenants ni suscripciones.
+- Un checkout futuro debe consumir una API central, validar pagos mediante
+  webhooks idempotentes y aprovisionar el tenant después de confirmar el pago.
+- Antes de persistir leads se debe documentar el esquema, consentimiento,
+  retención y tratamiento de datos.
+
+El estado de calidad y las decisiones de la revisión están en
+`docs/auditoria_landing.md`.

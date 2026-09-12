@@ -1,112 +1,255 @@
 ---
+import { Image } from "astro:assets";
+import heroImage from "../assets/hero-comercio-pos.png";
+
+const whatsappNumber = import.meta.env.PUBLIC_WHATSAPP_NUMBER?.replace(/\D/g, "") ?? "";
+const whatsappUrl = (message: string) =>
+  `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+
+const modules = [
+  { number: "01", title: "Ventas ágiles", text: "Registra productos, cantidades y medios de pago desde un flujo pensado para atender sin fricción." },
+  { number: "02", title: "Control de caja", text: "Organiza aperturas, cierres, movimientos y arqueos para entender cada turno con claridad." },
+  { number: "03", title: "Inventario al día", text: "Consulta existencias y movimientos para anticipar faltantes y comprar con mejor información." },
+  { number: "04", title: "Reportes útiles", text: "Revisa ventas, caja e inventario con indicadores claros para tomar decisiones oportunas." },
+  { number: "05", title: "Usuarios y permisos", text: "Asigna responsabilidades y controla el acceso de cada persona según su función." },
+  { number: "06", title: "Operación multisede", text: "Prepara el crecimiento de tu negocio con sucursales, cajas y control centralizado." },
+];
+
 const plans = [
   {
-    name: "Basico",
+    name: "Básico",
     price: "$59.900",
-    summary: "Para tiendas que necesitan vender, controlar caja y ordenar inventario.",
-    features: ["Ventas y caja", "Productos e inventario basico", "Reportes esenciales", "Soporte de arranque"],
-    cta: "Empezar con Basico",
+    summary: "Para empezar a vender con orden y controlar lo esencial del negocio.",
+    features: ["Ventas y caja", "Productos e inventario básico", "Reportes esenciales", "Acompañamiento de arranque"],
+    cta: "Elegir Básico",
   },
   {
     name: "Profesional",
     price: "$89.900",
-    summary: "Para negocios con mas usuarios, control operativo y reportes ampliados.",
-    features: ["Todo Basico", "Usuarios y permisos", "Inventario avanzado", "Compras y reportes ampliados"],
-    cta: "Solicitar Profesional",
+    summary: "Para equipos que necesitan más control operativo y mejores reportes.",
+    features: ["Todo lo del plan Básico", "Usuarios y permisos", "Inventario avanzado", "Compras y reportes ampliados"],
+    cta: "Elegir Profesional",
     highlighted: true,
   },
   {
     name: "Empresarial",
     price: "$149.900",
-    summary: "Para operaciones con varias sedes, permisos finos e integraciones futuras.",
-    features: ["Sucursales y cajas", "Permisos avanzados", "Dashboards de gestion", "Preparado para integraciones"],
-    cta: "Hablar de Empresarial",
+    summary: "Para operaciones con varias sedes y necesidades de gestión avanzada.",
+    features: ["Sucursales y múltiples cajas", "Permisos avanzados", "Indicadores gerenciales", "Preparado para integraciones"],
+    cta: "Hablar con un asesor",
   },
-];
-
-const modules = [
-  ["Ventas rapidas", "Facturacion diaria, productos frecuentes y control de cantidades desde una pantalla clara."],
-  ["Caja", "Aperturas, cierres, movimientos y arqueos para saber que paso en cada turno."],
-  ["Inventarios", "Existencias, movimientos y alertas para evitar ventas sin stock o compras tardias."],
-  ["Reportes", "Ventas, rentabilidad, caja e inventario con lectura simple para tomar decisiones."],
-  ["Administracion", "Usuarios, roles, sucursales y parametros del negocio en un solo lugar."],
-  ["SaaS futuro", "Planes, suscripciones y activacion controlada cuando el backend central este listo."],
 ];
 
 const comparisons = [
   ["Ventas y caja", "Incluido", "Incluido", "Incluido"],
-  ["Inventario avanzado", "Basico", "Incluido", "Incluido"],
+  ["Inventario", "Esencial", "Avanzado", "Avanzado"],
   ["Usuarios y permisos", "Limitado", "Incluido", "Avanzado"],
-  ["Sucursales", "1", "Segun configuracion", "Multi-sede"],
-  ["Dashboards", "Esenciales", "Ampliados", "Gerenciales"],
-  ["Checkout automatico", "Futuro", "Futuro", "Futuro"],
+  ["Sucursales", "1", "Según necesidad", "Multisede"],
+  ["Reportes", "Esenciales", "Ampliados", "Gerenciales"],
+  ["Acompañamiento", "Inicial", "Prioritario", "Personalizado"],
 ];
 
 const faqs = [
-  ["La compra queda automatica desde esta pagina?", "No. Esta primera version captura la intencion de compra o demo. La activacion real debe hacerla el backend SaaS despues de validar pago o aprobacion manual."],
-  ["Necesito comprar un dominio por cada cliente?", "No. La arquitectura recomendada usa una sola plataforma multi-tenant y separa cada empresa por tenant dentro del sistema."],
-  ["Puedo pedir implementacion inicial?", "Si. La implementacion inicial de referencia es de $150.000 para configuracion, parametrizacion y acompanamiento de arranque."],
-  ["Los precios ya son definitivos?", "Son precios de referencia comercial y deben validarse antes de publicarse formalmente."],
+  ["¿Puedo conocer el sistema antes de contratar?", "Sí. Coordinamos una demostración enfocada en el flujo real de tu negocio para que puedas evaluar ventas, caja, inventario y reportes."],
+  ["¿Necesito instalar el sistema en cada equipo?", "La plataforma está pensada para operar en la web. Durante la implementación revisamos tus equipos, conexión y necesidades para definir la configuración adecuada."],
+  ["¿Qué incluye la implementación inicial?", "Incluye configuración, parametrización y acompañamiento de arranque. El valor de referencia es de $150.000 y se confirma según el alcance del negocio."],
+  ["¿Puedo cambiar de plan más adelante?", "Sí. La estructura está preparada para acompañar el crecimiento del negocio y ajustar capacidades cuando la operación lo requiera."],
+  ["¿Los precios publicados son definitivos?", "Son valores mensuales de referencia. La propuesta final confirma alcance, impuestos aplicables y condiciones de servicio antes de contratar."],
 ];
+
+const softwareSchema = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Sistema POS",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Web",
+  description: "Sistema POS para ventas, caja, inventario y reportes de comercios.",
+  offers: plans.map((plan) => ({
+    "@type": "Offer",
+    name: `Plan ${plan.name}`,
+    price: plan.price.replace(/[$.]/g, ""),
+    priceCurrency: "COP",
+  })),
+};
 ---
 
 <!doctype html>
 <html lang="es">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <meta name="description" content="Sistema POS comercial para tiendas: ventas, caja, inventario, reportes y planes SaaS preparados para checkout futuro." />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Controla ventas, caja, inventario y reportes con Sistema POS. Conoce los planes y solicita una demostración para tu negocio." />
+    <meta name="theme-color" content="#123f38" />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_CO" />
+    <meta property="og:title" content="Sistema POS | Tu negocio bajo control" />
+    <meta property="og:description" content="Ventas ágiles, caja organizada e inventario al día desde una sola plataforma." />
+    <meta property="og:image" content="/images/og-sistema-pos.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="generator" content={Astro.generator} />
-    <title>Sistema POS | Ventas, caja e inventario para tiendas</title>
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(softwareSchema)} />
+    <title>Sistema POS | Ventas, caja e inventario para tu negocio</title>
   </head>
   <body>
-    <header class="site-header" aria-label="Navegacion principal">
-      <a class="brand" href="#inicio" aria-label="Sistema POS inicio"><span class="brand-mark">SP</span><span>Sistema POS</span></a>
-      <nav><a href="#modulos">Modulos</a><a href="#planes">Planes</a><a href="#comparador">Comparador</a><a href="#faq">FAQ</a></nav>
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+    <header class="site-header" aria-label="Navegación principal">
+      <a class="brand" href="#inicio" aria-label="Sistema POS, inicio">
+        <span class="brand-mark" aria-hidden="true">SP</span>
+        <span>Sistema POS</span>
+      </a>
+      <nav class="desktop-nav" aria-label="Secciones">
+        <a href="#solucion">Solución</a>
+        <a href="#modulos">Módulos</a>
+        <a href="#planes">Planes</a>
+        <a href="#faq">Preguntas</a>
+      </nav>
       <a class="header-cta" href="#contacto">Agendar demo</a>
+      <details class="mobile-menu">
+        <summary aria-label="Abrir menú"><span></span><span></span><span></span></summary>
+        <nav aria-label="Secciones móviles">
+          <a href="#solucion">Solución</a><a href="#modulos">Módulos</a><a href="#planes">Planes</a><a href="#faq">Preguntas</a><a href="#contacto">Agendar demo</a>
+        </nav>
+      </details>
     </header>
 
-    <main id="inicio">
-      <section class="hero section-band">
-        <div class="hero-copy">
-          <p class="eyebrow">POS web para tiendas en crecimiento</p>
+    <main id="contenido">
+      <section class="hero" id="inicio">
+        <Image class="hero-image" src={heroImage} alt="Comerciante usando un terminal de punto de venta en su tienda" widths={[768, 1280, 1920]} sizes="100vw" format="webp" loading="eager" fetchpriority="high" />
+        <div class="hero-shade" aria-hidden="true"></div>
+        <div class="hero-content">
+          <p class="eyebrow light">Control para comercios que quieren crecer</p>
           <h1>Sistema POS</h1>
-          <p class="hero-lead">Vende, controla caja, ordena inventario y consulta reportes desde una plataforma preparada para evolucionar a SaaS multi-tenant.</p>
-          <div class="hero-actions" aria-label="Acciones principales"><a class="button primary" href="#contacto">Solicitar demo</a><a class="button secondary" href="https://wa.me/?text=Hola%2C%20quiero%20informacion%20sobre%20Sistema%20POS" rel="noreferrer">WhatsApp</a></div>
-          <dl class="hero-metrics" aria-label="Resumen comercial"><div><dt>Desde</dt><dd>$59.900</dd></div><div><dt>Implementacion</dt><dd>$150.000</dd></div><div><dt>Activacion</dt><dd>Asistida</dd></div></dl>
+          <p class="hero-lead">Vende con agilidad, mantén tu caja organizada y conoce tu inventario desde una sola plataforma.</p>
+          <div class="hero-actions" aria-label="Acciones principales">
+            <a class="button primary light-button" href="#contacto">Solicitar demostración</a>
+            <a class="text-link light-link" href={whatsappUrl("Hola, quiero conocer Sistema POS para mi negocio.")} target="_blank" rel="noreferrer">Hablar por WhatsApp <span aria-hidden="true">→</span></a>
+          </div>
+          <p class="hero-note">Planes desde <strong>$59.900 al mes</strong> · Implementación acompañada</p>
         </div>
+      </section>
 
-        <div class="product-visual" aria-label="Vista ilustrativa del tablero POS">
-          <div class="screen-top"><span></span><strong>Venta en mostrador</strong><em>En linea</em></div>
+      <section class="proof-strip" aria-label="Beneficios principales">
+        <p><strong>Una sola operación</strong><span>Ventas, caja e inventario conectados</span></p>
+        <p><strong>Decisiones con datos</strong><span>Reportes claros y oportunos</span></p>
+        <p><strong>Acompañamiento real</strong><span>Configuración y puesta en marcha</span></p>
+      </section>
+
+      <section class="intro section" id="solucion">
+        <div class="section-heading split-heading">
+          <div><p class="eyebrow">Menos tareas sueltas</p><h2>Todo lo importante, en el mismo lugar</h2></div>
+          <p>Diseñado para que el equipo trabaje con rapidez y tú puedas entender qué pasa en el negocio sin reunir información de varias fuentes.</p>
+        </div>
+        <div class="outcomes">
+          <article><span>01</span><h3>Atiende mejor</h3><p>Un flujo de venta claro reduce pasos y mantiene la operación en movimiento.</p></article>
+          <article><span>02</span><h3>Controla cada turno</h3><p>Caja, movimientos y arqueos quedan organizados para facilitar el seguimiento.</p></article>
+          <article><span>03</span><h3>Compra con criterio</h3><p>Las existencias y reportes te ayudan a anticipar necesidades reales del inventario.</p></article>
+        </div>
+      </section>
+
+      <section class="product-section section dark-section" aria-labelledby="product-title">
+        <div class="product-copy">
+          <p class="eyebrow light">Una vista para actuar</p>
+          <h2 id="product-title">La jornada completa, sin perder el hilo</h2>
+          <p>Consulta el ticket actual, las alertas de inventario y el avance de ventas desde una experiencia consistente.</p>
+          <ul class="check-list"><li>Información útil en el momento de la venta</li><li>Alertas visibles para actuar a tiempo</li><li>Indicadores fáciles de leer</li></ul>
+        </div>
+        <div class="product-visual" aria-label="Vista ilustrativa del tablero de Sistema POS">
+          <div class="screen-top"><span aria-hidden="true"></span><strong>Venta en mostrador</strong><em>Sesión activa</em></div>
           <div class="pos-grid">
-            <section class="ticket-panel"><h2>Ticket actual</h2><div class="line-item"><span>Cafe premium</span><strong>$18.000</strong></div><div class="line-item"><span>Pan artesanal</span><strong>$7.500</strong></div><div class="line-item"><span>Bebida fria</span><strong>$6.900</strong></div><div class="total-row"><span>Total</span><strong>$32.400</strong></div></section>
-            <section class="stock-panel"><h2>Inventario</h2><div class="stock ok"><span>Arroz libra</span><strong>84</strong></div><div class="stock warn"><span>Azucar</span><strong>9</strong></div><div class="stock ok"><span>Aceite</span><strong>31</strong></div></section>
-            <section class="sales-panel"><h2>Ventas hoy</h2><strong>$1.284.600</strong><div class="bars" aria-hidden="true"><span style="height: 44%"></span><span style="height: 72%"></span><span style="height: 56%"></span><span style="height: 86%"></span><span style="height: 64%"></span></div></section>
+            <section class="ticket-panel"><h3>Ticket actual</h3><div class="line-item"><span>Café premium</span><strong>$18.000</strong></div><div class="line-item"><span>Pan artesanal</span><strong>$7.500</strong></div><div class="line-item"><span>Bebida fría</span><strong>$6.900</strong></div><div class="total-row"><span>Total</span><strong>$32.400</strong></div><button type="button" tabindex="-1">Cobrar venta</button></section>
+            <section class="stock-panel"><h3>Inventario</h3><div class="stock ok"><span>Arroz libra</span><strong>84</strong></div><div class="stock warn"><span>Azúcar</span><strong>9</strong></div><div class="stock ok"><span>Aceite</span><strong>31</strong></div></section>
+            <section class="sales-panel"><p>Ventas de hoy</p><strong>$1.284.600</strong><div class="bars" aria-hidden="true"><span style="height:44%"></span><span style="height:72%"></span><span style="height:56%"></span><span style="height:86%"></span><span style="height:64%"></span></div></section>
           </div>
         </div>
       </section>
 
-      <section class="value-section"><div class="section-heading"><p class="eyebrow">Propuesta de valor</p><h2>Operacion diaria clara, sin despliegues por cliente</h2></div><div class="value-grid"><article><span>01</span><h3>Listo para vender</h3><p>La experiencia comercial apunta a tiendas que necesitan caja, ventas e inventario desde el primer dia.</p></article><article><span>02</span><h3>Preparado para SaaS</h3><p>El flujo futuro separa planes, tenants y suscripciones sin crear instalaciones independientes por cliente.</p></article><article><span>03</span><h3>Compra controlada</h3><p>Los botones de plan dejan lista la intencion de checkout, pero la activacion espera backend, pago validado y aprovisionamiento.</p></article></div></section>
+      <section class="modules-section section" id="modulos">
+        <div class="section-heading"><p class="eyebrow">Capacidades</p><h2>Herramientas para la operación diaria</h2><p>Empieza por lo esencial y amplía el control a medida que tu negocio lo necesite.</p></div>
+        <div class="module-list">{modules.map((module) => <article><span>{module.number}</span><div><h3>{module.title}</h3><p>{module.text}</p></div></article>)}</div>
+      </section>
 
-      <section class="section-band" id="modulos"><div class="section-heading"><p class="eyebrow">Modulos</p><h2>Lo que una tienda necesita revisar todos los dias</h2></div><div class="module-grid">{modules.map(([title, text]) => (<article><h3>{title}</h3><p>{text}</p></article>))}</div></section>
+      <section class="steps-section section">
+        <div class="section-heading"><p class="eyebrow">Puesta en marcha</p><h2>Del diagnóstico a la primera venta</h2></div>
+        <ol class="steps"><li><span>1</span><div><h3>Conocemos tu operación</h3><p>Revisamos el tipo de negocio, los equipos y el flujo actual.</p></div></li><li><span>2</span><div><h3>Configuramos contigo</h3><p>Parametrizamos la solución y preparamos la información necesaria.</p></div></li><li><span>3</span><div><h3>Acompañamos el arranque</h3><p>Validamos el flujo y resolvemos dudas durante la puesta en marcha.</p></div></li></ol>
+      </section>
 
-      <section class="plans-section" id="planes"><div class="section-heading"><p class="eyebrow">Planes</p><h2>Precios de referencia para validar comercialmente</h2><p>Todos los planes contemplan implementacion inicial sugerida de $150.000.</p></div><div class="plans-grid">{plans.map((plan) => (<article class:list={["plan-card", { highlighted: plan.highlighted }]} data-plan={plan.name.toLowerCase()} data-checkout-ready="pending-backend">{plan.highlighted && <span class="plan-badge">Recomendado</span>}<h3>{plan.name}</h3><p>{plan.summary}</p><div class="price"><strong>{plan.price}</strong><span>/ mes</span></div><ul>{plan.features.map((feature) => <li>{feature}</li>)}</ul><a class="button plan-button" href="#contacto">{plan.cta}</a></article>))}</div></section>
+      <section class="plans-section section" id="planes">
+        <div class="section-heading centered"><p class="eyebrow">Planes</p><h2>Elige el nivel de control que necesitas</h2><p>Valores mensuales de referencia en pesos colombianos. Implementación inicial desde $150.000.</p></div>
+        <div class="plans-grid">{plans.map((plan) => <article class:list={["plan-card", { highlighted: plan.highlighted }]}>{plan.highlighted && <span class="plan-badge">Más elegido</span>}<p class="plan-name">Plan {plan.name}</p><div class="price"><strong>{plan.price}</strong><span>COP / mes</span></div><p>{plan.summary}</p><ul class="check-list">{plan.features.map((feature) => <li>{feature}</li>)}</ul><a class:list={["button plan-button", { primary: plan.highlighted }]} href="#contacto" data-select-plan={plan.name}>{plan.cta}</a></article>)}</div>
+        <p class="price-note">La propuesta final confirma alcance, impuestos aplicables y condiciones del servicio.</p>
+      </section>
 
-      <section class="section-band comparison-section" id="comparador"><div class="section-heading"><p class="eyebrow">Comparador</p><h2>Diferencias principales entre planes</h2></div><div class="comparison-table" role="table" aria-label="Comparador de planes"><div class="comparison-row header" role="row"><span role="columnheader">Capacidad</span><span role="columnheader">Basico</span><span role="columnheader">Profesional</span><span role="columnheader">Empresarial</span></div>{comparisons.map(([feature, basic, pro, enterprise]) => (<div class="comparison-row" role="row"><span role="cell">{feature}</span><span role="cell">{basic}</span><span role="cell">{pro}</span><span role="cell">{enterprise}</span></div>))}</div></section>
+      <section class="comparison-section section" id="comparador">
+        <div class="section-heading"><p class="eyebrow">Comparación</p><h2>Encuentra el plan adecuado</h2></div>
+        <div class="comparison-scroll" tabindex="0" aria-label="Comparador de planes; desplázate horizontalmente si es necesario">
+          <table><caption class="sr-only">Comparación de capacidades por plan</caption><thead><tr><th scope="col">Capacidad</th><th scope="col">Básico</th><th scope="col">Profesional</th><th scope="col">Empresarial</th></tr></thead><tbody>{comparisons.map(([feature, basic, pro, enterprise]) => <tr><th scope="row">{feature}</th><td>{basic}</td><td class="pro-cell">{pro}</td><td>{enterprise}</td></tr>)}</tbody></table>
+        </div>
+      </section>
 
-      <section class="checkout-section" id="checkout"><div><p class="eyebrow">Checkout futuro</p><h2>Preparado para compra, sin activar clientes automaticamente</h2></div><ol><li>El cliente selecciona plan y deja sus datos.</li><li>El backend SaaS crea orden cuando exista la API central.</li><li>La suscripcion se activa solo con pago confirmado o aprobacion manual.</li></ol></section>
+      <section class="cta-band">
+        <div><p class="eyebrow light">Decide con tranquilidad</p><h2>Conoce el sistema aplicado a tu negocio</h2><p>Agenda una conversación y revisemos juntos el flujo que hoy quieres mejorar.</p></div>
+        <a class="button light-button" href="#contacto">Quiero una demostración</a>
+      </section>
 
-      <section class="section-band faq-section" id="faq"><div class="section-heading"><p class="eyebrow">FAQ</p><h2>Preguntas frecuentes</h2></div><div class="faq-list">{faqs.map(([question, answer]) => (<details><summary>{question}</summary><p>{answer}</p></details>))}</div></section>
+      <section class="faq-section section" id="faq">
+        <div class="section-heading"><p class="eyebrow">Preguntas frecuentes</p><h2>Lo que necesitas saber antes de empezar</h2></div>
+        <div class="faq-list">{faqs.map(([question, answer]) => <details><summary>{question}<span aria-hidden="true">+</span></summary><p>{answer}</p></details>)}</div>
+      </section>
 
-      <section class="contact-section" id="contacto"><div class="contact-copy"><p class="eyebrow">Demo y contacto</p><h2>Agenda una revision del flujo de ventas, caja e inventario</h2><p>Esta version no guarda leads en base de datos. El formulario queda listo para conectarse a una API cuando el backend SaaS este definido.</p></div><form name="lead-intent" method="post" action="#" data-future-endpoint="/api/leads"><label>Nombre<input type="text" name="name" autocomplete="name" placeholder="Tu nombre" /></label><label>Telefono o WhatsApp<input type="tel" name="phone" autocomplete="tel" placeholder="300 000 0000" /></label><label>Plan de interes<select name="plan"><option>Basico</option><option>Profesional</option><option>Empresarial</option></select></label><label>Mensaje<textarea name="message" rows="4" placeholder="Cuentanos que tipo de negocio tienes"></textarea></label><button class="button primary" type="submit">Enviar solicitud</button><a class="button secondary full" href="https://wa.me/?text=Hola%2C%20quiero%20agendar%20una%20demo%20de%20Sistema%20POS" rel="noreferrer">Continuar por WhatsApp</a></form></section>
+      <section class="contact-section section" id="contacto">
+        <div class="contact-copy"><p class="eyebrow light">Hablemos</p><h2>Cuéntanos cómo funciona tu negocio</h2><p>Completa los datos y prepararemos un mensaje de WhatsApp. No almacenamos esta información en la página.</p><dl><div><dt>Respuesta</dt><dd>Atención personalizada</dd></div><div><dt>Demostración</dt><dd>Enfocada en tu operación</dd></div><div><dt>Implementación</dt><dd>Acompañada de principio a fin</dd></div></dl></div>
+        <form id="lead-form" data-whatsapp-number={whatsappNumber}>
+          <label for="name">Nombre</label><input id="name" type="text" name="name" autocomplete="name" required placeholder="Tu nombre" />
+          <label for="phone">Teléfono o WhatsApp</label><input id="phone" type="tel" name="phone" autocomplete="tel" required inputmode="tel" placeholder="300 000 0000" />
+          <label for="plan">Plan de interés</label><select id="plan" name="plan"><option>Básico</option><option selected>Profesional</option><option>Empresarial</option></select>
+          <label for="message">¿Qué te gustaría mejorar?</label><textarea id="message" name="message" rows="4" placeholder="Por ejemplo: controlar inventario y cierres de caja"></textarea>
+          <button class="button primary" type="submit">Preparar mensaje en WhatsApp</button>
+          <p class="form-note">Al continuar, WhatsApp abrirá el mensaje para que puedas revisarlo antes de enviarlo.</p>
+          <p class="form-status" role="status" aria-live="polite"></p>
+        </form>
+      </section>
     </main>
 
-    <footer><span>Sistema POS</span><span>Landing separada del POS operativo. SaaS multi-tenant en preparacion.</span></footer>
+    <footer><a class="brand" href="#inicio"><span class="brand-mark" aria-hidden="true">SP</span><span>Sistema POS</span></a><p>Ventas, caja e inventario para comercios que quieren crecer con control.</p><a href="#contacto">Agendar demostración</a><span>© {new Date().getFullYear()} Sistema POS</span></footer>
+
+    <script>
+      const planSelect = document.querySelector<HTMLSelectElement>("#plan");
+      const menu = document.querySelector<HTMLDetailsElement>(".mobile-menu");
+
+      document.querySelectorAll<HTMLElement>("[data-select-plan]").forEach((link) => {
+        link.addEventListener("click", () => {
+          if (planSelect) planSelect.value = link.dataset.selectPlan ?? "Profesional";
+        });
+      });
+
+      menu?.querySelectorAll("a").forEach((link) => link.addEventListener("click", () => menu.removeAttribute("open")));
+
+      document.querySelector<HTMLFormElement>("#lead-form")?.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const form = event.currentTarget as HTMLFormElement;
+        const data = new FormData(form);
+        const number = form.dataset.whatsappNumber ?? "";
+        const message = [
+          "Hola, quiero agendar una demostración de Sistema POS.",
+          `Nombre: ${data.get("name")}`,
+          `Teléfono: ${data.get("phone")}`,
+          `Plan de interés: ${data.get("plan")}`,
+          data.get("message") ? `Necesidad: ${data.get("message")}` : "",
+        ].filter(Boolean).join("\n");
+        const status = form.querySelector<HTMLElement>(".form-status");
+        if (status) status.textContent = "Abriendo WhatsApp con tu mensaje listo…";
+        window.open(`https://wa.me/${number}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+      });
+    </script>
   </body>
 </html>
 
 <style>
-  :root{color-scheme:light;--ink:#18211f;--muted:#61706b;--line:#d9e3de;--paper:#fbfcf8;--soft:#eef5f0;--brand:#0f6b5f;--brand-strong:#094a45;--accent:#d35f32;--gold:#f2b84b;--blue:#2f6fa7;--white:#fff;--shadow:0 24px 70px rgba(24,33,31,.14)}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-width:320px;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.5}a{color:inherit;text-decoration:none}.site-header{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:14px clamp(18px,4vw,56px);border-bottom:1px solid rgba(217,227,222,.85);background:rgba(251,252,248,.92);backdrop-filter:blur(18px)}.brand{display:inline-flex;align-items:center;gap:10px;font-weight:800;white-space:nowrap}.brand-mark{display:grid;width:34px;height:34px;place-items:center;border-radius:8px;background:var(--brand);color:var(--white);font-size:.78rem}nav{display:flex;align-items:center;gap:clamp(12px,2vw,26px);color:var(--muted);font-size:.95rem}.header-cta{color:var(--brand-strong);font-weight:800;white-space:nowrap}.section-band,.value-section,.plans-section,.checkout-section,.contact-section{padding:clamp(52px,8vw,104px) clamp(18px,5vw,72px)}.section-band{background:var(--soft)}.hero{display:grid;grid-template-columns:minmax(0,.92fr) minmax(340px,1.08fr);align-items:center;gap:clamp(28px,5vw,74px);min-height:calc(100svh - 64px);padding-top:clamp(40px,6vw,76px);padding-bottom:clamp(32px,6vw,72px);background:linear-gradient(135deg,rgba(15,107,95,.14),rgba(211,95,50,.08)),var(--paper)}.eyebrow{margin:0 0 12px;color:var(--accent);font-size:.78rem;font-weight:900;letter-spacing:0;text-transform:uppercase}h1,h2,h3,p{margin-top:0}h1{max-width:720px;margin-bottom:18px;font-size:clamp(3.25rem,7vw,6.8rem);line-height:.95;letter-spacing:0}h2{margin-bottom:14px;font-size:clamp(2rem,4vw,3.7rem);line-height:1.04;letter-spacing:0}h3{margin-bottom:10px;font-size:1.15rem;letter-spacing:0}.hero-lead,.section-heading p,.contact-copy p{max-width:720px;color:var(--muted);font-size:clamp(1.05rem,1.6vw,1.28rem)}.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin:28px 0}.button{display:inline-flex;min-height:46px;align-items:center;justify-content:center;border:1px solid var(--brand);border-radius:8px;padding:12px 18px;font-weight:850;text-align:center}.button.primary{background:var(--brand);color:var(--white)}.button.secondary{background:var(--white);color:var(--brand-strong)}.button.full{width:100%}.hero-metrics{display:grid;max-width:660px;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0}.hero-metrics div,.value-grid article,.module-grid article,.plan-card,details{border:1px solid var(--line);border-radius:8px;background:var(--white)}.hero-metrics div{padding:14px}.hero-metrics dt{color:var(--muted);font-size:.82rem}.hero-metrics dd{margin:4px 0 0;font-size:1.18rem;font-weight:900}.product-visual{overflow:hidden;border:1px solid rgba(15,107,95,.18);border-radius:8px;background:#102522;box-shadow:var(--shadow)}.screen-top{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;padding:16px 18px;color:var(--white)}.screen-top span{width:12px;height:12px;border-radius:999px;background:var(--gold)}.screen-top em{color:#b9dad1;font-style:normal;font-size:.86rem}.pos-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:12px;padding:12px;background:#17332f}.pos-grid section{min-height:180px;border-radius:8px;background:var(--paper);padding:18px}.pos-grid h2{margin-bottom:16px;font-size:1rem;line-height:1.2}.ticket-panel{grid-row:span 2}.line-item,.stock,.total-row{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.line-item span,.stock span{color:var(--muted)}.total-row{margin-top:16px;border:0;font-size:1.35rem;font-weight:900}.stock strong{display:grid;min-width:42px;height:32px;place-items:center;border-radius:8px;color:var(--white)}.stock.ok strong{background:var(--brand)}.stock.warn strong{background:var(--accent)}.sales-panel strong{display:block;margin-bottom:18px;color:var(--blue);font-size:1.65rem}.bars{display:grid;height:104px;grid-template-columns:repeat(5,1fr);align-items:end;gap:9px}.bars span{border-radius:8px 8px 0 0;background:linear-gradient(180deg,var(--gold),var(--accent))}.section-heading{max-width:860px;margin-bottom:clamp(24px,4vw,42px)}.value-grid,.module-grid,.plans-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.value-grid article,.module-grid article,.plan-card{padding:22px}.value-grid span{color:var(--accent);font-weight:950}.value-grid p,.module-grid p,.plan-card p,.faq-list p,footer{color:var(--muted)}.plans-section{background:var(--paper)}.plan-card{position:relative;display:flex;min-height:100%;flex-direction:column}.plan-card.highlighted{border-color:var(--brand);box-shadow:var(--shadow)}.plan-badge{width:fit-content;margin-bottom:18px;border-radius:999px;background:rgba(211,95,50,.13);color:var(--accent);padding:6px 10px;font-size:.78rem;font-weight:900}.price{margin:10px 0 18px}.price strong{font-size:clamp(2rem,3vw,2.8rem)}.price span{color:var(--muted)}ul{display:grid;gap:10px;margin:0 0 22px;padding:0;list-style:none}li{position:relative;padding-left:22px}li::before{position:absolute;left:0;color:var(--brand);content:"✓";font-weight:900}.plan-button{margin-top:auto}.comparison-table{overflow:hidden;border:1px solid var(--line);border-radius:8px;background:var(--white)}.comparison-row{display:grid;grid-template-columns:1.35fr repeat(3,minmax(0,1fr));border-top:1px solid var(--line)}.comparison-row:first-child{border-top:0}.comparison-row span{padding:16px}.comparison-row span:first-child{font-weight:850}.comparison-row.header{background:#133b36;color:var(--white);font-weight:900}.checkout-section{display:grid;grid-template-columns:minmax(0,.9fr) minmax(280px,1.1fr);gap:28px;align-items:start;background:var(--brand-strong);color:var(--white)}.checkout-section .eyebrow,.checkout-section h2{color:var(--white)}.checkout-section ol{display:grid;gap:12px;margin:0;padding-left:22px}.checkout-section li{padding-left:4px}.checkout-section li::before{content:none}.faq-list{display:grid;gap:12px}details{padding:18px 20px}summary{cursor:pointer;font-weight:850}details p{margin:12px 0 0}.contact-section{display:grid;grid-template-columns:minmax(0,.95fr) minmax(320px,.75fr);gap:clamp(24px,5vw,64px);align-items:start}form{display:grid;gap:14px;border:1px solid var(--line);border-radius:8px;background:var(--white);padding:22px}label{display:grid;gap:7px;color:var(--ink);font-weight:800}input,select,textarea{width:100%;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);font:inherit;padding:12px 13px}textarea{resize:vertical}footer{display:flex;justify-content:space-between;gap:18px;padding:24px clamp(18px,5vw,72px);border-top:1px solid var(--line);background:var(--white)}footer span:first-child{color:var(--ink);font-weight:900}@media (max-width:980px){.site-header{align-items:flex-start}nav{display:none}.hero,.checkout-section,.contact-section{grid-template-columns:1fr}.hero{min-height:auto}.value-grid,.module-grid,.plans-grid{grid-template-columns:1fr 1fr}}@media (max-width:680px){.site-header{gap:12px;padding:12px 16px}.header-cta{font-size:.9rem}.section-band,.value-section,.plans-section,.checkout-section,.contact-section{padding:44px 16px}h1{font-size:clamp(3rem,18vw,4.2rem)}.hero-actions,.hero-metrics,.value-grid,.module-grid,.plans-grid{grid-template-columns:1fr}.button,.hero-actions a{width:100%}.product-visual{margin-inline:-2px}.pos-grid{grid-template-columns:1fr}.ticket-panel{grid-row:auto}.comparison-table{border:0;background:transparent}.comparison-row,.comparison-row.header{grid-template-columns:1fr;margin-bottom:10px;border:1px solid var(--line);border-radius:8px;background:var(--white);color:var(--ink)}.comparison-row.header{display:none}.comparison-row span{display:flex;justify-content:space-between;gap:14px;padding:12px 14px;border-top:1px solid var(--line)}.comparison-row span:first-child{border-top:0;background:#133b36;color:var(--white)}.comparison-row span:nth-child(2)::before{content:"Basico";color:var(--muted);font-weight:800}.comparison-row span:nth-child(3)::before{content:"Profesional";color:var(--muted);font-weight:800}.comparison-row span:nth-child(4)::before{content:"Empresarial";color:var(--muted);font-weight:800}footer{flex-direction:column}}
+  :root{color-scheme:light;--ink:#17201e;--muted:#596763;--paper:#f7f8f5;--white:#fff;--line:#d8dfda;--green:#123f38;--green-2:#1c5d51;--mint:#e7efeb;--coral:#b95636;--gold:#d4a647;--shadow:0 22px 55px rgba(16,35,31,.14);font-family:Inter,"Aptos","Segoe UI",Arial,sans-serif}*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:76px}body{margin:0;min-width:320px;background:var(--paper);color:var(--ink);line-height:1.55}body,button,input,select,textarea{font:inherit}a{color:inherit;text-decoration:none}button,a,summary{touch-action:manipulation}.skip-link{position:fixed;top:8px;left:8px;z-index:100;transform:translateY(-150%);background:var(--white);padding:10px 14px;border:2px solid var(--green)}.skip-link:focus{transform:none}.site-header{position:sticky;top:0;z-index:30;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;min-height:70px;padding:0 clamp(20px,4vw,64px);border-bottom:1px solid rgba(216,223,218,.8);background:rgba(247,248,245,.94);backdrop-filter:blur(16px)}.brand{display:inline-flex;align-items:center;gap:11px;width:max-content;font-weight:800}.brand-mark{display:grid;width:36px;height:36px;place-items:center;border-radius:6px;background:var(--green);color:var(--white);font-size:.76rem}.desktop-nav{display:flex;gap:clamp(18px,2.5vw,34px);color:var(--muted);font-size:.93rem}.desktop-nav a,.header-cta,footer a{transition:color .2s ease}.desktop-nav a:hover,.header-cta:hover,footer a:hover{color:var(--coral)}.header-cta{justify-self:end;color:var(--green);font-weight:800}.mobile-menu{display:none}.section{padding:clamp(72px,9vw,120px) clamp(20px,5vw,76px)}.section-heading{max-width:780px;margin-bottom:clamp(34px,5vw,58px)}.section-heading.centered{margin-inline:auto;text-align:center}.split-heading{display:grid;max-width:none;grid-template-columns:minmax(0,1fr) minmax(280px,.72fr);gap:clamp(36px,8vw,120px);align-items:end}.eyebrow{margin:0 0 12px;color:var(--coral);font-size:.76rem;font-weight:850;text-transform:uppercase}.eyebrow.light{color:#f2c078}h1,h2,h3,p{margin-top:0}h1{margin:0 0 22px;font-family:Georgia,"Times New Roman",serif;font-size:clamp(4rem,8vw,7.6rem);font-weight:500;line-height:.9;letter-spacing:0}h2{margin-bottom:16px;font-family:Georgia,"Times New Roman",serif;font-size:clamp(2.2rem,4.5vw,4.6rem);font-weight:500;line-height:1.02;letter-spacing:0}h3{margin-bottom:8px;font-size:1.12rem;letter-spacing:0}.section-heading>p:last-child,.split-heading>p,.product-copy>p,.contact-copy>p{color:var(--muted);font-size:clamp(1.02rem,1.5vw,1.2rem)}.hero{position:relative;display:flex;min-height:calc(88svh - 70px);align-items:center;overflow:hidden;background:#17201e;color:var(--white)}.hero-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}.hero-shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(13,22,20,.94) 0%,rgba(13,22,20,.76) 36%,rgba(13,22,20,.12) 70%,rgba(13,22,20,.08) 100%)}.hero-content{position:relative;z-index:1;width:min(720px,90%);padding:clamp(76px,11vw,150px) clamp(20px,6vw,90px)}.hero-lead{max-width:640px;margin-bottom:30px;color:#e8eeeb;font-size:clamp(1.18rem,2vw,1.48rem)}.hero-actions{display:flex;align-items:center;gap:24px;margin-bottom:26px}.button{display:inline-flex;min-height:48px;align-items:center;justify-content:center;border:1px solid var(--green);border-radius:6px;background:transparent;padding:12px 19px;color:var(--green);font-weight:800;text-align:center;cursor:pointer;transition:transform .2s ease,background .2s ease,color .2s ease,box-shadow .2s ease}.button:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(16,35,31,.12)}.button.primary{background:var(--green);color:var(--white)}.light-button{border-color:var(--white);background:var(--white);color:var(--green)}.text-link{font-weight:800}.light-link{color:var(--white)}.text-link span{display:inline-block;margin-left:7px;transition:transform .2s ease}.text-link:hover span{transform:translateX(4px)}.hero-note{margin:0;color:#cbd7d2;font-size:.9rem}.hero-note strong{color:var(--white)}.proof-strip{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--line);background:var(--white);padding:0 clamp(20px,5vw,76px)}.proof-strip p{display:grid;gap:3px;margin:0;padding:26px clamp(14px,3vw,42px);border-left:1px solid var(--line)}.proof-strip p:last-child{border-right:1px solid var(--line)}.proof-strip strong{font-size:.93rem}.proof-strip span{color:var(--muted);font-size:.85rem}.intro{background:var(--paper)}.outcomes{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line)}.outcomes article{padding:30px 32px 12px 0;border-right:1px solid var(--line)}.outcomes article+article{padding-left:32px}.outcomes article:last-child{border-right:0}.outcomes span,.module-list>article>span{color:var(--coral);font-size:.78rem;font-weight:900}.outcomes p,.module-list p{color:var(--muted)}.dark-section{background:var(--green);color:var(--white)}.product-section{display:grid;grid-template-columns:minmax(260px,.68fr) minmax(500px,1.32fr);gap:clamp(40px,7vw,100px);align-items:center}.product-copy>p{color:#c8d7d2}.check-list{display:grid;gap:11px;margin:24px 0 0;padding:0;list-style:none}.check-list li{position:relative;padding-left:23px}.check-list li::before{position:absolute;left:0;color:var(--gold);content:"✓";font-weight:900}.product-visual{overflow:hidden;border:1px solid rgba(255,255,255,.18);border-radius:7px;background:#0d2e29;box-shadow:0 32px 70px rgba(4,18,15,.35);transform:rotate(.35deg)}.screen-top{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;padding:15px 18px;color:var(--white)}.screen-top>span{width:10px;height:10px;border-radius:50%;background:var(--gold)}.screen-top em{color:#b6cec6;font-size:.82rem;font-style:normal}.pos-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:11px;padding:11px;background:#174c43}.pos-grid section{min-height:170px;border-radius:6px;background:#f8faf7;padding:17px;color:var(--ink)}.pos-grid h3{font-size:.92rem}.ticket-panel{grid-row:span 2}.line-item,.stock,.total-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:.9rem}.line-item span,.stock span{color:var(--muted)}.total-row{margin-top:12px;border:0;font-size:1.2rem;font-weight:900}.ticket-panel button{width:100%;border:0;border-radius:5px;background:var(--green-2);color:var(--white);padding:10px;font-weight:800}.stock strong{min-width:34px;color:var(--green)}.stock.warn strong{color:var(--coral)}.sales-panel>p{margin-bottom:2px;color:var(--muted);font-size:.8rem}.sales-panel>strong{display:block;color:var(--green);font-size:1.55rem}.bars{display:grid;height:86px;grid-template-columns:repeat(5,1fr);align-items:end;gap:8px;margin-top:12px}.bars span{border-radius:4px 4px 0 0;background:var(--gold)}.modules-section{background:var(--white)}.module-list{display:grid;grid-template-columns:repeat(2,1fr);border-top:1px solid var(--line)}.module-list article{display:grid;grid-template-columns:42px 1fr;gap:16px;padding:28px 28px 24px 0;border-bottom:1px solid var(--line)}.module-list article:nth-child(odd){border-right:1px solid var(--line)}.module-list article:nth-child(even){padding-left:32px}.module-list p{max-width:560px;margin:0}.steps-section{background:var(--mint)}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin:0;padding:0;list-style:none}.steps li{display:grid;grid-template-columns:auto 1fr;gap:16px;padding-right:36px}.steps li+li{border-left:1px solid #c5d2cc;padding-left:36px}.steps li>span{display:grid;width:38px;height:38px;place-items:center;border:1px solid var(--green);border-radius:50%;color:var(--green);font-weight:900}.steps p{color:var(--muted)}.plans-section{background:var(--paper)}.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:1200px;margin:auto}.plan-card{position:relative;display:flex;min-height:100%;flex-direction:column;border:1px solid var(--line);border-radius:7px;background:var(--white);padding:30px}.plan-card.highlighted{border:2px solid var(--green);box-shadow:var(--shadow)}.plan-badge{position:absolute;top:0;right:22px;transform:translateY(-50%);border-radius:99px;background:var(--coral);color:var(--white);padding:6px 11px;font-size:.72rem;font-weight:900;text-transform:uppercase}.plan-name{margin-bottom:8px;color:var(--green);font-weight:900}.price{display:flex;align-items:baseline;gap:8px;margin-bottom:16px}.price strong{font-family:Georgia,"Times New Roman",serif;font-size:clamp(2.25rem,3.5vw,3.2rem);font-weight:500}.price span{color:var(--muted);font-size:.8rem}.plan-card>p:not(.plan-name){color:var(--muted)}.plan-card .check-list{margin-bottom:26px}.plan-button{margin-top:auto}.price-note{margin:22px auto 0;color:var(--muted);font-size:.83rem;text-align:center}.comparison-section{background:var(--white)}.comparison-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:7px}.comparison-scroll:focus-visible{outline:3px solid rgba(185,86,54,.28);outline-offset:3px}table{width:100%;min-width:720px;border-collapse:collapse;background:var(--white)}th,td{padding:18px 20px;border-bottom:1px solid var(--line);text-align:left}thead{background:var(--green);color:var(--white)}tbody th{font-size:.9rem}.pro-cell{background:rgba(231,239,235,.65);font-weight:750}tbody tr:last-child th,tbody tr:last-child td{border-bottom:0}.cta-band{display:flex;align-items:center;justify-content:space-between;gap:36px;padding:clamp(58px,7vw,88px) clamp(20px,7vw,108px);background:var(--coral);color:var(--white)}.cta-band h2{max-width:800px;margin-bottom:10px}.cta-band p:last-child{margin:0;color:#ffe9e1}.cta-band .button{flex:none}.faq-section{background:var(--paper)}.faq-list{border-top:1px solid var(--line)}details{border-bottom:1px solid var(--line)}summary{display:flex;justify-content:space-between;gap:20px;padding:23px 4px;cursor:pointer;font-weight:800;list-style:none}summary::-webkit-details-marker{display:none}summary span{color:var(--coral);font-size:1.35rem;transition:transform .2s ease}details[open] summary span{transform:rotate(45deg)}details>p{max-width:800px;margin:0;padding:0 42px 24px 4px;color:var(--muted)}.contact-section{display:grid;grid-template-columns:minmax(0,.9fr) minmax(350px,.7fr);gap:clamp(40px,8vw,120px);background:var(--green);color:var(--white)}.contact-copy>p{color:#c8d7d2}.contact-copy dl{display:grid;gap:16px;margin:38px 0 0}.contact-copy dl div{display:grid;grid-template-columns:120px 1fr;border-top:1px solid rgba(255,255,255,.18);padding-top:14px}.contact-copy dt{color:#aac2ba;font-size:.82rem}.contact-copy dd{margin:0;font-weight:750}form{display:grid;grid-template-columns:1fr 1fr;gap:9px 14px;border-radius:7px;background:var(--white);padding:28px;color:var(--ink)}form label{font-size:.82rem;font-weight:800}form label:nth-of-type(4),form textarea,form button,.form-note,.form-status{grid-column:1/-1}input,select,textarea{width:100%;border:1px solid var(--line);border-radius:5px;background:#fafbf9;color:var(--ink);padding:12px 13px}textarea{resize:vertical}.form-note,.form-status{margin:0;color:var(--muted);font-size:.78rem}.form-status{min-height:1.2em;color:var(--green);font-weight:700}footer{display:grid;grid-template-columns:1.2fr 2fr auto auto;align-items:center;gap:28px;padding:28px clamp(20px,5vw,76px);background:#0b2d28;color:#d9e5e1;font-size:.84rem}footer p{margin:0;color:#aebfba}footer>a:not(.brand){font-weight:800}footer>span{color:#94aaa4}a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid rgba(212,166,71,.7);outline-offset:3px}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+  @media(max-width:980px){.site-header{grid-template-columns:1fr auto auto;gap:18px}.desktop-nav{display:none}.mobile-menu{display:block;position:relative;order:3}.mobile-menu summary{display:grid;width:42px;height:42px;place-content:center;gap:5px;padding:0;border:1px solid var(--line);border-radius:5px;list-style:none}.mobile-menu summary span{display:block;width:19px;height:2px;background:var(--ink)}.mobile-menu nav{position:absolute;top:50px;right:0;display:grid;min-width:220px;border:1px solid var(--line);border-radius:6px;background:var(--white);box-shadow:var(--shadow);padding:8px}.mobile-menu nav a{padding:11px 12px}.hero{min-height:760px}.hero-shade{background:linear-gradient(90deg,rgba(13,22,20,.92),rgba(13,22,20,.58))}.product-section,.contact-section{grid-template-columns:1fr}.product-copy{max-width:680px}.plans-grid{grid-template-columns:1fr}.plan-card{max-width:650px;width:100%;margin:auto}.footer{grid-template-columns:1fr}.split-heading{grid-template-columns:1fr;gap:8px}footer{grid-template-columns:1fr 1fr}footer p{grid-column:1/-1;grid-row:2}}
+  @media(max-width:680px){html{scroll-padding-top:64px}.site-header{min-height:64px;padding:0 16px}.brand-mark{width:32px;height:32px}.brand>span:last-child{font-size:.93rem}.header-cta{display:none}.hero{min-height:720px;align-items:flex-end}.hero-image{object-position:63% center}.hero-shade{background:linear-gradient(0deg,rgba(11,23,20,.96) 0%,rgba(11,23,20,.8) 50%,rgba(11,23,20,.2) 100%)}.hero-content{width:100%;padding:74px 18px 54px}h1{font-size:clamp(3.8rem,18vw,5.2rem)}h2{font-size:clamp(2.25rem,12vw,3.35rem)}.hero-lead{font-size:1.12rem}.hero-actions{align-items:stretch;flex-direction:column}.hero-actions .button{width:100%}.light-link{text-align:center}.proof-strip{grid-template-columns:1fr;padding:0 18px}.proof-strip p{border-right:0;border-left:0;border-bottom:1px solid var(--line);padding:18px 0}.proof-strip p:last-child{border-right:0;border-bottom:0}.section{padding:68px 18px}.outcomes,.module-list,.steps{grid-template-columns:1fr}.outcomes article,.outcomes article+article{border-right:0;border-bottom:1px solid var(--line);padding:24px 0}.product-section{padding-inline:14px}.product-copy{padding-inline:4px}.product-visual{transform:none}.pos-grid{grid-template-columns:1fr}.ticket-panel{grid-row:auto}.screen-top{font-size:.78rem}.module-list article,.module-list article:nth-child(even){grid-template-columns:34px 1fr;border-right:0;padding:24px 0}.steps{gap:26px}.steps li,.steps li+li{border:0;padding:0}.plan-card{padding:26px 22px}.comparison-section{padding-inline:0}.comparison-section .section-heading{padding-inline:18px}.comparison-scroll{border-right:0;border-left:0;border-radius:0}.cta-band{align-items:stretch;flex-direction:column;padding:58px 18px}.cta-band .button{width:100%}.contact-copy dl div{grid-template-columns:1fr;gap:3px}form{grid-template-columns:1fr;padding:22px 18px}form label,form input,form select{grid-column:1/-1}footer{grid-template-columns:1fr;gap:16px;padding:28px 18px}footer p{grid-row:auto}}
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.button,.text-link span,summary span{transition:none}}
 </style>
