@@ -2,7 +2,7 @@
 import FlowLayout from "../../layouts/FlowLayout.astro";
 const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
 ---
-<FlowLayout title="Estado del pago" eyebrow="Pago" heading="Confirmación segura" lead="La empresa solo se activa después de que Wompi confirme el pago directamente al sistema.">
+<FlowLayout title="Estado del pago" eyebrow="Pago" heading="Confirmación segura" lead="La empresa solo se activa después de que el sistema confirme el pago y termine el aprovisionamiento.">
   <div class="result" id="payment-result" data-api-url={apiUrl}>
     <h2 id="result-heading">Estamos consultando tu pago</h2>
     <p class="status" role="status" aria-live="polite">Verificando la confirmación del proveedor…</p>
@@ -12,6 +12,7 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
     </dl>
     <p data-detail>No dependemos del resultado mostrado por el navegador.</p>
     <div class="actions">
+      <a class="button" id="password-link" href="#" hidden>Crear contraseña</a>
       <button class="button" id="retry-payment" type="button" hidden>Consultar de nuevo</button>
       <a class="button secondary" href="/">Volver al inicio</a>
     </div>
@@ -25,10 +26,12 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
     const reference = root.querySelector<HTMLElement>("[data-field='reference']")!;
     const amount = root.querySelector<HTMLElement>("[data-field='amount']")!;
     const retry = root.querySelector<HTMLButtonElement>("#retry-payment")!;
+    const passwordLink = root.querySelector<HTMLAnchorElement>("#password-link")!;
     const apiUrl = root.dataset.apiUrl?.replace(/\/$/, "") ?? "";
     const checkoutSessionId = new URLSearchParams(location.search).get("checkoutSessionId")
       ?? sessionStorage.getItem("checkout-session-id");
-    const terminalStates = new Set(["approved", "fulfilled", "declined", "expired", "cancelled", "refunded"]);
+    const terminalStates = new Set(["fulfilled", "declined", "expired", "cancelled", "refunded"]);
+    const localDemo = sessionStorage.getItem("checkout-provider") === "local_demo";
     let attempts = 0;
     let timer: number | undefined;
 
@@ -41,7 +44,9 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
         heading.textContent = result.status === "fulfilled" ? "Tu empresa está lista" : "Pago confirmado";
         status.textContent = result.status === "fulfilled" ? "El aprovisionamiento terminó correctamente." : "Estamos preparando tu empresa.";
         status.dataset.state = "success";
-        detail.textContent = "Te enviaremos al correo registrado el enlace seguro para crear tu contraseña.";
+        detail.textContent = localDemo
+          ? "Estamos preparando el acceso local para crear tu contraseña."
+          : "Te enviaremos al correo registrado el enlace seguro para crear tu contraseña.";
       } else if (result.status === "pending") {
         heading.textContent = "Estamos confirmando";
         status.textContent = "Wompi todavía no ha confirmado el pago al sistema.";
@@ -53,6 +58,20 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
         status.dataset.state = "error";
         detail.textContent = result.status === "declined" ? "Puedes volver al checkout e intentar con otro medio de pago." : "Contacta a soporte indicando la referencia mostrada.";
         retry.hidden = result.status !== "declined";
+      }
+    };
+
+    const loadPasswordSetup = async () => {
+      if (!localDemo || !checkoutSessionId) return;
+      const response = await fetch(`${apiUrl}/v1/development/checkout-sessions/${encodeURIComponent(checkoutSessionId)}/password-setup`);
+      const body = await response.json();
+      if (!response.ok) throw body;
+      if (body.status === "ready" && typeof body.passwordSetupUrl === "string") {
+        passwordLink.href = body.passwordSetupUrl;
+        passwordLink.hidden = false;
+        detail.textContent = "La empresa quedó aprovisionada. Crea la contraseña del propietario para entrar al POS.";
+      } else if (body.status === "completed") {
+        detail.textContent = "La contraseña del propietario ya fue configurada. Puedes entrar al POS.";
       }
     };
 
@@ -70,6 +89,7 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
         const body = await response.json();
         if (!response.ok) throw body;
         render(body);
+        if (body.status === "fulfilled") await loadPasswordSetup();
         attempts += 1;
         if (!terminalStates.has(body.status) && attempts < 10) timer = window.setTimeout(queryStatus, 3000);
         else if (!terminalStates.has(body.status)) retry.hidden = false;

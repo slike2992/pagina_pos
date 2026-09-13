@@ -2,7 +2,7 @@
 import FlowLayout from "../../layouts/FlowLayout.astro";
 const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
 ---
-<FlowLayout title="Verificar correo" eyebrow="Verificación" heading="Confirma tu correo" lead="Validaremos el enlace antes de preparar el pago en Wompi.">
+<FlowLayout title="Verificar correo" eyebrow="Verificación" heading="Confirma tu correo" lead="Validaremos el enlace antes de preparar el pago seguro.">
   <div class="result" id="verification" data-api-url={apiUrl}>
     <p class="status" role="status" aria-live="polite">Validando el enlace…</p>
     <div class="actions" hidden><a class="button" id="checkout-link" href="#">Continuar al pago seguro</a></div>
@@ -34,8 +34,13 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
         const checkoutBody = await checkout.json();
         if (!checkout.ok) throw checkoutBody;
         sessionStorage.setItem("checkout-session-id", checkoutBody.checkoutSessionId);
+        sessionStorage.setItem("checkout-provider", checkoutBody.provider);
         link.href = checkoutBody.checkoutUrl;
-        status.textContent = "Tu orden está lista. El pago se realiza directamente en Wompi.";
+        const localDemo = checkoutBody.provider === "local_demo";
+        link.textContent = localDemo ? "Continuar al pago de prueba" : "Continuar al pago seguro";
+        status.textContent = localDemo
+          ? "Tu orden está lista. Puedes aprobar un pago local sin usar una tarjeta."
+          : "Tu orden está lista. El pago se realiza directamente en Wompi.";
         status.dataset.state = "success";
         actions.hidden = false;
       } catch (error) {

@@ -1,0 +1,61 @@
+---
+import FlowLayout from "../../layouts/FlowLayout.astro";
+const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
+---
+<FlowLayout title="Pago local" eyebrow="Demostración local" heading="Confirma el pago de prueba" lead="Esta pantalla solo está disponible en el entorno local aislado y no solicita datos de tarjeta.">
+  <div class="result" id="demo-payment" data-api-url={apiUrl}>
+    <p class="status" role="status" aria-live="polite">Consultando la orden…</p>
+    <dl hidden>
+      <div><dt>Referencia</dt><dd data-field="reference"></dd></div>
+      <div><dt>Valor</dt><dd data-field="amount"></dd></div>
+    </dl>
+    <div class="actions"><button class="button" id="approve" type="button" disabled>Aprobar pago de prueba</button></div>
+  </div>
+  <script>
+    const root = document.querySelector<HTMLElement>("#demo-payment")!;
+    const status = root.querySelector<HTMLElement>(".status")!;
+    const summary = root.querySelector<HTMLDListElement>("dl")!;
+    const reference = root.querySelector<HTMLElement>("[data-field='reference']")!;
+    const amount = root.querySelector<HTMLElement>("[data-field='amount']")!;
+    const approve = root.querySelector<HTMLButtonElement>("#approve")!;
+    const apiUrl = root.dataset.apiUrl?.replace(/\/$/, "") ?? "";
+    const checkoutSessionId = new URLSearchParams(location.search).get("checkoutSessionId");
+    const fail = (message: string) => { status.textContent = message; status.dataset.state = "error"; };
+
+    const loadOrder = async () => {
+      if (!checkoutSessionId) { fail("La dirección no contiene una orden válida."); return; }
+      try {
+        const response = await fetch(`${apiUrl}/v1/checkout-sessions/${encodeURIComponent(checkoutSessionId)}`);
+        const body = await response.json();
+        if (!response.ok) throw body;
+        reference.textContent = body.reference;
+        amount.textContent = new Intl.NumberFormat("es-CO", { style: "currency", currency: body.currency, maximumFractionDigits: 0 }).format(body.amountInCents / 100);
+        summary.hidden = false;
+        approve.disabled = false;
+        status.textContent = "La orden está lista para recorrer el mismo aprovisionamiento usado por un pago confirmado.";
+      } catch (error) {
+        const message = typeof error === "object" && error && "error" in error ? (error as { error?: { message?: string } }).error?.message : null;
+        fail(message ?? "No fue posible consultar la orden local.");
+      }
+    };
+
+    approve.addEventListener("click", async () => {
+      if (!checkoutSessionId) return;
+      approve.disabled = true;
+      status.textContent = "Enviando la confirmación al worker…";
+      try {
+        const response = await fetch(`${apiUrl}/v1/development/checkout-sessions/${encodeURIComponent(checkoutSessionId)}/approve`, { method: "POST" });
+        const body = await response.json();
+        if (!response.ok) throw body;
+        sessionStorage.setItem("checkout-session-id", checkoutSessionId);
+        sessionStorage.setItem("checkout-provider", "local_demo");
+        location.assign(`/pago/resultado?checkoutSessionId=${encodeURIComponent(checkoutSessionId)}`);
+      } catch (error) {
+        approve.disabled = false;
+        const message = typeof error === "object" && error && "error" in error ? (error as { error?: { message?: string } }).error?.message : null;
+        fail(message ?? "No fue posible aprobar el pago de prueba.");
+      }
+    });
+    void loadOrder();
+  </script>
+</FlowLayout>

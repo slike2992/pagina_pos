@@ -90,6 +90,19 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
         email.textContent = body.email;
         message.append(email, ". El registro continuará desde ese enlace.");
         result.append(label, heading, message);
+        if (typeof body.developmentVerificationUrl === "string") {
+          label.textContent = "Modo local";
+          heading.textContent = "Registro creado";
+          message.lastChild!.textContent = ". Continúa con la verificación local para probar el recorrido completo.";
+          const actions = document.createElement("div");
+          actions.className = "actions";
+          const link = document.createElement("a");
+          link.className = "button";
+          link.href = body.developmentVerificationUrl;
+          link.textContent = "Continuar verificación";
+          actions.append(link);
+          result.append(actions);
+        }
         form.append(result);
       } catch (error) {
         submit!.disabled = false;
