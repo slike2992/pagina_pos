@@ -100,6 +100,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     const tenantSelect = root.querySelector<HTMLSelectElement>("#tenant")!;
     const panel = root.querySelector<HTMLElement>(".account-panel")!;
     const accountStatus = panel.querySelector<HTMLElement>(".account-status")!;
+    const posLink = panel.querySelector<HTMLAnchorElement>("[data-action='open-pos']")!;
     const cancelButton = panel.querySelector<HTMLButtonElement>("[data-action='cancel']")!;
     const reactivateButton = panel.querySelector<HTMLButtonElement>("[data-action='reactivate']")!;
     const dialog = root.querySelector<HTMLDialogElement>("#cancel-dialog")!;
@@ -155,8 +156,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       planSelect.value = subscription.plan.code;
       accountStatus.textContent = scheduled ? `La renovación está cancelada desde el ${formatDate(subscription.currentPeriodEnd)}.` : "";
       accountStatus.dataset.state = scheduled ? "success" : "";
-      const posLink = panel.querySelector<HTMLAnchorElement>("[data-action='open-pos']")!;
-      posLink.href = `${posUrl}/?empresa=${encodeURIComponent(login.tenant.tenantKey)}`;
+      posLink.href = posUrl;
       loginForm.hidden = true;
       panel.hidden = false;
     };
@@ -458,8 +458,34 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         reactivateButton.disabled = false;
       }
     });
+    posLink.addEventListener("click", async (event) => {
+      event.preventDefault();
+      if (!accessToken || posLink.getAttribute("aria-disabled") === "true") return;
+      posLink.setAttribute("aria-disabled", "true");
+      accountStatus.textContent = "Abriendo el POS…";
+      accountStatus.dataset.state = "";
+      try {
+        const response = await fetch(`${apiUrl}/v1/auth/pos-sso`, {
+          method: "POST",
+          headers: { authorization: `Bearer ${accessToken}` }
+        });
+        const body = await response.json();
+        if (!response.ok) throw body;
+        const destination = new URL(String(body.redirectUrl ?? ""));
+        const expected = new URL(posUrl);
+        if (destination.origin !== expected.origin || destination.pathname !== "/auth/sso") {
+          throw new Error("Destino POS inválido");
+        }
+        window.location.assign(destination.toString());
+      } catch (error) {
+        accountStatus.textContent = messageFrom(error, "No fue posible abrir el POS.");
+        accountStatus.dataset.state = "error";
+        posLink.removeAttribute("aria-disabled");
+      }
+    });
     panel.querySelector<HTMLButtonElement>("[data-action='logout']")!.addEventListener("click", () => {
       accessToken = "";
+      posLink.removeAttribute("aria-disabled");
       currentSubscription = null;
       pendingChange = null;
       changeIdempotencyKey = "";
