@@ -1,6 +1,90 @@
 ---
 import FlowLayout from "../../layouts/FlowLayout.astro";
+const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
 ---
-<FlowLayout title="Estado del pago" eyebrow="Pago recibido" heading="Estamos confirmando" lead="La empresa solo se activa después de que Wompi confirme el pago directamente al sistema.">
-  <div class="result"><h2>Puedes cerrar esta ventana</h2><p>No dependemos del resultado mostrado por el navegador. Cuando el webhook auténtico sea procesado, aprovisionaremos tu empresa y enviaremos el enlace para crear la contraseña.</p><div class="actions"><a class="button secondary" href="/">Volver al inicio</a></div></div>
+<FlowLayout title="Estado del pago" eyebrow="Pago" heading="Confirmación segura" lead="La empresa solo se activa después de que Wompi confirme el pago directamente al sistema.">
+  <div class="result" id="payment-result" data-api-url={apiUrl}>
+    <h2 id="result-heading">Estamos consultando tu pago</h2>
+    <p class="status" role="status" aria-live="polite">Verificando la confirmación del proveedor…</p>
+    <dl hidden>
+      <div><dt>Referencia</dt><dd data-field="reference"></dd></div>
+      <div><dt>Valor</dt><dd data-field="amount"></dd></div>
+    </dl>
+    <p data-detail>No dependemos del resultado mostrado por el navegador.</p>
+    <div class="actions">
+      <button class="button" id="retry-payment" type="button" hidden>Consultar de nuevo</button>
+      <a class="button secondary" href="/">Volver al inicio</a>
+    </div>
+  </div>
+  <script>
+    const root = document.querySelector<HTMLElement>("#payment-result")!;
+    const heading = root.querySelector<HTMLElement>("#result-heading")!;
+    const status = root.querySelector<HTMLElement>(".status")!;
+    const detail = root.querySelector<HTMLElement>("[data-detail]")!;
+    const summary = root.querySelector<HTMLDListElement>("dl")!;
+    const reference = root.querySelector<HTMLElement>("[data-field='reference']")!;
+    const amount = root.querySelector<HTMLElement>("[data-field='amount']")!;
+    const retry = root.querySelector<HTMLButtonElement>("#retry-payment")!;
+    const apiUrl = root.dataset.apiUrl?.replace(/\/$/, "") ?? "";
+    const checkoutSessionId = new URLSearchParams(location.search).get("checkoutSessionId")
+      ?? sessionStorage.getItem("checkout-session-id");
+    const terminalStates = new Set(["approved", "fulfilled", "declined", "expired", "cancelled", "refunded"]);
+    let attempts = 0;
+    let timer: number | undefined;
+
+    const render = (result: { status: string; reference: string; amountInCents: number; currency: string }) => {
+      reference.textContent = result.reference;
+      amount.textContent = new Intl.NumberFormat("es-CO", { style: "currency", currency: result.currency, maximumFractionDigits: 0 }).format(result.amountInCents / 100);
+      summary.hidden = false;
+      retry.hidden = result.status !== "declined";
+      if (result.status === "approved" || result.status === "fulfilled") {
+        heading.textContent = result.status === "fulfilled" ? "Tu empresa está lista" : "Pago confirmado";
+        status.textContent = result.status === "fulfilled" ? "El aprovisionamiento terminó correctamente." : "Estamos preparando tu empresa.";
+        status.dataset.state = "success";
+        detail.textContent = "Te enviaremos al correo registrado el enlace seguro para crear tu contraseña.";
+      } else if (result.status === "pending") {
+        heading.textContent = "Estamos confirmando";
+        status.textContent = "Wompi todavía no ha confirmado el pago al sistema.";
+        detail.textContent = "Puedes esperar en esta página. La consulta se actualizará automáticamente.";
+      } else {
+        const labels: Record<string, string> = { declined: "Pago rechazado", expired: "Orden vencida", cancelled: "Pago cancelado", refunded: "Pago reembolsado" };
+        heading.textContent = labels[result.status] ?? "No fue posible confirmar el pago";
+        status.textContent = "Tu empresa no fue activada.";
+        status.dataset.state = "error";
+        detail.textContent = result.status === "declined" ? "Puedes volver al checkout e intentar con otro medio de pago." : "Contacta a soporte indicando la referencia mostrada.";
+        retry.hidden = result.status !== "declined";
+      }
+    };
+
+    const queryStatus = async () => {
+      if (!checkoutSessionId) {
+        heading.textContent = "No encontramos la orden";
+        status.textContent = "Abre esta página desde el flujo de pago iniciado en este navegador.";
+        status.dataset.state = "error";
+        detail.textContent = "Si ya pagaste, revisa tu correo o contacta a soporte.";
+        return;
+      }
+      retry.disabled = true;
+      try {
+        const response = await fetch(`${apiUrl}/v1/checkout-sessions/${encodeURIComponent(checkoutSessionId)}`, { headers: { accept: "application/json" } });
+        const body = await response.json();
+        if (!response.ok) throw body;
+        render(body);
+        attempts += 1;
+        if (!terminalStates.has(body.status) && attempts < 10) timer = window.setTimeout(queryStatus, 3000);
+        else if (!terminalStates.has(body.status)) retry.hidden = false;
+      } catch (error) {
+        const message = typeof error === "object" && error && "error" in error ? (error as { error?: { message?: string } }).error?.message : null;
+        status.textContent = message ?? "No pudimos consultar el pago en este momento.";
+        status.dataset.state = "error";
+        retry.hidden = false;
+      } finally {
+        retry.disabled = false;
+      }
+    };
+
+    retry.addEventListener("click", () => { attempts = 0; status.dataset.state = ""; void queryStatus(); });
+    window.addEventListener("pagehide", () => { if (timer) window.clearTimeout(timer); }, { once: true });
+    void queryStatus();
+  </script>
 </FlowLayout>

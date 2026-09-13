@@ -33,6 +33,7 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
         const checkout = await fetch(`${apiUrl}/v1/checkout-sessions`, { method: "POST", headers: { "content-type": "application/json", "idempotency-key": sessionStorage.getItem(keyName)! }, body: JSON.stringify({ signupIntentId }) });
         const checkoutBody = await checkout.json();
         if (!checkout.ok) throw checkoutBody;
+        sessionStorage.setItem("checkout-session-id", checkoutBody.checkoutSessionId);
         link.href = checkoutBody.checkoutUrl;
         status.textContent = "Tu orden está lista. El pago se realiza directamente en Wompi.";
         status.dataset.state = "success";
