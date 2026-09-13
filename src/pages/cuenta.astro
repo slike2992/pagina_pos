@@ -40,6 +40,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
           <p class="label">Renovación automática</p>
           <h3>Medio de pago</h3>
           <p>Wompi solicitará los datos de la tarjeta en su ventana segura.</p>
+          <p class="current-source">Actual: <strong data-field="payment-source-current">Sin medio de pago registrado</strong></p>
         </div>
         <div class="acceptances">
           <label><input type="checkbox" data-acceptance="terms" /> Acepto el <a data-field="wompi-terms" target="_blank" rel="noopener noreferrer">reglamento de usuarios de Wompi</a>.</label>
@@ -86,6 +87,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     type Subscription = { status: string; plan: { code: string; name: string }; price: { amountMinor: number; currency: string; billingInterval: string }; currentPeriodEnd: string | null; cancelAtPeriodEnd: boolean };
     type PlanChange = { subscriptionChangeId: string; changeType: "upgrade" | "downgrade"; status: string; toPlan: { name: string }; quote: { amountMinor: number; currency: string }; effectiveAt: string; nextAction: "checkout" | "wait_for_period_end" };
     type PaymentSourceConfig = { publicKey: string; widgetScriptUrl: string; fraudScriptUrl: string; acceptance: { token: string; permalink: string }; personalDataAuthorization: { token: string; permalink: string } };
+    type PaymentSource = { type: "card" | "nequi"; displayHint: string | null; recurringConsentAt: string };
     type TokenizedSource = { token: string; type: "CARD" | "NEQUI" };
     type WidgetCheckoutInstance = { open(callback: (result: { payment_source?: TokenizedSource }) => void): void };
     type WidgetCheckoutConstructor = new (config: { publicKey: string; widgetOperation: "tokenize"; bootstrapTransport: "postmessage" }) => WidgetCheckoutInstance;
@@ -196,6 +198,16 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       paymentSourceStatus.textContent = "Preparando el registro seguro…";
       paymentSourceStatus.dataset.state = "";
       try {
+        const currentResponse = await fetch(`${apiUrl}/v1/me/billing/payment-sources`, {
+          headers: { authorization: `Bearer ${accessToken}` }
+        });
+        const currentBody = await currentResponse.json();
+        if (!currentResponse.ok) throw currentBody;
+        const current = currentBody.paymentSource as PaymentSource | null;
+        field("payment-source-current").textContent = current?.displayHint
+          ?? (current ? "Medio de pago registrado" : "Sin medio de pago registrado");
+        paymentSourceButton.textContent = current ? "Cambiar tarjeta" : "Agregar tarjeta";
+
         const response = await fetch(`${apiUrl}/v1/public/payment-source-config`);
         const body = await response.json();
         if (!response.ok) throw body;
@@ -302,6 +314,8 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
           paymentSourceStatus.textContent = body.displayHint
             ? `${body.displayHint} quedó disponible para la renovación.`
             : "El medio de pago quedó disponible para la renovación.";
+          field("payment-source-current").textContent = body.displayHint ?? "Medio de pago registrado";
+          paymentSourceButton.textContent = "Cambiar tarjeta";
           paymentSourceStatus.dataset.state = "success";
           termsAcceptance.checked = false;
           personalDataAcceptance.checked = false;
@@ -457,6 +471,8 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       paymentSourceStatus.textContent = "";
       paymentSourceStatus.dataset.state = "";
       paymentSourceButton.disabled = true;
+      field("payment-source-current").textContent = "Sin medio de pago registrado";
+      paymentSourceButton.textContent = "Agregar tarjeta";
       changePlanButton.disabled = false;
       changePlanButton.textContent = "Revisar cambio";
       accountStatus.textContent = "";
@@ -487,6 +503,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
   .plan-management>div{display:grid;gap:6px}.plan-management label{font-size:.78rem;font-weight:850}
   .payment-source-management{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:14px;border-top:1px solid var(--line);padding-top:18px}
   .payment-source-management h3{margin:2px 0 4px;font-size:1.05rem;letter-spacing:0}.payment-source-management p{margin:0;color:var(--muted)}
+  .payment-source-management .current-source{margin-top:8px;color:var(--ink)}
   .acceptances{grid-column:1/-1;display:grid;gap:9px}.acceptances label{display:flex;align-items:flex-start;gap:9px;color:var(--muted);font-size:.9rem;line-height:1.45}.acceptances input{flex:none;margin-top:3px}.acceptances a{color:var(--green);font-weight:750}
   .payment-source-status{grid-column:1/-1}
   .text-button{border:0;background:transparent;color:var(--green);padding:12px;font-weight:800;cursor:pointer}
