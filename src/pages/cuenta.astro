@@ -28,6 +28,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       <div class="actions">
         <a class="button" data-action="open-pos" href={posUrl}>Abrir POS</a>
         <button class="button secondary" data-action="cancel" type="button">Cancelar renovación</button>
+        <button class="button secondary" data-action="reactivate" type="button" hidden>Reactivar renovación</button>
         <button class="text-button" data-action="logout" type="button">Cerrar sesión</button>
       </div>
     </section>
@@ -57,6 +58,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     const panel = root.querySelector<HTMLElement>(".account-panel")!;
     const accountStatus = panel.querySelector<HTMLElement>(".account-status")!;
     const cancelButton = panel.querySelector<HTMLButtonElement>("[data-action='cancel']")!;
+    const reactivateButton = panel.querySelector<HTMLButtonElement>("[data-action='reactivate']")!;
     const dialog = root.querySelector<HTMLDialogElement>("#cancel-dialog")!;
     const confirmCancel = root.querySelector<HTMLButtonElement>("#confirm-cancel")!;
     const apiUrl = root.dataset.apiUrl?.replace(/\/$/, "") ?? "";
@@ -87,7 +89,9 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       field("period-end").textContent = formatDate(subscription.currentPeriodEnd);
       field("cancel-date").textContent = formatDate(subscription.currentPeriodEnd);
       const scheduled = subscription.cancelAtPeriodEnd || subscription.status === "cancel_at_period_end";
-      cancelButton.hidden = scheduled || !["owner", "admin", "billing"].includes(login.tenant.role);
+      const canManage = ["owner", "admin", "billing"].includes(login.tenant.role);
+      cancelButton.hidden = scheduled || !canManage;
+      reactivateButton.hidden = !scheduled || !canManage;
       accountStatus.textContent = scheduled ? `La renovación está cancelada desde el ${formatDate(subscription.currentPeriodEnd)}.` : "";
       accountStatus.dataset.state = scheduled ? "success" : "";
       const posLink = panel.querySelector<HTMLAnchorElement>("[data-action='open-pos']")!;
@@ -143,6 +147,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         currentSubscription = body as Subscription;
         field("subscription-status").textContent = statusLabels[currentSubscription.status] ?? currentSubscription.status;
         cancelButton.hidden = true;
+        reactivateButton.hidden = false;
         accountStatus.textContent = `La renovación quedó cancelada desde el ${formatDate(currentSubscription.currentPeriodEnd)}.`;
         accountStatus.dataset.state = "success";
         dialog.close();
@@ -152,6 +157,27 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         dialog.close();
       } finally {
         confirmCancel.disabled = false;
+      }
+    });
+    reactivateButton.addEventListener("click", async () => {
+      reactivateButton.disabled = true;
+      accountStatus.textContent = "Reactivando la renovación…";
+      accountStatus.dataset.state = "";
+      try {
+        const response = await fetch(`${apiUrl}/v1/me/subscription/reactivate`, { method: "POST", headers: { authorization: `Bearer ${accessToken}` } });
+        const body = await response.json();
+        if (!response.ok) throw body;
+        currentSubscription = body as Subscription;
+        field("subscription-status").textContent = statusLabels[currentSubscription.status] ?? currentSubscription.status;
+        reactivateButton.hidden = true;
+        cancelButton.hidden = false;
+        accountStatus.textContent = "La renovación está activa nuevamente.";
+        accountStatus.dataset.state = "success";
+      } catch (error) {
+        accountStatus.textContent = messageFrom(error, "No fue posible reactivar la renovación.");
+        accountStatus.dataset.state = "error";
+      } finally {
+        reactivateButton.disabled = false;
       }
     });
     panel.querySelector<HTMLButtonElement>("[data-action='logout']")!.addEventListener("click", () => {
