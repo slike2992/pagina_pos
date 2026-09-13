@@ -1,0 +1,190 @@
+---
+import FlowLayout from "../layouts/FlowLayout.astro";
+const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
+const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
+---
+<FlowLayout title="Mi cuenta" eyebrow="Clientes" heading="Mi cuenta" lead="Consulta tu empresa, abre el POS y administra la renovación de tu plan.">
+  <div class="account" id="account" data-api-url={apiUrl} data-pos-url={posUrl}>
+    <form class="login-form" id="login-form">
+      <div class="field full"><label for="email">Correo</label><input id="email" name="email" type="email" autocomplete="username" required /></div>
+      <div class="field full"><label for="password">Contraseña</label><input id="password" name="password" type="password" autocomplete="current-password" maxlength="72" required /></div>
+      <div class="field full" id="tenant-field" hidden><label for="tenant">Empresa</label><select id="tenant" name="tenantId"></select></div>
+      <button class="button" type="submit">Ingresar</button>
+      <p class="status" role="status" aria-live="polite"></p>
+    </form>
+
+    <section class="account-panel" hidden>
+      <div class="account-heading">
+        <div><p class="label">Empresa activa</p><h2 data-field="tenant-name"></h2><p data-field="principal-name"></p></div>
+        <span class="state" data-field="tenant-status"></span>
+      </div>
+      <dl class="subscription-data">
+        <div><dt>Plan</dt><dd data-field="plan"></dd></div>
+        <div><dt>Valor</dt><dd data-field="price"></dd></div>
+        <div><dt>Estado</dt><dd data-field="subscription-status"></dd></div>
+        <div><dt>Próximo periodo</dt><dd data-field="period-end"></dd></div>
+      </dl>
+      <p class="status account-status" role="status" aria-live="polite"></p>
+      <div class="actions">
+        <a class="button" data-action="open-pos" href={posUrl}>Abrir POS</a>
+        <button class="button secondary" data-action="cancel" type="button">Cancelar renovación</button>
+        <button class="text-button" data-action="logout" type="button">Cerrar sesión</button>
+      </div>
+    </section>
+
+    <dialog id="cancel-dialog">
+      <form method="dialog">
+        <h2>Cancelar renovación</h2>
+        <p>Tu acceso continuará hasta <strong data-field="cancel-date"></strong>. Después, la empresa quedará suspendida sin borrar su información.</p>
+        <div class="actions">
+          <button class="button secondary" value="close">Conservar plan</button>
+          <button class="button danger" id="confirm-cancel" value="confirm">Confirmar cancelación</button>
+        </div>
+      </form>
+    </dialog>
+  </div>
+
+  <script>
+    type Tenant = { tenantId: string; tenantKey: string; name: string; status: string; role: string };
+    type LoginResult = { accessToken: string; expiresAt: string; principal: { displayName: string }; tenant: Tenant };
+    type Subscription = { status: string; plan: { name: string }; price: { amountMinor: number; currency: string; billingInterval: string }; currentPeriodEnd: string | null; cancelAtPeriodEnd: boolean };
+
+    const root = document.querySelector<HTMLElement>("#account")!;
+    const loginForm = root.querySelector<HTMLFormElement>("#login-form")!;
+    const loginStatus = loginForm.querySelector<HTMLElement>(".status")!;
+    const tenantField = root.querySelector<HTMLElement>("#tenant-field")!;
+    const tenantSelect = root.querySelector<HTMLSelectElement>("#tenant")!;
+    const panel = root.querySelector<HTMLElement>(".account-panel")!;
+    const accountStatus = panel.querySelector<HTMLElement>(".account-status")!;
+    const cancelButton = panel.querySelector<HTMLButtonElement>("[data-action='cancel']")!;
+    const dialog = root.querySelector<HTMLDialogElement>("#cancel-dialog")!;
+    const confirmCancel = root.querySelector<HTMLButtonElement>("#confirm-cancel")!;
+    const apiUrl = root.dataset.apiUrl?.replace(/\/$/, "") ?? "";
+    const posUrl = root.dataset.posUrl?.replace(/\/$/, "") ?? "";
+    let accessToken = "";
+    let currentSubscription: Subscription | null = null;
+
+    const field = (name: string) => root.querySelector<HTMLElement>(`[data-field='${name}']`)!;
+    const messageFrom = (body: unknown, fallback: string) => typeof body === "object" && body && "error" in body
+      ? (body as { error?: { message?: string } }).error?.message ?? fallback
+      : fallback;
+    const formatDate = (value: string | null) => value
+      ? new Intl.DateTimeFormat("es-CO", { dateStyle: "long" }).format(new Date(value))
+      : "Por confirmar";
+    const statusLabels: Record<string, string> = {
+      active: "Activo", past_due: "Pago pendiente", grace: "En gracia", restricted: "Solo lectura",
+      suspended: "Suspendido", cancel_at_period_end: "Cancelación programada", pending: "Pendiente"
+    };
+
+    const renderAccount = (login: LoginResult, subscription: Subscription) => {
+      currentSubscription = subscription;
+      field("tenant-name").textContent = login.tenant.name;
+      field("principal-name").textContent = `${login.principal.displayName} · ${login.tenant.role}`;
+      field("tenant-status").textContent = statusLabels[login.tenant.status] ?? login.tenant.status;
+      field("plan").textContent = subscription.plan.name;
+      field("price").textContent = `${new Intl.NumberFormat("es-CO", { style: "currency", currency: subscription.price.currency, maximumFractionDigits: 0 }).format(subscription.price.amountMinor / 100)} / ${subscription.price.billingInterval === "annual" ? "año" : "mes"}`;
+      field("subscription-status").textContent = statusLabels[subscription.status] ?? subscription.status;
+      field("period-end").textContent = formatDate(subscription.currentPeriodEnd);
+      field("cancel-date").textContent = formatDate(subscription.currentPeriodEnd);
+      const scheduled = subscription.cancelAtPeriodEnd || subscription.status === "cancel_at_period_end";
+      cancelButton.hidden = scheduled || !["owner", "admin", "billing"].includes(login.tenant.role);
+      accountStatus.textContent = scheduled ? `La renovación está cancelada desde el ${formatDate(subscription.currentPeriodEnd)}.` : "";
+      accountStatus.dataset.state = scheduled ? "success" : "";
+      const posLink = panel.querySelector<HTMLAnchorElement>("[data-action='open-pos']")!;
+      posLink.href = `${posUrl}/?empresa=${encodeURIComponent(login.tenant.tenantKey)}`;
+      loginForm.hidden = true;
+      panel.hidden = false;
+    };
+
+    loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = loginForm.querySelector<HTMLButtonElement>("button[type='submit']")!;
+      button.disabled = true;
+      loginStatus.textContent = "Validando acceso…";
+      loginStatus.dataset.state = "";
+      try {
+        const data = new FormData(loginForm);
+        const payload: Record<string, string> = { email: String(data.get("email") ?? ""), password: String(data.get("password") ?? "") };
+        const tenantId = String(data.get("tenantId") ?? "");
+        if (!tenantField.hidden && tenantId) payload.tenantId = tenantId;
+        const response = await fetch(`${apiUrl}/v1/auth/login`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });
+        const body = await response.json();
+        if (response.status === 409 && body.error?.code === "tenant_selection_required" && Array.isArray(body.tenants)) {
+          tenantSelect.replaceChildren(...body.tenants.map((tenant: Tenant) => new Option(tenant.name, tenant.tenantId)));
+          tenantField.hidden = false;
+          loginStatus.textContent = "Selecciona la empresa y vuelve a ingresar.";
+          return;
+        }
+        if (!response.ok) throw body;
+        const login = body as LoginResult;
+        accessToken = login.accessToken;
+        const subscriptionResponse = await fetch(`${apiUrl}/v1/me/subscription`, { headers: { authorization: `Bearer ${accessToken}` } });
+        const subscription = await subscriptionResponse.json();
+        if (!subscriptionResponse.ok) throw subscription;
+        renderAccount(login, subscription as Subscription);
+        loginForm.reset();
+      } catch (error) {
+        accessToken = "";
+        loginStatus.textContent = messageFrom(error, "No fue posible iniciar sesión.");
+        loginStatus.dataset.state = "error";
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    cancelButton.addEventListener("click", () => dialog.showModal());
+    confirmCancel.addEventListener("click", async (event) => {
+      event.preventDefault();
+      confirmCancel.disabled = true;
+      try {
+        const response = await fetch(`${apiUrl}/v1/me/subscription/cancel`, { method: "POST", headers: { authorization: `Bearer ${accessToken}` } });
+        const body = await response.json();
+        if (!response.ok) throw body;
+        currentSubscription = body as Subscription;
+        field("subscription-status").textContent = statusLabels[currentSubscription.status] ?? currentSubscription.status;
+        cancelButton.hidden = true;
+        accountStatus.textContent = `La renovación quedó cancelada desde el ${formatDate(currentSubscription.currentPeriodEnd)}.`;
+        accountStatus.dataset.state = "success";
+        dialog.close();
+      } catch (error) {
+        accountStatus.textContent = messageFrom(error, "No fue posible cancelar la renovación.");
+        accountStatus.dataset.state = "error";
+        dialog.close();
+      } finally {
+        confirmCancel.disabled = false;
+      }
+    });
+    panel.querySelector<HTMLButtonElement>("[data-action='logout']")!.addEventListener("click", () => {
+      accessToken = "";
+      currentSubscription = null;
+      panel.hidden = true;
+      tenantField.hidden = true;
+      loginStatus.textContent = "";
+      loginForm.hidden = false;
+      loginForm.querySelector<HTMLInputElement>("#email")!.focus();
+    });
+  </script>
+</FlowLayout>
+
+<style>
+  .account{width:min(680px,100%)}
+  .login-form{display:grid;gap:12px}
+  .account-panel{display:grid;gap:22px}
+  .account-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;border-bottom:1px solid var(--line);padding-bottom:18px}
+  .account-heading h2{margin:0;font-family:Georgia,"Times New Roman",serif;font-size:2rem;font-weight:500;letter-spacing:0}
+  .account-heading p{margin:4px 0 0;color:var(--muted)}
+  .label{font-size:.78rem;font-weight:850;text-transform:uppercase}
+  .state{flex:none;border:1px solid var(--line);border-radius:5px;padding:7px 10px;color:var(--green);font-size:.78rem;font-weight:850}
+  .subscription-data{display:grid;grid-template-columns:1fr 1fr;gap:0;margin:0}
+  .subscription-data div{border-bottom:1px solid var(--line);padding:14px 10px 14px 0}
+  .subscription-data dt{color:var(--muted);font-size:.78rem}
+  .subscription-data dd{margin:3px 0 0;font-weight:800;overflow-wrap:anywhere}
+  .text-button{border:0;background:transparent;color:var(--green);padding:12px;font-weight:800;cursor:pointer}
+  dialog{width:min(520px,calc(100% - 32px));border:1px solid var(--line);border-radius:7px;padding:0;color:var(--ink)}
+  dialog::backdrop{background:rgba(11,45,40,.55)}
+  dialog form{display:grid;gap:18px;padding:26px}
+  dialog h2{margin:0;font-family:Georgia,"Times New Roman",serif;font-size:2rem;font-weight:500;letter-spacing:0}
+  dialog p{margin:0;color:var(--muted)}
+  .button.danger{border-color:#963d2a;background:#963d2a}
+  @media(max-width:560px){.account-heading{align-items:flex-start;flex-direction:column}.subscription-data{grid-template-columns:1fr}.actions{display:grid}.actions>*{width:100%}}
+</style>
