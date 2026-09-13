@@ -180,7 +180,8 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
         return { email: String(data.get("email") ?? ""), password: String(data.get("password") ?? "") };
       };
       const setBusy = (form: HTMLFormElement, busy: boolean) => {
-        form.querySelectorAll<HTMLInputElement | HTMLButtonElement>("input,button").forEach((control) => { control.disabled = busy; });
+        form.querySelectorAll<HTMLInputElement>("input").forEach((control) => { control.readOnly = busy; });
+        form.querySelectorAll<HTMLButtonElement>("button").forEach((control) => { control.disabled = busy; });
       };
       const setAccessMessage = (message: string, state = "") => {
         accessStatus.textContent = message;
@@ -394,7 +395,7 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
   </body>
 </html>
 
-<style>
+<style is:global>
   [hidden]{display:none!important}
   :root{--ink:#17201e;--muted:#596763;--paper:#f4f6f3;--white:#fff;--line:#d7dfda;--green:#123f38;--green-2:#1c5d51;--coral:#a9472d;--gold:#d4a647;font-family:Inter,"Aptos","Segoe UI",Arial,sans-serif;color:var(--ink);background:var(--paper)}
   *{box-sizing:border-box}body{margin:0;min-width:320px;line-height:1.45}.topbar{display:flex;min-height:64px;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding:0 clamp(18px,4vw,56px);background:var(--white)}
