@@ -17,6 +17,7 @@ const modules = [
 
 const plans = [
   {
+    code: "basic",
     name: "Básico",
     price: "$59.900",
     summary: "Para empezar a vender con orden y controlar lo esencial del negocio.",
@@ -24,6 +25,7 @@ const plans = [
     cta: "Elegir Básico",
   },
   {
+    code: "professional",
     name: "Profesional",
     price: "$89.900",
     summary: "Para equipos que necesitan más control operativo y mejores reportes.",
@@ -32,11 +34,12 @@ const plans = [
     highlighted: true,
   },
   {
+    code: "enterprise",
     name: "Empresarial",
     price: "$149.900",
     summary: "Para operaciones con varias sedes y necesidades de gestión avanzada.",
     features: ["Sucursales y múltiples cajas", "Permisos avanzados", "Indicadores gerenciales", "Preparado para integraciones"],
-    cta: "Hablar con un asesor",
+    cta: "Elegir Empresarial",
   },
 ];
 
@@ -106,7 +109,7 @@ const softwareSchema = {
         <a href="#planes">Planes</a>
         <a href="#faq">Preguntas</a>
       </nav>
-      <a class="header-cta" href="#contacto">Agendar demo</a>
+      <a class="header-cta" href="/registro?plan=professional">Crear cuenta</a>
       <details class="mobile-menu">
         <summary aria-label="Abrir menú"><span></span><span></span><span></span></summary>
         <nav aria-label="Secciones móviles">
@@ -124,7 +127,7 @@ const softwareSchema = {
           <h1>Sistema POS</h1>
           <p class="hero-lead">Vende con agilidad, mantén tu caja organizada y conoce tu inventario desde una sola plataforma.</p>
           <div class="hero-actions" aria-label="Acciones principales">
-            <a class="button primary light-button" href="#contacto">Solicitar demostración</a>
+            <a class="button primary light-button" href="/registro?plan=professional">Empezar ahora</a>
             <a class="text-link light-link" href={whatsappUrl("Hola, quiero conocer Sistema POS para mi negocio.")} target="_blank" rel="noreferrer">Hablar por WhatsApp <span aria-hidden="true">→</span></a>
           </div>
           <p class="hero-note">Planes desde <strong>$59.900 al mes</strong> · Implementación acompañada</p>
@@ -178,7 +181,7 @@ const softwareSchema = {
 
       <section class="plans-section section" id="planes">
         <div class="section-heading centered"><p class="eyebrow">Planes</p><h2>Elige el nivel de control que necesitas</h2><p>Valores mensuales de referencia en pesos colombianos. Implementación inicial desde $150.000.</p></div>
-        <div class="plans-grid">{plans.map((plan) => <article class:list={["plan-card", { highlighted: plan.highlighted }]}>{plan.highlighted && <span class="plan-badge">Más elegido</span>}<p class="plan-name">Plan {plan.name}</p><div class="price"><strong>{plan.price}</strong><span>COP / mes</span></div><p>{plan.summary}</p><ul class="check-list">{plan.features.map((feature) => <li>{feature}</li>)}</ul><a class:list={["button plan-button", { primary: plan.highlighted }]} href="#contacto" data-select-plan={plan.name}>{plan.cta}</a></article>)}</div>
+        <div class="plans-grid">{plans.map((plan) => <article class:list={["plan-card", { highlighted: plan.highlighted }]}>{plan.highlighted && <span class="plan-badge">Más elegido</span>}<p class="plan-name">Plan {plan.name}</p><div class="price"><strong>{plan.price}</strong><span>COP / mes</span></div><p>{plan.summary}</p><ul class="check-list">{plan.features.map((feature) => <li>{feature}</li>)}</ul><a class:list={["button plan-button", { primary: plan.highlighted }]} href={`/registro?plan=${plan.code}`}>{plan.cta}</a></article>)}</div>
         <p class="price-note">La propuesta final confirma alcance, impuestos aplicables y condiciones del servicio.</p>
       </section>
 
@@ -216,14 +219,7 @@ const softwareSchema = {
     <footer><a class="brand" href="#inicio"><span class="brand-mark" aria-hidden="true">SP</span><span>Sistema POS</span></a><p>Ventas, caja e inventario para comercios que quieren crecer con control.</p><a href="#contacto">Agendar demostración</a><span>© {new Date().getFullYear()} Sistema POS</span></footer>
 
     <script>
-      const planSelect = document.querySelector<HTMLSelectElement>("#plan");
       const menu = document.querySelector<HTMLDetailsElement>(".mobile-menu");
-
-      document.querySelectorAll<HTMLElement>("[data-select-plan]").forEach((link) => {
-        link.addEventListener("click", () => {
-          if (planSelect) planSelect.value = link.dataset.selectPlan ?? "Profesional";
-        });
-      });
 
       menu?.querySelectorAll("a").forEach((link) => link.addEventListener("click", () => menu.removeAttribute("open")));
 

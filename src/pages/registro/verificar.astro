@@ -1,0 +1,46 @@
+---
+import FlowLayout from "../../layouts/FlowLayout.astro";
+const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
+---
+<FlowLayout title="Verificar correo" eyebrow="Verificación" heading="Confirma tu correo" lead="Validaremos el enlace antes de preparar el pago en Wompi.">
+  <div class="result" id="verification" data-api-url={apiUrl}>
+    <p class="status" role="status" aria-live="polite">Validando el enlace…</p>
+    <div class="actions" hidden><a class="button" id="checkout-link" href="#">Continuar al pago seguro</a></div>
+  </div>
+  <script>
+    const root = document.querySelector<HTMLElement>("#verification")!;
+    const status = root.querySelector<HTMLElement>(".status")!;
+    const actions = root.querySelector<HTMLElement>(".actions")!;
+    const link = root.querySelector<HTMLAnchorElement>("#checkout-link")!;
+    const params = new URLSearchParams(location.search);
+    const token = params.get("token");
+    const signupIntentId = params.get("signupIntentId");
+    const apiUrl = root.dataset.apiUrl?.replace(/\/$/, "") ?? "";
+    const fail = (message: string) => { status.textContent = message; status.dataset.state = "error"; };
+    if (!token || !signupIntentId) fail("El enlace está incompleto. Solicita uno nuevo.");
+    else (async () => {
+      try {
+        const verifiedKey = `verified-signup:${signupIntentId}`;
+        if (!sessionStorage.getItem(verifiedKey)) {
+          const verification = await fetch(`${apiUrl}/v1/signup-intents/${encodeURIComponent(signupIntentId)}/verify-email`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ token }) });
+          const verified = await verification.json();
+          if (!verification.ok) throw verified;
+          sessionStorage.setItem(verifiedKey, "true");
+        }
+        status.textContent = "Correo confirmado. Estamos preparando tu orden…";
+        const keyName = `checkout-key:${signupIntentId}`;
+        if (!sessionStorage.getItem(keyName)) sessionStorage.setItem(keyName, crypto.randomUUID());
+        const checkout = await fetch(`${apiUrl}/v1/checkout-sessions`, { method: "POST", headers: { "content-type": "application/json", "idempotency-key": sessionStorage.getItem(keyName)! }, body: JSON.stringify({ signupIntentId }) });
+        const checkoutBody = await checkout.json();
+        if (!checkout.ok) throw checkoutBody;
+        link.href = checkoutBody.checkoutUrl;
+        status.textContent = "Tu orden está lista. El pago se realiza directamente en Wompi.";
+        status.dataset.state = "success";
+        actions.hidden = false;
+      } catch (error) {
+        const message = typeof error === "object" && error && "error" in error ? (error as { error?: { message?: string } }).error?.message : null;
+        fail(message ?? "No pudimos validar el enlace. Puede haber vencido o ya fue utilizado.");
+      }
+    })();
+  </script>
+</FlowLayout>

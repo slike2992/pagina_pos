@@ -1,0 +1,100 @@
+---
+import FlowLayout from "../../layouts/FlowLayout.astro";
+const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
+---
+<FlowLayout title="Crear cuenta" eyebrow="Alta SaaS" heading="Prepara tu empresa" lead="Elige el plan, confirma tus datos y valida tu correo antes del pago.">
+  <form class="flow-form" id="signup-form" data-api-url={apiUrl}>
+    <div class="field"><label for="contactName">Nombre completo</label><input id="contactName" name="contactName" autocomplete="name" minlength="2" maxlength="180" required /></div>
+    <div class="field"><label for="email">Correo</label><input id="email" name="email" type="email" autocomplete="email" maxlength="320" required /></div>
+    <div class="field"><label for="companyName">Empresa</label><input id="companyName" name="companyName" autocomplete="organization" minlength="2" maxlength="200" required /></div>
+    <div class="field"><label for="phone">Teléfono</label><input id="phone" name="phone" type="tel" autocomplete="tel" minlength="5" maxlength="40" /></div>
+    <div class="field full"><label for="priceCode">Plan</label><select id="priceCode" name="priceCode" required><option value="basic">Básico</option><option value="professional">Profesional</option><option value="enterprise">Empresarial</option></select></div>
+    <label class="legal-check"><input id="legal" type="checkbox" required disabled /><span>Acepto los <a id="terms-link" href="/legal/terminos" target="_blank" rel="noopener">términos</a> y la <a id="privacy-link" href="/legal/privacidad" target="_blank" rel="noopener">política de privacidad</a> vigentes.</span></label>
+    <div class="actions"><button class="button" type="submit" disabled>Continuar</button></div>
+    <p class="status" role="status" aria-live="polite">Consultando condiciones vigentes…</p>
+  </form>
+  <script>
+    type LegalDocument = { type: "terms" | "privacy"; version: string; contentUrl: string };
+    const form = document.querySelector<HTMLFormElement>("#signup-form");
+    const status = form?.querySelector<HTMLElement>(".status");
+    const submit = form?.querySelector<HTMLButtonElement>('button[type="submit"]');
+    const legal = form?.querySelector<HTMLInputElement>("#legal");
+    const plan = form?.querySelector<HTMLSelectElement>("#priceCode");
+    const apiUrl = form?.dataset.apiUrl?.replace(/\/$/, "") ?? "";
+    let documents: LegalDocument[] = [];
+    const setStatus = (message: string, state = "") => { if (status) { status.textContent = message; status.dataset.state = state; } };
+    const errorMessage = (value: unknown) => {
+      if (typeof value === "object" && value && "error" in value) {
+        const error = (value as { error?: { message?: string } }).error;
+        if (error?.message) return error.message;
+      }
+      return "No fue posible completar la solicitud. Intenta de nuevo.";
+    };
+    const selected = new URLSearchParams(location.search).get("plan");
+    if (plan && ["basic", "professional", "enterprise"].includes(selected ?? "")) plan.value = selected!;
+    fetch(`${apiUrl}/v1/public/legal-documents`)
+      .then(async (response) => {
+        const body = await response.json();
+        if (!response.ok) throw body;
+        documents = body.documents;
+        const terms = documents.find((item) => item.type === "terms");
+        const privacy = documents.find((item) => item.type === "privacy");
+        if (!terms || !privacy) throw new Error("missing legal documents");
+        const termsLink = document.querySelector<HTMLAnchorElement>("#terms-link");
+        const privacyLink = document.querySelector<HTMLAnchorElement>("#privacy-link");
+        if (termsLink) termsLink.href = new URL(terms.contentUrl, location.origin).toString();
+        if (privacyLink) privacyLink.href = new URL(privacy.contentUrl, location.origin).toString();
+        if (legal) legal.disabled = false;
+        if (submit) submit.disabled = false;
+        setStatus(`Condiciones vigentes: ${terms.version}.`);
+      })
+      .catch(() => setStatus("No pudimos consultar las condiciones vigentes. Recarga la página.", "error"));
+    form?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!form.reportValidity() || documents.length < 2) return;
+      const data = new FormData(form);
+      const terms = documents.find((item) => item.type === "terms")!;
+      const privacy = documents.find((item) => item.type === "privacy")!;
+      const draft = {
+        contactName: String(data.get("contactName") ?? ""), email: String(data.get("email") ?? ""),
+        companyName: String(data.get("companyName") ?? ""), phone: String(data.get("phone") ?? "") || undefined,
+        priceCode: String(data.get("priceCode") ?? "professional"),
+        termsVersion: terms.version, privacyVersion: privacy.version
+      };
+      const fingerprint = JSON.stringify(draft);
+      const previous = sessionStorage.getItem("signup-draft");
+      if (previous !== fingerprint || !sessionStorage.getItem("signup-accepted-at")) {
+        sessionStorage.setItem("signup-draft", fingerprint);
+        sessionStorage.setItem("signup-accepted-at", new Date().toISOString());
+        sessionStorage.setItem("signup-key", crypto.randomUUID());
+      }
+      const payload = { ...draft, legalAcceptance: { termsVersion: terms.version, privacyVersion: privacy.version, acceptedAt: sessionStorage.getItem("signup-accepted-at") } };
+      submit!.disabled = true;
+      setStatus("Creando tu registro…");
+      try {
+        const response = await fetch(`${apiUrl}/v1/signup-intents`, { method: "POST", headers: { "content-type": "application/json", "idempotency-key": sessionStorage.getItem("signup-key")! }, body: JSON.stringify(payload) });
+        const body = await response.json();
+        if (!response.ok) throw body;
+        sessionStorage.setItem("signup-intent-id", body.signupIntentId);
+        form.replaceChildren();
+        const result = document.createElement("div");
+        result.className = "result";
+        const label = document.createElement("p");
+        label.className = "eyebrow";
+        label.textContent = "Correo enviado";
+        const heading = document.createElement("h2");
+        heading.textContent = "Revisa tu bandeja";
+        const message = document.createElement("p");
+        message.append("Enviamos el enlace de verificación a ");
+        const email = document.createElement("strong");
+        email.textContent = body.email;
+        message.append(email, ". El registro continuará desde ese enlace.");
+        result.append(label, heading, message);
+        form.append(result);
+      } catch (error) {
+        submit!.disabled = false;
+        setStatus(errorMessage(error), "error");
+      }
+    });
+  </script>
+</FlowLayout>

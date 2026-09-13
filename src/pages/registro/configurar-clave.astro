@@ -1,0 +1,51 @@
+---
+import FlowLayout from "../../layouts/FlowLayout.astro";
+const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
+---
+<FlowLayout title="Configurar contraseña" eyebrow="Empresa lista" heading="Crea tu acceso" lead="Define la contraseña inicial del propietario para entrar al POS.">
+  <form class="flow-form" id="password-form" data-api-url={apiUrl}>
+    <div class="field full"><label for="password">Contraseña</label><input id="password" name="password" type="password" autocomplete="new-password" minlength="12" maxlength="72" required aria-describedby="password-help" /></div>
+    <div class="field full"><label for="confirmation">Confirmar contraseña</label><input id="confirmation" name="confirmation" type="password" autocomplete="new-password" minlength="12" maxlength="72" required /></div>
+    <p class="status" id="password-help">Mínimo 12 caracteres, con mayúscula, minúscula y número.</p>
+    <div class="actions"><button class="button" type="submit">Guardar contraseña</button></div>
+    <p class="status" role="status" aria-live="polite"></p>
+  </form>
+  <script>
+    const form = document.querySelector<HTMLFormElement>("#password-form")!;
+    const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+    const statuses = form.querySelectorAll<HTMLElement>(".status");
+    const status = statuses[statuses.length - 1]!;
+    const token = new URLSearchParams(location.search).get("token");
+    if (!token) { button.disabled = true; status.textContent = "El enlace está incompleto."; status.dataset.state = "error"; }
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const data = new FormData(form);
+      const password = String(data.get("password") ?? "");
+      if (password !== String(data.get("confirmation") ?? "")) { status.textContent = "Las contraseñas no coinciden."; status.dataset.state = "error"; return; }
+      button.disabled = true; status.textContent = "Guardando tu acceso…"; status.dataset.state = "";
+      try {
+        const apiUrl = form.dataset.apiUrl?.replace(/\/$/, "") ?? "";
+        const response = await fetch(`${apiUrl}/v1/password-setup`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ token, password }) });
+        const body = await response.json();
+        if (!response.ok) throw body;
+        form.replaceChildren();
+        const result = document.createElement("div");
+        result.className = "result";
+        const label = document.createElement("p"); label.className = "eyebrow"; label.textContent = "Acceso creado";
+        const heading = document.createElement("h2"); heading.textContent = "Tu POS está listo";
+        const details = document.createElement("dl");
+        for (const [name, value] of [["Empresa", body.tenantKey], ["Usuario", body.username]]) {
+          const row = document.createElement("div"); const term = document.createElement("dt"); const description = document.createElement("dd");
+          term.textContent = name; description.textContent = value; row.append(term, description); details.append(row);
+        }
+        const actions = document.createElement("div"); actions.className = "actions";
+        const login = document.createElement("a"); login.className = "button"; login.href = body.loginUrl; login.textContent = "Entrar al POS";
+        actions.append(login); result.append(label, heading, details, actions); form.append(result);
+      } catch (error) {
+        button.disabled = false;
+        status.textContent = typeof error === "object" && error && "error" in error ? (error as { error?: { message?: string } }).error?.message ?? "No fue posible guardar la contraseña." : "No fue posible guardar la contraseña.";
+        status.dataset.state = "error";
+      }
+    });
+  </script>
+</FlowLayout>
