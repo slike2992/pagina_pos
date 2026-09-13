@@ -24,6 +24,17 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         <div><dt>Estado</dt><dd data-field="subscription-status"></dd></div>
         <div><dt>Próximo periodo</dt><dd data-field="period-end"></dd></div>
       </dl>
+      <section class="plan-management" data-section="plan-management" hidden>
+        <div>
+          <label for="target-plan">Cambiar plan</label>
+          <select id="target-plan">
+            <option value="basic">Básico</option>
+            <option value="professional">Profesional</option>
+            <option value="enterprise">Empresarial</option>
+          </select>
+        </div>
+        <button class="button secondary" data-action="change-plan" type="button">Revisar cambio</button>
+      </section>
       <p class="status account-status" role="status" aria-live="polite"></p>
       <div class="actions">
         <a class="button" data-action="open-pos" href={posUrl}>Abrir POS</a>
@@ -43,12 +54,24 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         </div>
       </form>
     </dialog>
+
+    <dialog id="plan-dialog">
+      <form method="dialog">
+        <h2>Cambiar a <span data-field="target-plan-name"></span></h2>
+        <p data-field="plan-change-copy"></p>
+        <div class="actions">
+          <button class="button secondary" value="close">Volver</button>
+          <button class="button" id="confirm-plan-change" value="confirm">Confirmar cambio</button>
+        </div>
+      </form>
+    </dialog>
   </div>
 
   <script>
     type Tenant = { tenantId: string; tenantKey: string; name: string; status: string; role: string };
     type LoginResult = { accessToken: string; expiresAt: string; principal: { displayName: string }; tenant: Tenant };
-    type Subscription = { status: string; plan: { name: string }; price: { amountMinor: number; currency: string; billingInterval: string }; currentPeriodEnd: string | null; cancelAtPeriodEnd: boolean };
+    type Subscription = { status: string; plan: { code: string; name: string }; price: { amountMinor: number; currency: string; billingInterval: string }; currentPeriodEnd: string | null; cancelAtPeriodEnd: boolean };
+    type PlanChange = { subscriptionChangeId: string; changeType: "upgrade" | "downgrade"; status: string; toPlan: { name: string }; quote: { amountMinor: number; currency: string }; effectiveAt: string; nextAction: "checkout" | "wait_for_period_end" };
 
     const root = document.querySelector<HTMLElement>("#account")!;
     const loginForm = root.querySelector<HTMLFormElement>("#login-form")!;
@@ -61,10 +84,18 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     const reactivateButton = panel.querySelector<HTMLButtonElement>("[data-action='reactivate']")!;
     const dialog = root.querySelector<HTMLDialogElement>("#cancel-dialog")!;
     const confirmCancel = root.querySelector<HTMLButtonElement>("#confirm-cancel")!;
+    const planSection = root.querySelector<HTMLElement>("[data-section='plan-management']")!;
+    const planSelect = root.querySelector<HTMLSelectElement>("#target-plan")!;
+    const changePlanButton = root.querySelector<HTMLButtonElement>("[data-action='change-plan']")!;
+    const planDialog = root.querySelector<HTMLDialogElement>("#plan-dialog")!;
+    const confirmPlanChange = root.querySelector<HTMLButtonElement>("#confirm-plan-change")!;
     const apiUrl = root.dataset.apiUrl?.replace(/\/$/, "") ?? "";
     const posUrl = root.dataset.posUrl?.replace(/\/$/, "") ?? "";
     let accessToken = "";
     let currentSubscription: Subscription | null = null;
+    let pendingChange: PlanChange | null = null;
+    let changeIdempotencyKey = "";
+    let checkoutIdempotencyKey = "";
 
     const field = (name: string) => root.querySelector<HTMLElement>(`[data-field='${name}']`)!;
     const messageFrom = (body: unknown, fallback: string) => typeof body === "object" && body && "error" in body
@@ -92,6 +123,8 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       const canManage = ["owner", "admin", "billing"].includes(login.tenant.role);
       cancelButton.hidden = scheduled || !canManage;
       reactivateButton.hidden = !scheduled || !canManage;
+      planSection.hidden = scheduled || !canManage || subscription.status !== "active";
+      planSelect.value = subscription.plan.code;
       accountStatus.textContent = scheduled ? `La renovación está cancelada desde el ${formatDate(subscription.currentPeriodEnd)}.` : "";
       accountStatus.dataset.state = scheduled ? "success" : "";
       const posLink = panel.querySelector<HTMLAnchorElement>("[data-action='open-pos']")!;
@@ -136,6 +169,90 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       }
     });
 
+    const planNames: Record<string, string> = { basic: "Básico", professional: "Profesional", enterprise: "Empresarial" };
+    const continueToUpgradeCheckout = async (change: PlanChange) => {
+      if (!checkoutIdempotencyKey) checkoutIdempotencyKey = crypto.randomUUID();
+      const response = await fetch(`${apiUrl}/v1/me/billing/checkout-sessions`, {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${accessToken}`,
+          "content-type": "application/json",
+          "idempotency-key": checkoutIdempotencyKey
+        },
+        body: JSON.stringify({ subscriptionChangeId: change.subscriptionChangeId })
+      });
+      const body = await response.json();
+      if (!response.ok) throw body;
+      sessionStorage.setItem("checkout-session-id", body.checkoutSessionId);
+      location.assign(body.checkoutUrl);
+    };
+
+    changePlanButton.addEventListener("click", async () => {
+      if (pendingChange?.nextAction === "checkout") {
+        changePlanButton.disabled = true;
+        accountStatus.textContent = "Preparando el pago seguro…";
+        try {
+          await continueToUpgradeCheckout(pendingChange);
+        } catch (error) {
+          accountStatus.textContent = messageFrom(error, "No fue posible abrir el pago seguro.");
+          accountStatus.dataset.state = "error";
+          changePlanButton.disabled = false;
+        }
+        return;
+      }
+      if (!currentSubscription || planSelect.value === currentSubscription.plan.code) {
+        accountStatus.textContent = "Selecciona un plan diferente al actual.";
+        accountStatus.dataset.state = "error";
+        return;
+      }
+      field("target-plan-name").textContent = planNames[planSelect.value] ?? planSelect.value;
+      field("plan-change-copy").textContent = `El servidor confirmará si corresponde un cobro proporcional o un cambio al finalizar el periodo actual (${formatDate(currentSubscription.currentPeriodEnd)}). Tus datos no se eliminarán.`;
+      planDialog.showModal();
+    });
+
+    confirmPlanChange.addEventListener("click", async (event) => {
+      event.preventDefault();
+      confirmPlanChange.disabled = true;
+      if (!changeIdempotencyKey) changeIdempotencyKey = crypto.randomUUID();
+      try {
+        const response = await fetch(`${apiUrl}/v1/me/subscription/change`, {
+          method: "POST",
+          headers: {
+            authorization: `Bearer ${accessToken}`,
+            "content-type": "application/json",
+            "idempotency-key": changeIdempotencyKey
+          },
+          body: JSON.stringify({ targetPlanCode: planSelect.value })
+        });
+        const body = await response.json();
+        if (!response.ok) throw body;
+        pendingChange = body as PlanChange;
+        planDialog.close();
+        if (pendingChange.nextAction === "wait_for_period_end") {
+          planSection.hidden = true;
+          accountStatus.textContent = `Cambio a ${pendingChange.toPlan.name} programado para el ${formatDate(pendingChange.effectiveAt)}. Tus datos se conservarán.`;
+          accountStatus.dataset.state = "success";
+          return;
+        }
+        const amount = new Intl.NumberFormat("es-CO", { style: "currency", currency: pendingChange.quote.currency, maximumFractionDigits: 0 }).format(pendingChange.quote.amountMinor / 100);
+        accountStatus.textContent = `Prorrateo confirmado: ${amount}. Preparando el pago seguro…`;
+        accountStatus.dataset.state = "success";
+        try {
+          await continueToUpgradeCheckout(pendingChange);
+        } catch (error) {
+          accountStatus.textContent = `${messageFrom(error, "No fue posible abrir el pago seguro.")} La cotización sigue disponible en esta sesión.`;
+          accountStatus.dataset.state = "error";
+          changePlanButton.textContent = "Continuar al pago";
+        }
+      } catch (error) {
+        accountStatus.textContent = messageFrom(error, "No fue posible solicitar el cambio de plan.");
+        accountStatus.dataset.state = "error";
+        planDialog.close();
+      } finally {
+        confirmPlanChange.disabled = false;
+      }
+    });
+
     cancelButton.addEventListener("click", () => dialog.showModal());
     confirmCancel.addEventListener("click", async (event) => {
       event.preventDefault();
@@ -148,6 +265,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         field("subscription-status").textContent = statusLabels[currentSubscription.status] ?? currentSubscription.status;
         cancelButton.hidden = true;
         reactivateButton.hidden = false;
+        planSection.hidden = true;
         accountStatus.textContent = `La renovación quedó cancelada desde el ${formatDate(currentSubscription.currentPeriodEnd)}.`;
         accountStatus.dataset.state = "success";
         dialog.close();
@@ -171,6 +289,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         field("subscription-status").textContent = statusLabels[currentSubscription.status] ?? currentSubscription.status;
         reactivateButton.hidden = true;
         cancelButton.hidden = false;
+        planSection.hidden = currentSubscription.status !== "active";
         accountStatus.textContent = "La renovación está activa nuevamente.";
         accountStatus.dataset.state = "success";
       } catch (error) {
@@ -183,6 +302,13 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     panel.querySelector<HTMLButtonElement>("[data-action='logout']")!.addEventListener("click", () => {
       accessToken = "";
       currentSubscription = null;
+      pendingChange = null;
+      changeIdempotencyKey = "";
+      checkoutIdempotencyKey = "";
+      changePlanButton.disabled = false;
+      changePlanButton.textContent = "Revisar cambio";
+      accountStatus.textContent = "";
+      accountStatus.dataset.state = "";
       panel.hidden = true;
       tenantField.hidden = true;
       loginStatus.textContent = "";
@@ -205,6 +331,8 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
   .subscription-data div{border-bottom:1px solid var(--line);padding:14px 10px 14px 0}
   .subscription-data dt{color:var(--muted);font-size:.78rem}
   .subscription-data dd{margin:3px 0 0;font-weight:800;overflow-wrap:anywhere}
+  .plan-management{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:14px;border-top:1px solid var(--line);padding-top:18px}
+  .plan-management>div{display:grid;gap:6px}.plan-management label{font-size:.78rem;font-weight:850}
   .text-button{border:0;background:transparent;color:var(--green);padding:12px;font-weight:800;cursor:pointer}
   dialog{width:min(520px,calc(100% - 32px));border:1px solid var(--line);border-radius:7px;padding:0;color:var(--ink)}
   dialog::backdrop{background:rgba(11,45,40,.55)}
@@ -212,5 +340,5 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
   dialog h2{margin:0;font-family:Georgia,"Times New Roman",serif;font-size:2rem;font-weight:500;letter-spacing:0}
   dialog p{margin:0;color:var(--muted)}
   .button.danger{border-color:#963d2a;background:#963d2a}
-  @media(max-width:560px){.account-heading{align-items:flex-start;flex-direction:column}.subscription-data{grid-template-columns:1fr}.actions{display:grid}.actions>*{width:100%}}
+  @media(max-width:560px){.account-heading{align-items:flex-start;flex-direction:column}.subscription-data{grid-template-columns:1fr}.plan-management{grid-template-columns:1fr}.actions{display:grid}.actions>*{width:100%}}
 </style>
