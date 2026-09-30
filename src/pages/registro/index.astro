@@ -8,7 +8,7 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
     <div class="field"><label for="email">Correo</label><input id="email" name="email" type="email" autocomplete="email" maxlength="320" required /></div>
     <div class="field"><label for="companyName">Empresa</label><input id="companyName" name="companyName" autocomplete="organization" minlength="2" maxlength="200" required /></div>
     <div class="field"><label for="phone">Teléfono</label><input id="phone" name="phone" type="tel" autocomplete="tel" minlength="5" maxlength="40" /></div>
-    <div class="field full"><label for="priceCode">Plan</label><select id="priceCode" name="priceCode" required><option value="basic">Básico</option><option value="professional">Profesional</option><option value="enterprise">Empresarial</option></select></div>
+    <div class="field full"><label for="priceCode">Plan</label><select id="priceCode" name="priceCode" required><optgroup label="Sin facturación electrónica"><option value="basic">Básico · $49.900/mes</option><option value="professional">Profesional · $79.900/mes</option><option value="enterprise">Empresarial · $129.900/mes</option></optgroup><optgroup label="Con facturación electrónica"><option value="basic-fe">Básico FE · $69.900/mes</option><option value="professional-fe">Profesional FE · $99.900/mes</option><option value="enterprise-fe">Empresarial FE · $159.900/mes</option></optgroup></select></div>
     <label class="legal-check"><input id="legal" type="checkbox" required disabled /><span>Acepto los <a id="terms-link" href="/legal/terminos" target="_blank" rel="noopener">términos</a> y la <a id="privacy-link" href="/legal/privacidad" target="_blank" rel="noopener">política de privacidad</a> vigentes.</span></label>
     <div class="actions"><button class="button" type="submit" disabled>Continuar</button></div>
     <p class="status" role="status" aria-live="polite">Consultando condiciones vigentes…</p>
@@ -31,7 +31,7 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
       return "No fue posible completar la solicitud. Intenta de nuevo.";
     };
     const selected = new URLSearchParams(location.search).get("plan");
-    if (plan && ["basic", "professional", "enterprise"].includes(selected ?? "")) plan.value = selected!;
+    if (plan && ["basic", "professional", "enterprise", "basic-fe", "professional-fe", "enterprise-fe"].includes(selected ?? "")) plan.value = selected!;
     fetch(`${apiUrl}/v1/public/legal-documents`)
       .then(async (response) => {
         const body = await response.json();

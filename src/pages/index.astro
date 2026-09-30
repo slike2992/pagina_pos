@@ -15,41 +15,99 @@ const modules = [
   { number: "06", title: "Operación multisede", text: "Prepara el crecimiento de tu negocio con sucursales, cajas y control centralizado." },
 ];
 
-const plans = [
+const planCatalog = [
   {
     code: "basic",
     name: "Básico",
-    price: "$59.900",
     summary: "Para empezar a vender con orden y controlar lo esencial del negocio.",
-    features: ["Ventas y caja", "Productos e inventario básico", "Reportes esenciales", "Acompañamiento de arranque"],
+    monthly: "$49.900",
+    annual: "$499.000",
+    saving: "$100.000",
+    users: "1 usuario",
+    branches: "1 sucursal",
+    registers: "1 caja",
+    items: "Hasta 1.000 ítems",
+    features: ["Ventas y caja", "Productos e inventario básico", "Reportes esenciales", "Soporte por chat", "Acompañamiento de arranque"],
     cta: "Elegir Básico",
+    highlighted: false,
   },
   {
     code: "professional",
     name: "Profesional",
-    price: "$89.900",
-    summary: "Para equipos que necesitan más control operativo y mejores reportes.",
-    features: ["Todo lo del plan Básico", "Usuarios y permisos", "Inventario avanzado", "Compras y reportes ampliados"],
+    summary: "Para negocios en crecimiento que necesitan más control operativo y mejores reportes.",
+    monthly: "$79.900",
+    annual: "$799.000",
+    saving: "$100.000",
+    users: "Hasta 3 usuarios",
+    branches: "2 sucursales",
+    registers: "2 cajas, una por sucursal",
+    items: "Hasta 5.000 ítems",
+    features: ["Todo lo del plan Básico", "Usuarios y permisos", "Inventario avanzado", "Compras y proveedores", "Reportes avanzados", "Soporte prioritario"],
     cta: "Elegir Profesional",
     highlighted: true,
   },
   {
     code: "enterprise",
     name: "Empresarial",
-    price: "$149.900",
     summary: "Para operaciones con varias sedes y necesidades de gestión avanzada.",
-    features: ["Sucursales y múltiples cajas", "Permisos avanzados", "Indicadores gerenciales", "Preparado para integraciones"],
+    monthly: "$129.900",
+    annual: "$1.299.000",
+    saving: "$100.000",
+    users: "Usuarios ilimitados",
+    branches: "3 sucursales",
+    registers: "Hasta 6 cajas, dos por sucursal",
+    items: "Hasta 20.000 ítems",
+    features: ["Todo lo del plan Profesional", "Permisos avanzados", "Indicadores gerenciales", "Preparado para integraciones", "Soporte prioritario y acompañamiento"],
     cta: "Elegir Empresarial",
+    highlighted: false,
   },
-];
+] as const;
+
+const electronicInvoicingPlans = [
+  {
+    ...planCatalog[0],
+    code: "basic-fe",
+    name: "Básico FE",
+    summary: "Vende y factura electrónicamente desde el inicio, con una operación sencilla.",
+    monthly: "$69.900",
+    annual: "$699.000",
+    saving: "$140.000",
+    documents: "Hasta 1.000 documentos electrónicos al año",
+    cta: "Elegir Básico FE",
+  },
+  {
+    ...planCatalog[1],
+    code: "professional-fe",
+    name: "Profesional FE",
+    summary: "Mayor control, mejores reportes y facturación electrónica para equipos en crecimiento.",
+    monthly: "$99.900",
+    annual: "$999.000",
+    saving: "$200.000",
+    documents: "Hasta 2.000 documentos electrónicos al año",
+    cta: "Elegir Profesional FE",
+  },
+  {
+    ...planCatalog[2],
+    code: "enterprise-fe",
+    name: "Empresarial FE",
+    summary: "Control multisede y facturación electrónica para operaciones de alto volumen.",
+    monthly: "$159.900",
+    annual: "$1.599.000",
+    saving: "$320.000",
+    documents: "Documentos electrónicos ilimitados",
+    cta: "Elegir Empresarial FE",
+  },
+] as const;
+
+const plans = [...planCatalog, ...electronicInvoicingPlans];
 
 const comparisons = [
-  ["Ventas y caja", "Incluido", "Incluido", "Incluido"],
+  ["Usuarios", "1", "Hasta 3", "Ilimitados"],
+  ["Sucursales", "1", "2", "3"],
+  ["Cajas", "1", "2", "Hasta 6"],
+  ["Ítems de inventario", "Hasta 1.000", "Hasta 5.000", "Hasta 20.000"],
   ["Inventario", "Esencial", "Avanzado", "Avanzado"],
-  ["Usuarios y permisos", "Limitado", "Incluido", "Avanzado"],
-  ["Sucursales", "1", "Según necesidad", "Multisede"],
-  ["Reportes", "Esenciales", "Ampliados", "Gerenciales"],
-  ["Acompañamiento", "Inicial", "Prioritario", "Personalizado"],
+  ["Reportes", "Esenciales", "Avanzados", "Gerenciales"],
 ];
 
 const faqs = [
@@ -70,7 +128,7 @@ const softwareSchema = {
   offers: plans.map((plan) => ({
     "@type": "Offer",
     name: `Plan ${plan.name}`,
-    price: plan.price.replace(/[$.]/g, ""),
+    price: plan.monthly.replace(/[$.]/g, ""),
     priceCurrency: "COP",
   })),
 };
@@ -131,7 +189,7 @@ const softwareSchema = {
             <a class="button primary light-button" href="/registro?plan=professional">Empezar ahora</a>
             <a class="text-link light-link" href={whatsappUrl("Hola, quiero conocer Sistema POS para mi negocio.")} target="_blank" rel="noreferrer">Hablar por WhatsApp <span aria-hidden="true">→</span></a>
           </div>
-          <p class="hero-note">Planes desde <strong>$59.900 al mes</strong> · Implementación acompañada</p>
+          <p class="hero-note">Planes desde <strong>$49.900 al mes</strong> · Implementación acompañada</p>
         </div>
       </section>
 
@@ -181,9 +239,16 @@ const softwareSchema = {
       </section>
 
       <section class="plans-section section" id="planes">
-        <div class="section-heading centered"><p class="eyebrow">Planes</p><h2>Elige el nivel de control que necesitas</h2><p>Valores mensuales de referencia en pesos colombianos. Implementación inicial desde $150.000.</p></div>
-        <div class="plans-grid">{plans.map((plan) => <article class:list={["plan-card", { highlighted: plan.highlighted }]}>{plan.highlighted && <span class="plan-badge">Más elegido</span>}<p class="plan-name">Plan {plan.name}</p><div class="price"><strong>{plan.price}</strong><span>COP / mes</span></div><p>{plan.summary}</p><ul class="check-list">{plan.features.map((feature) => <li>{feature}</li>)}</ul><a class:list={["button plan-button", { primary: plan.highlighted }]} href={`/registro?plan=${plan.code}`}>{plan.cta}</a></article>)}</div>
-        <p class="price-note">La propuesta final confirma alcance, impuestos aplicables y condiciones del servicio.</p>
+        <div class="section-heading centered"><p class="eyebrow">Planes</p><h2>Elige el nivel de control que necesitas</h2><p>Dos modalidades independientes para que contrates solo lo que tu operación necesita. Valores en pesos colombianos.</p></div>
+        <div class="plan-group" aria-labelledby="plans-without-fe-title">
+          <div class="plan-group-heading"><div><p class="eyebrow">Operación POS</p><h3 id="plans-without-fe-title">Planes sin facturación electrónica</h3></div><p>Ideales si ya tienes un proveedor de facturación o todavía no necesitas emitir documentos electrónicos.</p></div>
+          <div class="plans-grid">{planCatalog.map((plan) => <article class:list={["plan-card", { highlighted: plan.highlighted }]}>{plan.highlighted && <span class="plan-badge">Más elegido</span>}<p class="plan-name">Plan {plan.name}</p><div class="price"><strong>{plan.monthly}</strong><span>COP / mes</span></div><div class="annual-price"><strong>{plan.annual}</strong><span>COP / año</span><em>Ahorra {plan.saving}</em></div><p>{plan.summary}</p><dl class="plan-limits"><div><dt>Usuarios</dt><dd>{plan.users}</dd></div><div><dt>Sucursales</dt><dd>{plan.branches}</dd></div><div><dt>Cajas</dt><dd>{plan.registers}</dd></div><div><dt>Inventario</dt><dd>{plan.items}</dd></div></dl><ul class="check-list">{plan.features.map((feature) => <li>{feature}</li>)}</ul><a class:list={["button plan-button", { primary: plan.highlighted }]} href={`/registro?plan=${plan.code}`}>{plan.cta}</a></article>)}</div>
+        </div>
+        <div class="plan-group plan-group-fe" aria-labelledby="plans-with-fe-title">
+          <div class="plan-group-heading"><div><p class="eyebrow fe-eyebrow">Cumplimiento DIAN</p><h3 id="plans-with-fe-title">Planes con facturación electrónica</h3></div><p>POS y facturación electrónica en un solo lugar, con límites de documentos claros para cada nivel.</p></div>
+          <div class="plans-grid">{electronicInvoicingPlans.map((plan) => <article class:list={["plan-card", "fe-card", { highlighted: plan.highlighted }]}>{plan.highlighted && <span class="plan-badge">Más elegido</span>}<p class="plan-name">Plan {plan.name}</p><div class="price"><strong>{plan.monthly}</strong><span>COP / mes</span></div><div class="annual-price"><strong>{plan.annual}</strong><span>COP / año</span><em>Ahorra {plan.saving}</em></div><p>{plan.summary}</p><dl class="plan-limits"><div><dt>Usuarios</dt><dd>{plan.users}</dd></div><div><dt>Sucursales</dt><dd>{plan.branches}</dd></div><div><dt>Cajas</dt><dd>{plan.registers}</dd></div><div><dt>Inventario</dt><dd>{plan.items}</dd></div></dl><ul class="check-list"><li>Facturación electrónica incluida</li><li>{plan.documents}</li>{plan.features.map((feature) => <li>{feature}</li>)}</ul><a class:list={["button plan-button", { primary: plan.highlighted }]} href={`/registro?plan=${plan.code}`}>{plan.cta}</a></article>)}</div>
+        </div>
+        <p class="price-note">Los límites de usuarios, cajas, sucursales, ítems y documentos se aplican por empresa y quedan asociados al plan contratado. La propuesta final confirma impuestos y condiciones del servicio.</p>
       </section>
 
       <section class="comparison-section section" id="comparador">
@@ -249,4 +314,31 @@ const softwareSchema = {
   @media(max-width:980px){.site-header{grid-template-columns:1fr auto auto;gap:18px}.desktop-nav{display:none}.mobile-menu{display:block;position:relative;order:3}.mobile-menu summary{display:grid;width:42px;height:42px;place-content:center;gap:5px;padding:0;border:1px solid var(--line);border-radius:5px;list-style:none}.mobile-menu summary span{display:block;width:19px;height:2px;background:var(--ink)}.mobile-menu nav{position:absolute;top:50px;right:0;display:grid;min-width:220px;border:1px solid var(--line);border-radius:6px;background:var(--white);box-shadow:var(--shadow);padding:8px}.mobile-menu nav a{padding:11px 12px}.hero{min-height:760px}.hero-shade{background:linear-gradient(90deg,rgba(13,22,20,.92),rgba(13,22,20,.58))}.product-section,.contact-section{grid-template-columns:1fr}.product-copy{max-width:680px}.plans-grid{grid-template-columns:1fr}.plan-card{max-width:650px;width:100%;margin:auto}.footer{grid-template-columns:1fr}.split-heading{grid-template-columns:1fr;gap:8px}footer{grid-template-columns:1fr 1fr}footer p{grid-column:1/-1;grid-row:2}}
   @media(max-width:680px){html{scroll-padding-top:64px}.site-header{min-height:64px;padding:0 16px}.brand-mark{width:32px;height:32px}.brand>span:last-child{font-size:.93rem}.header-cta{display:none}.hero{min-height:720px;align-items:flex-end}.hero-image{object-position:63% center}.hero-shade{background:linear-gradient(0deg,rgba(11,23,20,.96) 0%,rgba(11,23,20,.8) 50%,rgba(11,23,20,.2) 100%)}.hero-content{width:100%;padding:74px 18px 54px}h1{font-size:clamp(3.8rem,18vw,5.2rem)}h2{font-size:clamp(2.25rem,12vw,3.35rem)}.hero-lead{font-size:1.12rem}.hero-actions{align-items:stretch;flex-direction:column}.hero-actions .button{width:100%}.light-link{text-align:center}.proof-strip{grid-template-columns:1fr;padding:0 18px}.proof-strip p{border-right:0;border-left:0;border-bottom:1px solid var(--line);padding:18px 0}.proof-strip p:last-child{border-right:0;border-bottom:0}.section{padding:68px 18px}.outcomes,.module-list,.steps{grid-template-columns:1fr}.outcomes article,.outcomes article+article{border-right:0;border-bottom:1px solid var(--line);padding:24px 0}.product-section{padding-inline:14px}.product-copy{padding-inline:4px}.product-visual{transform:none}.pos-grid{grid-template-columns:1fr}.ticket-panel{grid-row:auto}.screen-top{font-size:.78rem}.module-list article,.module-list article:nth-child(even){grid-template-columns:34px 1fr;border-right:0;padding:24px 0}.steps{gap:26px}.steps li,.steps li+li{border:0;padding:0}.plan-card{padding:26px 22px}.comparison-section{padding-inline:0}.comparison-section .section-heading{padding-inline:18px}.comparison-scroll{border-right:0;border-left:0;border-radius:0}.cta-band{align-items:stretch;flex-direction:column;padding:58px 18px}.cta-band .button{width:100%}.contact-copy dl div{grid-template-columns:1fr;gap:3px}form{grid-template-columns:1fr;padding:22px 18px}form label,form input,form select{grid-column:1/-1}footer{grid-template-columns:1fr;gap:16px;padding:28px 18px}footer p{grid-row:auto}}
   @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.button,.text-link span,summary span{transition:none}}
+</style>
+
+<style>
+  .plan-group + .plan-group{margin-top:clamp(70px,9vw,118px)}
+  .plan-group-heading{display:flex;align-items:end;justify-content:space-between;gap:36px;max-width:1200px;margin:0 auto 28px;border-bottom:1px solid var(--line);padding-bottom:18px}
+  .plan-group-heading h3{margin:0;font-family:Georgia,"Times New Roman",serif;font-size:clamp(1.8rem,3vw,2.7rem);font-weight:500;line-height:1.05}
+  .plan-group-heading>p{max-width:490px;margin:0;color:var(--muted)}
+  .fe-eyebrow{color:#1c68b4}
+  .plan-card{transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+  .plan-card:hover,.plan-card:focus-within{border-color:var(--coral);box-shadow:0 18px 42px rgba(16,35,31,.16);transform:translateY(-5px)}
+  .plan-card.highlighted:hover,.plan-card.highlighted:focus-within{border-color:var(--green);box-shadow:0 24px 52px rgba(16,35,31,.22)}
+  .plan-card.fe-card:hover,.plan-card.fe-card:focus-within{border-color:#1c68b4}
+  .plan-card.fe-card.highlighted{border-color:#1c68b4}
+  .plan-card.fe-card.highlighted:hover,.plan-card.fe-card.highlighted:focus-within{border-color:#1c68b4}
+  .fe-card .plan-name{color:#1c68b4}
+  .annual-price{position:relative;display:grid;gap:2px;margin:0 0 20px;border-radius:6px;background:var(--mint);padding:12px 14px}
+  .annual-price strong{font-family:Georgia,"Times New Roman",serif;font-size:1.65rem;font-weight:500}
+  .annual-price span{color:var(--muted);font-size:.76rem}
+  .annual-price em{position:absolute;top:-10px;right:10px;border-radius:99px;background:#16a467;color:#fff;padding:4px 9px;font-size:.7rem;font-style:normal;font-weight:850}
+  .fe-card .annual-price{background:#e8f1fb}
+  .plan-limits{display:grid;gap:8px;margin:0 0 10px;border-top:1px solid var(--line);padding-top:16px}
+  .plan-limits div{display:flex;justify-content:space-between;gap:18px;font-size:.85rem}
+  .plan-limits dt{color:var(--muted)}
+  .plan-limits dd{margin:0;text-align:right;font-weight:800}
+  .plan-group-fe{border-top:1px solid #c8dced;padding-top:42px}
+  .plan-group-fe .plan-badge{background:#1c68b4}
+  @media(max-width:680px){.plan-group-heading{display:grid;gap:10px}.plan-group-heading>p{font-size:.94rem}.plan-card:hover,.plan-card:focus-within{transform:none}.annual-price strong{font-size:1.5rem}.plan-limits div{display:grid;gap:2px}.plan-limits dd{text-align:left}}
 </style>
