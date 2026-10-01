@@ -121,10 +121,10 @@ const faqs = [
 const softwareSchema = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  name: "Sistema POS",
+  name: "Criptón",
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
-  description: "Sistema POS para ventas, caja, inventario y reportes de comercios.",
+  description: "Criptón: ventas, caja, inventario y reportes para comercios.",
   offers: plans.map((plan) => ({
     "@type": "Offer",
     name: `Plan ${plan.name}`,
@@ -139,12 +139,12 @@ const softwareSchema = {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Controla ventas, caja, inventario y reportes con Sistema POS. Conoce los planes y solicita una demostración para tu negocio." />
+    <meta name="description" content="Controla ventas, caja, inventario y reportes con Criptón. Conoce los planes y solicita una demostración para tu negocio." />
     <meta name="theme-color" content="#123f38" />
     <meta name="robots" content="index, follow" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="es_CO" />
-    <meta property="og:title" content="Sistema POS | Tu negocio bajo control" />
+    <meta property="og:title" content="Criptón | Tu negocio bajo control" />
     <meta property="og:description" content="Ventas ágiles, caja organizada e inventario al día desde una sola plataforma." />
     <meta property="og:image" content="/images/og-sistema-pos.jpg" />
     <meta name="twitter:card" content="summary_large_image" />
@@ -152,14 +152,14 @@ const softwareSchema = {
     <link rel="icon" href="/favicon.ico" />
     <meta name="generator" content={Astro.generator} />
     <script is:inline type="application/ld+json" set:html={JSON.stringify(softwareSchema)} />
-    <title>Sistema POS | Ventas, caja e inventario para tu negocio</title>
+    <title>Criptón | Ventas, caja e inventario para tu negocio</title>
   </head>
   <body>
     <a class="skip-link" href="#contenido">Saltar al contenido</a>
     <header class="site-header" aria-label="Navegación principal">
-      <a class="brand" href="#inicio" aria-label="Sistema POS, inicio">
-        <span class="brand-mark" aria-hidden="true">SP</span>
-        <span>Sistema POS</span>
+      <a class="brand" href="#inicio" aria-label="Criptón, inicio">
+        <span class="brand-mark" aria-hidden="true">C</span>
+        <span>Criptón</span>
       </a>
       <nav class="desktop-nav" aria-label="Secciones">
         <a href="#solucion">Solución</a>
@@ -183,11 +183,11 @@ const softwareSchema = {
         <div class="hero-shade" aria-hidden="true"></div>
         <div class="hero-content">
           <p class="eyebrow light">Control para comercios que quieren crecer</p>
-          <h1>Sistema POS</h1>
+          <h1>Criptón</h1>
           <p class="hero-lead">Vende con agilidad, mantén tu caja organizada y conoce tu inventario desde una sola plataforma.</p>
           <div class="hero-actions" aria-label="Acciones principales">
             <a class="button primary light-button" href="/registro?plan=professional">Empezar ahora</a>
-            <a class="text-link light-link" href={whatsappUrl("Hola, quiero conocer Sistema POS para mi negocio.")} target="_blank" rel="noreferrer">Hablar por WhatsApp <span aria-hidden="true">→</span></a>
+            <a class="text-link light-link" href={whatsappUrl("Hola, quiero conocer Criptón para mi negocio.")} target="_blank" rel="noreferrer">Hablar por WhatsApp <span aria-hidden="true">→</span></a>
           </div>
           <p class="hero-note">Planes desde <strong>$49.900 al mes</strong> · Implementación acompañada</p>
         </div>
@@ -218,7 +218,7 @@ const softwareSchema = {
           <p>Consulta el ticket actual, las alertas de inventario y el avance de ventas desde una experiencia consistente.</p>
           <ul class="check-list"><li>Información útil en el momento de la venta</li><li>Alertas visibles para actuar a tiempo</li><li>Indicadores fáciles de leer</li></ul>
         </div>
-        <div class="product-visual" aria-label="Vista ilustrativa del tablero de Sistema POS">
+        <div class="product-visual" aria-label="Vista ilustrativa del tablero de Criptón">
           <div class="screen-top"><span aria-hidden="true"></span><strong>Venta en mostrador</strong><em>Sesión activa</em></div>
           <div class="pos-grid">
             <section class="ticket-panel"><h3>Ticket actual</h3><div class="line-item"><span>Café premium</span><strong>$18.000</strong></div><div class="line-item"><span>Pan artesanal</span><strong>$7.500</strong></div><div class="line-item"><span>Bebida fría</span><strong>$6.900</strong></div><div class="total-row"><span>Total</span><strong>$32.400</strong></div><button type="button" tabindex="-1">Cobrar venta</button></section>
@@ -282,7 +282,7 @@ const softwareSchema = {
       </section>
     </main>
 
-    <footer><a class="brand" href="#inicio"><span class="brand-mark" aria-hidden="true">SP</span><span>Sistema POS</span></a><p>Ventas, caja e inventario para comercios que quieren crecer con control.</p><a href="#contacto">Agendar demostración</a><span>© {new Date().getFullYear()} Sistema POS</span></footer>
+    <footer><a class="brand" href="#inicio"><span class="brand-mark" aria-hidden="true">C</span><span>Criptón</span></a><p>Ventas, caja e inventario para comercios que quieren crecer con control.</p><a href="#contacto">Agendar demostración</a><span>© {new Date().getFullYear()} Criptón</span></footer>
 
     <script>
       const menu = document.querySelector<HTMLDetailsElement>(".mobile-menu");
@@ -295,7 +295,7 @@ const softwareSchema = {
         const data = new FormData(form);
         const number = form.dataset.whatsappNumber ?? "";
         const message = [
-          "Hola, quiero agendar una demostración de Sistema POS.",
+          "Hola, quiero agendar una demostración de Criptón.",
           `Nombre: ${data.get("name")}`,
           `Teléfono: ${data.get("phone")}`,
           `Plan de interés: ${data.get("plan")}`,

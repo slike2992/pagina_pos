@@ -15,11 +15,11 @@ const { title, eyebrow, heading, lead } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={lead} />
     <meta name="robots" content="noindex, follow" />
-    <title>{title} | Sistema POS</title>
+    <title>{title} | Criptón</title>
   </head>
   <body>
     <header>
-      <a class="brand" href="/"><span aria-hidden="true">SP</span><strong>Sistema POS</strong></a>
+      <a class="brand" href="/"><span aria-hidden="true">C</span><strong>Criptón</strong></a>
       <a href="/">Volver al inicio</a>
     </header>
     <main>
@@ -30,7 +30,7 @@ const { title, eyebrow, heading, lead } = Astro.props;
       </section>
       <section class="surface"><slot /></section>
     </main>
-    <footer>© {new Date().getFullYear()} Sistema POS</footer>
+    <footer>© {new Date().getFullYear()} Criptón</footer>
   </body>
 </html>
 
