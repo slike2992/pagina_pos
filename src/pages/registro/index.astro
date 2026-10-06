@@ -58,17 +58,23 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
       const draft = {
         contactName: String(data.get("contactName") ?? ""), email: String(data.get("email") ?? ""),
         companyName: String(data.get("companyName") ?? ""), phone: String(data.get("phone") ?? "") || undefined,
-        priceCode: String(data.get("priceCode") ?? "professional"),
-        termsVersion: terms.version, privacyVersion: privacy.version
+        priceCode: String(data.get("priceCode") ?? "professional")
       };
-      const fingerprint = JSON.stringify(draft);
+      const legalAcceptance = { termsVersion: terms.version, privacyVersion: privacy.version };
+      const fingerprint = JSON.stringify({ ...draft, legalAcceptance });
       const previous = sessionStorage.getItem("signup-draft");
       if (previous !== fingerprint || !sessionStorage.getItem("signup-accepted-at")) {
         sessionStorage.setItem("signup-draft", fingerprint);
         sessionStorage.setItem("signup-accepted-at", new Date().toISOString());
         sessionStorage.setItem("signup-key", crypto.randomUUID());
       }
-      const payload = { ...draft, legalAcceptance: { termsVersion: terms.version, privacyVersion: privacy.version, acceptedAt: sessionStorage.getItem("signup-accepted-at") } };
+      const payload = {
+        ...draft,
+        legalAcceptance: {
+          ...legalAcceptance,
+          acceptedAt: sessionStorage.getItem("signup-accepted-at")!
+        }
+      };
       submit!.disabled = true;
       setStatus("Creando tu registro…");
       try {
