@@ -1,0 +1,30 @@
+{
+  "name": "Cripton",
+  "short_name": "Cripton",
+  "description": "Ejemplo de manifiesto. Ajustar start_url y scope al despliegue real.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#002552",
+  "icons": [
+    {
+      "src": "../04_iconos/cripton_app_192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../04_iconos/cripton_app_512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../04_iconos/cripton_maskable_512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

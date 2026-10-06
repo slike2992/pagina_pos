@@ -1,0 +1,498 @@
+{
+  "revision": "1.0.1",
+  "scope": "outline maintenance, not a redesign",
+  "checks": {
+    "svg": {
+      "count": 28,
+      "palette": "exact",
+      "transforms_viewboxes": "unchanged",
+      "strokes_images_fonts": 0,
+      "cyan_o_underpaint": "removed; intersection area zero"
+    },
+    "png": {
+      "count": 45,
+      "dimensions": "all match original",
+      "master_transparency": "pass",
+      "srgb_profiles": 44
+    },
+    "vector_pdf": {
+      "count": 20,
+      "raster_images": 0,
+      "fonts": 0,
+      "original_page_sizes": "pass"
+    },
+    "manual_pdf": {
+      "pages": 35,
+      "text_layout_links_content_streams": "unchanged",
+      "renderer": "Poppler 72 dpi",
+      "pixels_outside_figures": "identical",
+      "updated_figures": 18,
+      "logo_placements": 56,
+      "pages_tested": [
+        {
+          "page": 1,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 20213,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 2,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 0,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 3,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 0,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 4,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 0,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 5,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 46464,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 6,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 4671,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 7,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 11204,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 8,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 10345,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 9,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 5848,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 10,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 20590,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 11,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 8591,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 12,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 6575,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 13,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 0,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 14,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 0,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 15,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 4011,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 16,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 0,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 17,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 16295,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 18,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 21706,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 19,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 0,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 20,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 1027,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 21,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 3629,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 22,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 15970,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 23,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 1078,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 24,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 0,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 25,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 1435,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 26,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 0,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 27,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 52448,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 28,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 0,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 29,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 0,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 30,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 0,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 31,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 0,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 32,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 0,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 33,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 0,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 34,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 0,
+          "max_rgb_rounding_outside_figures": 0
+        },
+        {
+          "page": 35,
+          "text_layout_links_preserved": true,
+          "pixels_changed": 0,
+          "max_rgb_rounding_outside_figures": 0
+        }
+      ]
+    },
+    "manual_docx": {
+      "changed_images": 18,
+      "all_xml_styles_relationships_text": "unchanged",
+      "independent_word_render": "unavailable: bundled LibreOffice not installed; renderer attempted and failed before conversion"
+    },
+    "reference": "byte-for-byte unchanged",
+    "silhouette_comparison": {
+      "p": {
+        "iou": 0.992837294712142,
+        "old_bounds": [
+          501.1988830566406,
+          925.4927978515625,
+          665.5,
+          1106.989990234375
+        ],
+        "new_bounds": [
+          501.3999938964844,
+          925.75,
+          665.5,
+          1107.0
+        ],
+        "old_segments": 27,
+        "new_segments": 16
+      },
+      "i": {
+        "iou": 0.995477082980455,
+        "old_bounds": [
+          441.0,
+          925.7291259765625,
+          486.83892822265625,
+          1050.0400390625
+        ],
+        "new_bounds": [
+          441.0,
+          925.9500122070312,
+          486.6499938964844,
+          1049.75
+        ],
+        "old_segments": 10,
+        "new_segments": 5
+      },
+      "o": {
+        "iou": 0.9907345733040495,
+        "old_bounds": [
+          781.5,
+          924.1284790039062,
+          944.5,
+          1049.87255859375
+        ],
+        "new_bounds": [
+          781.5,
+          924.5,
+          944.5,
+          1049.75
+        ],
+        "old_segments": 27,
+        "new_segments": 20
+      },
+      "C": {
+        "iou": 0.9924242697246305,
+        "old_bounds": [
+          125.11683654785156,
+          884.5,
+          313.04998779296875,
+          1048.649169921875
+        ],
+        "new_bounds": [
+          125.25,
+          884.5,
+          313.0,
+          1048.5
+        ],
+        "old_segments": 21,
+        "new_segments": 14
+      },
+      "r": {
+        "iou": 0.9894198772950703,
+        "old_bounds": [
+          319.965087890625,
+          925.8900146484375,
+          428.0,
+          1048.2998046875
+        ],
+        "new_bounds": [
+          320.25,
+          926.0999755859375,
+          428.0,
+          1048.1500244140625
+        ],
+        "old_segments": 14,
+        "new_segments": 10
+      },
+      "n": {
+        "iou": 0.9946390794939353,
+        "old_bounds": [
+          959.0,
+          924.9500122070312,
+          1132.8817138671875,
+          1048.5631103515625
+        ],
+        "new_bounds": [
+          959.0,
+          925.25,
+          1132.75,
+          1048.5
+        ],
+        "old_segments": 19,
+        "new_segments": 12
+      },
+      "t": {
+        "iou": 0.9936095335073031,
+        "old_bounds": [
+          679.5399780273438,
+          884.9600219726562,
+          767.0,
+          1048.0
+        ],
+        "new_bounds": [
+          679.75,
+          885.25,
+          767.0,
+          1048.0
+        ],
+        "old_segments": 23,
+        "new_segments": 14
+      },
+      "word": {
+        "iou": 0.9927416242767733,
+        "old_bounds": [
+          125.11683654785156,
+          880.1653442382812,
+          1132.8817138671875,
+          1106.989990234375
+        ],
+        "new_bounds": [
+          125.25,
+          880.1653442382812,
+          1132.75,
+          1107.0
+        ],
+        "old_segments": 147,
+        "new_segments": 97
+      },
+      "symbol": {
+        "iou": 0.9993512290971741,
+        "old_bounds": [
+          277.365966796875,
+          157.97000122070312,
+          1038.68994140625,
+          864.0
+        ],
+        "new_bounds": [
+          277.365966796875,
+          157.97000122070312,
+          1038.68994140625,
+          864.0
+        ],
+        "old_segments": 237,
+        "new_segments": 209
+      },
+      "accents": {
+        "iou": 0.9992648025409566,
+        "old_bounds": [
+          340.4167175292969,
+          205.0334930419922,
+          783.1199951171875,
+          819.0
+        ],
+        "new_bounds": [
+          340.4167175292969,
+          205.0334930419922,
+          783.1199951171875,
+          819.0
+        ],
+        "old_segments": 76,
+        "new_segments": 68
+      }
+    },
+    "maskable_safe_area": {
+      "maximum_foreground_radius": 321.72659200010185,
+      "allowed": 409.6,
+      "pass": true
+    },
+    "generated_assets": {
+      "svg": 28,
+      "master_png": 31,
+      "icons_png": 12,
+      "vector_pdf": 20,
+      "ico_sizes": [
+        16,
+        32,
+        48,
+        64
+      ]
+    },
+    "browser": {
+      "engine": "Microsoft Edge / Chromium",
+      "mode": "local file; no hosting or PWA installation claim",
+      "viewports": [
+        {
+          "width": 320,
+          "images": 31,
+          "broken": [],
+          "overflow": false
+        },
+        {
+          "width": 360,
+          "images": 31,
+          "broken": [],
+          "overflow": false
+        },
+        {
+          "width": 390,
+          "images": 31,
+          "broken": [],
+          "overflow": false
+        },
+        {
+          "width": 430,
+          "images": 31,
+          "broken": [],
+          "overflow": false
+        },
+        {
+          "width": 768,
+          "images": 31,
+          "broken": [],
+          "overflow": false
+        },
+        {
+          "width": 1024,
+          "images": 31,
+          "broken": [],
+          "overflow": false
+        },
+        {
+          "width": 1440,
+          "images": 31,
+          "broken": [],
+          "overflow": false
+        }
+      ],
+      "errors": []
+    },
+    "visual_review": "all 25 master variants, 22 figures and 35 PDF pages reviewed; enlarged wordmark compared with original",
+    "website_delivery": {
+      "url": "http://127.0.0.1:4321/brand/v1.0/cripton_nombre_color_v1.0.svg",
+      "status": 200,
+      "served_bytes_match_refined_master": true
+    }
+  },
+  "automated_checks_passed": true,
+  "overall": "executed checks passed; independent DOCX rendering not available",
+  "manual_sha256": "81719a9d55723329a2dda91d03b3bce1fa00ce8f3ad2c007122e2040f326470d"
+}

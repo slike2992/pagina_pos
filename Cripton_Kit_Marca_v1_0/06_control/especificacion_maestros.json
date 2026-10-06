@@ -1,0 +1,267 @@
+{
+  "source": "1B84F68B-4B86-4B09-9366-61FF2266B835.png",
+  "source_sha256": "d4ec5e700cf6b8917f6cbe500bb008064906d492c4c18ebc343d54ae7397b248",
+  "source_pixels": [
+    1254,
+    1254
+  ],
+  "source_icc": false,
+  "icon_bbox_source": [
+    277,
+    158,
+    1039,
+    864
+  ],
+  "wordmark_bbox_source": [
+    125,
+    880,
+    1133,
+    1107
+  ],
+  "C_bbox_source": [
+    125,
+    884,
+    313,
+    1049
+  ],
+  "normalization_scale": 0.9920634920634921,
+  "cap_height": 163.6904761904762,
+  "module_X": 40.92261904761905,
+  "original_gap": 15.873015873015873,
+  "new_gap": 40.92261904761905,
+  "icon_offset_x": 150.79365079365078,
+  "palette": {
+    "navy": "#002552",
+    "cyan": "#00DEF8",
+    "white": "#FFFFFF",
+    "ui_teal": "#006B80"
+  },
+  "metrics": {
+    "vertical": {
+      "art_width": 1000,
+      "art_height": 966.5178571428571,
+      "padding": 40.92261904761905,
+      "viewbox_width": 1081.845238095238,
+      "viewbox_height": 1048.3630952380952
+    },
+    "horizontal": {
+      "art_width": 1435.1940847160395,
+      "art_height": 327.3809523809524,
+      "padding": 40.92261904761905,
+      "viewbox_width": 1517.0393228112775,
+      "viewbox_height": 409.2261904761905
+    },
+    "simbolo": {
+      "art_width": 755.952380952381,
+      "art_height": 700.3968253968254,
+      "padding": 94.49404761904762,
+      "viewbox_width": 944.9404761904761,
+      "viewbox_height": 889.3849206349207
+    },
+    "nombre": {
+      "art_width": 1000,
+      "art_height": 225.1984126984127,
+      "padding": 40.92261904761905,
+      "viewbox_width": 1081.845238095238,
+      "viewbox_height": 307.04365079365084
+    },
+    "micro": {
+      "art_width": 100,
+      "art_height": 87.76595744680851,
+      "padding": 12.5,
+      "viewbox_width": 125.0,
+      "viewbox_height": 112.76595744680851
+    }
+  },
+  "contrast": {
+    "navy_white": 15.146418281376437,
+    "cyan_white": 1.6401159723068368,
+    "navy_cyan": 9.234967854177333,
+    "ui_teal_white": 6.1497362699662075
+  },
+  "status": "Fine outline maintenance completed; same identity, palette and nominal compositions. See current validation scope.",
+  "revision": "1.0.1",
+  "historical_original_trace": {
+    "geometry_iou_source_vs_trace": 0.9940470808634988,
+    "paths_segments": {
+      "icon_shape": 173,
+      "icon_cyan": 53,
+      "word_shape": 101,
+      "word_cyan": 23,
+      "micro_shape": 15
+    }
+  },
+  "refinement_vs_original_vectors": {
+    "p": {
+      "iou": 0.992837294712142,
+      "old_bounds": [
+        501.1988830566406,
+        925.4927978515625,
+        665.5,
+        1106.989990234375
+      ],
+      "new_bounds": [
+        501.3999938964844,
+        925.75,
+        665.5,
+        1107.0
+      ],
+      "old_segments": 27,
+      "new_segments": 16
+    },
+    "i": {
+      "iou": 0.995477082980455,
+      "old_bounds": [
+        441.0,
+        925.7291259765625,
+        486.83892822265625,
+        1050.0400390625
+      ],
+      "new_bounds": [
+        441.0,
+        925.9500122070312,
+        486.6499938964844,
+        1049.75
+      ],
+      "old_segments": 10,
+      "new_segments": 5
+    },
+    "o": {
+      "iou": 0.9907345733040495,
+      "old_bounds": [
+        781.5,
+        924.1284790039062,
+        944.5,
+        1049.87255859375
+      ],
+      "new_bounds": [
+        781.5,
+        924.5,
+        944.5,
+        1049.75
+      ],
+      "old_segments": 27,
+      "new_segments": 20
+    },
+    "C": {
+      "iou": 0.9924242697246305,
+      "old_bounds": [
+        125.11683654785156,
+        884.5,
+        313.04998779296875,
+        1048.649169921875
+      ],
+      "new_bounds": [
+        125.25,
+        884.5,
+        313.0,
+        1048.5
+      ],
+      "old_segments": 21,
+      "new_segments": 14
+    },
+    "r": {
+      "iou": 0.9894198772950703,
+      "old_bounds": [
+        319.965087890625,
+        925.8900146484375,
+        428.0,
+        1048.2998046875
+      ],
+      "new_bounds": [
+        320.25,
+        926.0999755859375,
+        428.0,
+        1048.1500244140625
+      ],
+      "old_segments": 14,
+      "new_segments": 10
+    },
+    "n": {
+      "iou": 0.9946390794939353,
+      "old_bounds": [
+        959.0,
+        924.9500122070312,
+        1132.8817138671875,
+        1048.5631103515625
+      ],
+      "new_bounds": [
+        959.0,
+        925.25,
+        1132.75,
+        1048.5
+      ],
+      "old_segments": 19,
+      "new_segments": 12
+    },
+    "t": {
+      "iou": 0.9936095335073031,
+      "old_bounds": [
+        679.5399780273438,
+        884.9600219726562,
+        767.0,
+        1048.0
+      ],
+      "new_bounds": [
+        679.75,
+        885.25,
+        767.0,
+        1048.0
+      ],
+      "old_segments": 23,
+      "new_segments": 14
+    },
+    "word": {
+      "iou": 0.9927416242767733,
+      "old_bounds": [
+        125.11683654785156,
+        880.1653442382812,
+        1132.8817138671875,
+        1106.989990234375
+      ],
+      "new_bounds": [
+        125.25,
+        880.1653442382812,
+        1132.75,
+        1107.0
+      ],
+      "old_segments": 147,
+      "new_segments": 97
+    },
+    "symbol": {
+      "iou": 0.9993512290971741,
+      "old_bounds": [
+        277.365966796875,
+        157.97000122070312,
+        1038.68994140625,
+        864.0
+      ],
+      "new_bounds": [
+        277.365966796875,
+        157.97000122070312,
+        1038.68994140625,
+        864.0
+      ],
+      "old_segments": 237,
+      "new_segments": 209
+    },
+    "accents": {
+      "iou": 0.9992648025409566,
+      "old_bounds": [
+        340.4167175292969,
+        205.0334930419922,
+        783.1199951171875,
+        819.0
+      ],
+      "new_bounds": [
+        340.4167175292969,
+        205.0334930419922,
+        783.1199951171875,
+        819.0
+      ],
+      "old_segments": 76,
+      "new_segments": 68
+    }
+  },
+  "metrics_note": "Original nominal composition metrics retained; actual refined outline bounds are recorded above."
+}

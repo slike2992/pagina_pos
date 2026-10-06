@@ -1,0 +1,22 @@
+/* Cripton v1.0. Los colores UI secundarios no sustituyen los del logo. */
+:root {
+  --cripton-navy: #002552;
+  --cripton-cyan: #00DEF8;
+  --cripton-white: #FFFFFF;
+  --cripton-ui-link: #006B80;
+  --cripton-ui-surface: #F4F7FA;
+  --cripton-ui-text: #002552;
+  --cripton-font: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.brand { display: inline-flex; max-width: 100%; text-decoration: none; }
+.brand img { display: block; height: auto; object-fit: contain; }
+/* Anchos de archivo, con área de protección incluida. */
+.brand--horizontal img { width: 300px; }
+.brand--vertical img { width: 260px; }
+.brand--nombre img { width: 160px; }
+.brand--simbolo img { width: 80px; }
+.brand:focus-visible { outline: 3px solid var(--cripton-ui-link); outline-offset: 4px; }
+.brand-number { font-variant-numeric: tabular-nums; }
+.brand--intro { animation: cripton-appear 240ms ease-out both; }
+@keyframes cripton-appear { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .brand--intro { animation: none; } }

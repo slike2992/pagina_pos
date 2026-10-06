@@ -1,0 +1,3 @@
+# Preserve the exact bytes covered by the brand kit checksum manifest.
+/Cripton_Kit_Marca_v1_0/** -text
+/public/brand/v1.0/** -text

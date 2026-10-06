@@ -1,0 +1,15 @@
+OBJETIVO: integrar la identidad Cripton v1.0 aprobada, sin modificar lógica de negocio ni rediseñar módulos.
+
+PRECONDICIÓN
+Confirmar que el titular aprobó el manual y los maestros, incluidas la separación vertical normalizada, la versión horizontal y la micro C. No declarar aprobados los cambios solo por existir en el kit.
+
+1. Leer AGENTS.md y README del proyecto/módulo si existen. Revisar únicamente los componentes compartidos que muestran marca: layout, login, cabecera, pie, manifiesto e iconos. No hacer auditoría masiva.
+2. Tomar los SVG y PNG del paquete; no generar dibujos, no reescribir el nombre y no instalar una fuente para imitarlo. Nombre: Cripton sin tilde; solo la o es cian. Raptor a la derecha.
+3. Conservar una única ruta versionada de recursos, por ejemplo public/brand/v1.0. Resolver la ruta real del proyecto antes de modificar. No usar CDN ni llamadas externas.
+4. Aplicar nombre solo en barras bajas y móvil; horizontal donde quepan al menos 280 px visibles; vertical en login donde quepan 240 px visibles. El archivo incluye protección. No distorsionar ni recortar.
+5. Aplicar reverso con archivos dedicados para modo oscuro. No usar filtros CSS de inversión o recoloración.
+6. Incluir texto alternativo orientado a la función, medidas de imagen y estilo responsive. Si existe animación, respetar movimiento reducido y no retrasar operaciones. No agregar librerías.
+7. Actualizar favicon y manifest solo tras revisar scope/start_url/service worker. Usar any y maskable como recursos distintos. Conservar entornos locales y nube.
+8. Validar a 320, 360, 390, 430, 768 y 1440 CSS px; comprobar no desbordamiento, temas, rutas, errores de carga, foco y nombre accesible. No asegurar validación en iOS/Android nativos si no se ejecutó.
+9. Ejecutar pruebas existentes pertinentes. No tocar permisos, ventas, inventario, SQL, API, facturación o procesos.
+10. Entregar lista de archivos modificados, capturas antes/después, pruebas ejecutadas y límites. Mantener rollback. No hacer commit/push ni desplegar sin autorización.
