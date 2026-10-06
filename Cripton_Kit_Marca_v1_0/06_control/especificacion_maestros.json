@@ -31,10 +31,10 @@
   "new_gap": 40.92261904761905,
   "icon_offset_x": 150.79365079365078,
   "palette": {
-    "navy": "#002552",
-    "cyan": "#00DEF8",
+    "navy": "#051828",
+    "cyan": "#31CCD4",
     "white": "#FFFFFF",
-    "ui_teal": "#006B80"
+    "ui_teal": "#056877"
   },
   "metrics": {
     "vertical": {
@@ -74,13 +74,13 @@
     }
   },
   "contrast": {
-    "navy_white": 15.146418281376437,
-    "cyan_white": 1.6401159723068368,
-    "navy_cyan": 9.234967854177333,
-    "ui_teal_white": 6.1497362699662075
+    "navy_white": 17.983350341218014,
+    "cyan_white": 1.9592416069041607,
+    "navy_cyan": 9.178730319857737,
+    "ui_teal_white": 6.45565746256288
   },
-  "status": "Fine outline maintenance completed; same identity, palette and nominal compositions. See current validation scope.",
-  "revision": "1.0.1",
+  "status": "Paleta y estructura de landing aprobadas por el usuario el 2026-10-06. Geometria refinada 1.0.1 conservada.",
+  "revision": "1.1.0",
   "historical_original_trace": {
     "geometry_iou_source_vs_trace": 0.9940470808634988,
     "paths_segments": {
@@ -263,5 +263,11 @@
       "new_segments": 68
     }
   },
-  "metrics_note": "Original nominal composition metrics retained; actual refined outline bounds are recorded above."
+  "metrics_note": "Original nominal composition metrics retained; actual refined outline bounds are recorded above.",
+  "contrast_current": {
+    "oscuro_blanco": 17.983350341218014,
+    "oscuro_turquesa": 9.178730319857737,
+    "turquesa_blanco": 1.9592416069041607,
+    "petroleo_blanco": 6.45565746256288
+  }
 }

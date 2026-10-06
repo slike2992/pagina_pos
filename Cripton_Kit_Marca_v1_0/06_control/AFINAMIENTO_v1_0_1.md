@@ -1,3 +1,5 @@
+> HISTORICO: describe la revision anterior. Paleta vigente: PALETA_APROBADA_1_1_0.md.
+
 # Afinamiento técnico de contornos
 
 ## Alcance

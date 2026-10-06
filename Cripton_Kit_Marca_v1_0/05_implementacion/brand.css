@@ -1,11 +1,11 @@
 /* Cripton v1.0. Los colores UI secundarios no sustituyen los del logo. */
 :root {
-  --cripton-navy: #002552;
-  --cripton-cyan: #00DEF8;
+  --cripton-navy: #051828;
+  --cripton-cyan: #31ccd4;
   --cripton-white: #FFFFFF;
-  --cripton-ui-link: #006B80;
+  --cripton-ui-link: #056877;
   --cripton-ui-surface: #F4F7FA;
-  --cripton-ui-text: #002552;
+  --cripton-ui-text: #051828;
   --cripton-font: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 .brand { display: inline-flex; max-width: 100%; text-decoration: none; }

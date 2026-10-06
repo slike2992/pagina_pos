@@ -1,0 +1,1 @@
+Referencia historica de la paleta anterior. No usar para produccion. El manual vigente esta en 00_manual y la revision es 1.1.0.

@@ -1,6 +1,6 @@
-# Cripton · Manual de identidad visual v1.0
-Fecha: 2026-10-05
-Base visual elegida; normalización propuesta para aprobación.
+# Cripton · Manual de identidad visual v1.1.0
+Fecha: 2026-10-06
+Estándar aprobado: estructura de la landing y paleta de la prueba del POS. Se conservan las formas refinadas del logo.
 
 ## Guía rápida de uso
 01 / EMPEZAR AQUÍ
@@ -22,26 +22,14 @@ Usar los archivos del kit; escalar siempre proporcionalmente; respetar el espaci
 
 ### Qué está aprobado y qué se propone
 
-La imagen aportada es la base visual expresamente elegida. La unificación del color, la separación técnica y las aplicaciones derivadas de este documento son una propuesta de normalización v1.0 para adopción por el titular. No se presupone registro de marca ni aprobación de imprenta.
+La imagen aportada es la referencia histórica de formas. La paleta vigente es la aprobada el 6 de octubre de 2026. La unificación del color, la separación técnica y las aplicaciones derivadas de este documento forman parte del estándar adoptado por el titular. No se presupone registro de marca ni aprobación de imprenta.
 
 El PDF es la referencia de consulta. Los SVG son los maestros gráficos. El Word permite editar las normas, pero no convierte las imágenes del documento en archivos originales de diseño.
 
 ## Mapa del manual
 02 / ENCONTRAR LA REGLA
 
-Tema | Páginas
---- | ---
-Identidad, diagnóstico y anatomía | 4–6
-Construcción, proporciones y protección | 7–9
-Selección de versión y fondos | 10–12
-Colores, accesibilidad y tipografía | 13–16
-Tamaños, iconos y usos incorrectos | 17–19
-Web, móvil, documentos y tickets | 20–23
-Producción, productos y comunicación | 24–26
-Movimiento e implementación web | 27–28
-Archivos, gobierno y validación | 29–31
-Propiedad de marca y control de proveedores | 32–33
-Fuentes y adopción del manual | 34–35
+La edición recompuesta se organiza por los títulos de sección; la paginación anterior no aplica.
 
 ### Cómo interpretar la evidencia
 
@@ -81,9 +69,9 @@ La referencia define la apariencia del raptor. Este manual no certifica una reco
 
 La referencia es un PNG RGB de 1.254 × 1.254 px sin perfil ICC incrustado. Sus zonas planas contienen variaciones de color y suavizado de bordes. No hay capas, vectores ni metadatos de fuente que permitan certificar una tipografía comercial concreta. [R0, R15]
 
-Hallazgo | Tratamiento en v1.0
+Hallazgo | Tratamiento en v1.1.0
 --- | ---
-Cian distinto entre acentos y “o” | Unificar en #00DEF8. Marino: #002552.
+Cian distinto entre acentos y “o” | Unificar en #31ccd4. Marino: #051828.
 Espacio símbolo–nombre de 16 px en la fuente | Ampliar a 41,25 px equivalentes; módulo X.
 Fondo blanco integrado en el PNG | Exportar vectores y PNG transparentes.
 Bordes rasterizados | Trazar curvas y polígonos; depurar partículas pequeñas.
@@ -123,7 +111,7 @@ El archivo ya incluye X de margen exterior. Su lienzo mide 1.081,85 × 1.048,36 
 
 La versión horizontal usa exactamente el mismo símbolo y el mismo nombre. Es una disposición nueva propuesta para espacios anchos. Mantiene el ancho visible del nombre en 1.000 u y fija la altura del símbolo en 2H = 327,38 u. La separación lateral es 2X = 81,85 u.
 
-El símbolo mide aproximadamente 353,35 u de ancho. El arte completo mide 1.435,19 × 327,38 u. Con el margen exterior X, el lienzo mide 1.517,04 × 409,23 u. El nombre se alinea por el centro de su altura capital, no por la caja que incluye la descendente de la “p”. [R15]
+El símbolo mide aproximadamente 353,35 u de ancho. El arte completo mide 1.435,19 × 327,38 u. Con el margen exterior X, el lienzo mide 1.517,04 × 409,18 u. El nombre se alinea por el centro de su altura capital, no por la caja que incluye la descendente de la “p”. [R15]
 
 ### Colocación recomendada
 
@@ -144,7 +132,7 @@ La medida se toma desde el extremo más saliente del arte, incluidas las puntas,
 
 ### Ejemplo numérico
 
-Si el nombre visible mide 240 px de ancho, X equivale a 9,82 px. Si el isotipo visible mide 80 px, su protección es 10 px. Para impresos: nombre de 40 mm → X = 1,64 mm. Son medidas adicionales al arte, no deformaciones del dibujo.
+Si el nombre visible mide 240 px de ancho, X equivale a 9,82 px. Si el isotipo visible mide 80 px, su protección es 10 px. Para impresos: nombre de 40 mm → X = 1,96 mm. Son medidas adicionales al arte, no deformaciones del dibujo.
 
 En piezas editoriales amplias se recomienda 2X de aire; X es el mínimo, no un objetivo de saturación. Alinear a la columna de contenido por el borde del arte o por el borde del archivo, pero no mezclar ambos criterios en una misma familia de plantillas.
 
@@ -196,33 +184,30 @@ Reservar un bloque blanco o marino con el espacio libre correspondiente, integra
 
 La caja de reserva es un elemento de la pieza, no una nueva forma del símbolo. No convertir el raptor en una insignia hexagonal, escudo o medalla salvo que exista una variante aprobada.
 
-## Paleta oficial propuesta
-12 / VALORES QUE NO CAMBIAN
+## Paleta oficial aprobada
+12 / ESTÁNDAR VIGENTE DESDE EL 6 DE OCTUBRE DE 2026
 
-[Figura: colores] Tres colores de identidad: marino, cian y blanco. Sin degradados en el maestro.
+La paleta aprobada procede de la prueba visual del POS. Sustituye los colores de la revisión 1.0.1; no se afirma que coincida con la referencia original. Los identificadores técnicos navy y cyan se mantienen por compatibilidad, pero representan petróleo oscuro y turquesa.
 
-El marino #002552 coincide con la mediana observada en las áreas oscuras de la referencia. El cian #00DEF8 unifica variaciones: el símbolo tenía una mediana aproximada RGB 0/237/253 y la letra “o”, RGB 0/220/247. No se conserva esa diferencia como un degradado intencional. [R0, R15]
+Color | HEX | RGB | Uso
+--- | --- | --- | ---
+Petróleo oscuro | #051828 | 5, 24, 40 | Logo, texto y superficies oscuras
+Turquesa | #31CCD4 | 49, 204, 212 | Letra o, acentos del símbolo y destacados
+Petróleo | #056877 | 5, 104, 119 | Enlaces, botones y superficies de apoyo
+Blanco | #FFFFFF | 255, 255, 255 | Reverso y superficies claras
 
-Color | HEX / RGB | CMYK aritmético orientativo
---- | --- | ---
-Marino | #002552 · 0, 37, 82 | 100 / 55 / 0 / 68
-Cian | #00DEF8 · 0, 222, 248 | 100 / 10 / 0 / 3
-Blanco | #FFFFFF · 255, 255, 255 | 0 / 0 / 0 / 0
-
-Los CMYK de la tabla son una conversión matemática sin perfil; no son recetas finales de imprenta. No se asigna un Pantone supuesto. La equivalencia se aprueba sobre muestra física, sustrato y proceso definidos. El estándar de trabajo digital de este kit es sRGB; se adopta como supuesto porque la imagen de origen no tenía ICC. [R9]
-
-En interfaz pueden existir neutros y colores de estado, pero no se incorporan al logo. El cian se usa como acento, no como color de todos los textos.
+El maestro del logo conserva colores planos. Los degradados se permiten únicamente en fondos de interfaz, nunca en sus trazados. No hay equivalencia CMYK o Pantone aprobada: debe obtenerse con el perfil y una prueba del proceso de impresión. Los PNG de producción incluyen perfil sRGB.
 
 ## Contraste y accesibilidad
 13 / MARCA Y PRODUCTO NO SON LO MISMO
 
 Par de colores | Relación calculada | Criterio de uso
 --- | --- | ---
-Marino / blanco | 15,15:1 | Admitido para texto normal.
-Marino / cian | 9,23:1 | Admitido para texto y controles.
-Cian / blanco | 1,64:1 | No usar para texto ni borde funcional necesario.
-Blanco / cian | 1,64:1 | No usar como texto de botón.
-#006B80 / blanco | 6,15:1 | Alternativa de interfaz; no recolorea el logo.
+Petróleo oscuro / blanco | 17,98:1 | Admitido para texto normal.
+Petróleo oscuro / cian | 9,18:1 | Admitido para texto y controles.
+Turquesa / blanco | 1,96:1 | No usar para texto ni borde funcional necesario.
+Blanco / turquesa | 1,96:1 | No usar como texto de botón.
+#056877 / blanco | 6,46:1 | Alternativa de interfaz; no recolorea el logo.
 
 Las relaciones se calcularon con luminancia relativa sRGB y la fórmula (Lmayor + 0,05)/(Lmenor + 0,05). Están redondeadas solo para presentación; la decisión se realiza con el valor sin redondear. Son pruebas de pares de color, no una auditoría de toda la aplicación. [R4, R15]
 
@@ -230,7 +215,7 @@ WCAG contempla una excepción de contraste para texto que forma parte de un logo
 
 ### Decisión práctica
 
-Botón cian: texto marino. Enlace sobre blanco: marino o #006B80, acompañado de subrayado o un indicador no dependiente solo del color. Precio, saldo y cantidad: nunca cian claro sobre blanco. El área clicable del enlace de marca debe ser independiente del detalle del dibujo.
+Botón cian: texto marino. Enlace sobre blanco: marino o #056877, acompañado de subrayado o un indicador no dependiente solo del color. Precio, saldo y cantidad: nunca cian claro sobre blanco. El área clicable del enlace de marca debe ser independiente del detalle del dibujo.
 
 ### Nombre accesible
 
@@ -458,7 +443,7 @@ Usar el SVG del kit como recurso externo local. Sus formas no dependen de una fu
 ```
 <a class="brand" href="/inicio">
   <img
-    src="/brand/v1.0/cripton_horizontal_color_v1.0.svg"
+    src="/brand/v1.1.0/cripton_horizontal_color_v1.1.0.svg"
     alt="Cripton, inicio"
     width="1517" height="409">
 </a>
@@ -491,7 +476,7 @@ Carpeta | Contenido y uso
 06_control | Medidas, controles y listado SHA-256 de entregables.
 07_referencia | Imagen elegida, sin editar; solo trazabilidad.
 
-Convención: cripton_[composicion]_[color]_v1.0.[ext]. Composiciones: vertical, horizontal, simbolo, nombre y micro. Variantes: color, reverso, negro, blanco y navy. Un sufijo 1200px o 2400px indica el ancho total de la exportación, incluido su margen.
+Convención: cripton_[composicion]_[color]_v1.1.0.[ext]. Composiciones: vertical, horizontal, simbolo, nombre y micro. Variantes: color, reverso, negro, blanco y navy. Un sufijo 1200px o 2400px indica el ancho total de la exportación, incluido su margen.
 
 Los PDF vectoriales RGB no son EPS, AI ni PDF/X certificados. No renombrar extensiones para simular un formato. Los SVG contienen curvas y polígonos reales, no una imagen raster incrustada. Los PNG transparentes pueden verse negros en un visor que no muestre el fondo; colocarlos sobre el fondo para el que fueron creados.
 
@@ -512,17 +497,15 @@ Documentar motivo, archivos afectados, comparación antes/después, impacto en t
 
 Cambio | Criterio propuesto
 --- | ---
-v1.0.1 | Corrección técnica que no cambia la identidad.
+v1.1.0.1 | Corrección técnica que no cambia la identidad.
 v1.1 | Nueva aplicación o variante aprobada del mismo sistema.
 v2.0 | Cambio sustancial de forma, nombre, tipo o paleta.
 
 Conservar el paquete anterior como archivo histórico, marcarlo como obsoleto y actualizar las rutas del producto de manera coordinada. No sobrescribir una versión publicada dejando el mismo nombre si terceros podrían estar utilizando cachés o copias locales.
 
-### Adopción de esta propuesta
+### Adopción confirmada
 
-La aprobación debe mencionar expresamente la unificación de colores, el aumento de separación vertical, la versión horizontal y la micro C. Una vez aprobados, este documento y sus maestros se convierten en la referencia vigente. Hasta entonces, la imagen seleccionada sigue siendo la evidencia de preferencia visual.
-
-Este manual define un sistema, no una autorización para prometer alianzas, funcionalidades, registro o exclusividad legal.
+El titular aprobó la estructura de la landing y la paleta de la prueba del POS el 6 de octubre de 2026. Se conservan los contornos refinados, la separación, las variantes y la micro C. Esta aprobación no certifica registro, impresión ni prestaciones del producto.
 
 ## Validación y límites del encargo
 30 / QUÉ SE COMPROBÓ
@@ -563,7 +546,7 @@ Conservar la referencia, los archivos de trabajo, las instrucciones del titular,
 
 No usar ® antes de comprobar el registro y su alcance aplicable. No incorporar símbolos de Superman, películas, fabricantes de videojuegos, dinosaurios de franquicias ni logos de integraciones sin revisar los derechos correspondientes. El raptor de este kit se gestiona como el signo seleccionado para Cripton, sin garantía de exclusividad mundial.
 
-Esta página es una advertencia de gestión de marca, no un dictamen legal. Antes de un registro o inversión relevante, solicitar una revisión profesional de propiedad industrial.
+Esta sección es una advertencia de gestión de marca, no un dictamen legal. Antes de un registro o inversión relevante, solicitar una revisión profesional de propiedad industrial.
 
 ## Ficha para cualquier proveedor
 32 / CONTROL ANTES DE ENTREGAR
@@ -605,3 +588,10 @@ No aprobar únicamente una miniatura enviada por mensajería. Revisar el archivo
 [R13] OMPI / WIPO · Global Brand Database. Búsqueda por nombre e imagen; conveniencia de consultar también registros nacionales o regionales. https://www.wipo.int/en/web/global-brand-database/index
 [R14] VUE Colombia · Consulta de nombre de marca. Orientación oficial sobre antecedentes marcarios, SIPI y modalidades de marca. https://www.vue.gov.co/tramites-y-consultas/consulta-de-nombre-de-marca
 [R15] Control técnico de este paquete. Mediciones y verificaciones locales de la referencia, los vectores y sus exportaciones; no representa un ensayo de imprenta, estudio de consumidores o dictamen jurídico. 06_control/especificacion_maestros.json
+## Adopción de la landing y trazabilidad
+
+La distribución de la landing de prueba queda adoptada: cabecera, hero fotográfico, beneficios, demostración del POS, módulos, pasos, dos grupos de planes, comparación, llamada a la acción, preguntas, contacto y pie. Se mantiene su comportamiento responsive. Se aplican los colores sobre la versión actual del sitio para conservar las correcciones posteriores de registro y contacto.
+
+No se redibujan las letras ni el símbolo. El cambio no modifica precios, contratos de API, permisos, reglas contables, facturas ni datos. Los documentos comerciales conservan la identidad del comercio. Los archivos de 07_referencia son históricos y no se usan para producción. Los nombres de archivo v1.0 se conservan por compatibilidad; la revisión vigente del kit es 1.1.0.
+
+La aprobación visual del usuario no equivale a certificación legal, de imprenta ni de accesibilidad de toda la aplicación. Ver 06_control para las verificaciones ejecutadas.
