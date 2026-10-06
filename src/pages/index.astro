@@ -1,6 +1,7 @@
 ---
 import { Image } from "astro:assets";
 import heroImage from "../assets/hero-comercio-pos.png";
+import Brand from "../components/Brand.astro";
 
 const whatsappNumber = import.meta.env.PUBLIC_WHATSAPP_NUMBER?.replace(/\D/g, "") ?? "";
 const whatsappUrl = (message: string) =>
@@ -121,10 +122,10 @@ const faqs = [
 const softwareSchema = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  name: "Criptón",
+  name: "Cripton",
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
-  description: "Criptón: ventas, caja, inventario y reportes para comercios.",
+  description: "Cripton: ventas, caja, inventario y reportes para comercios.",
   offers: plans.map((plan) => ({
     "@type": "Offer",
     name: `Plan ${plan.name}`,
@@ -139,28 +140,26 @@ const softwareSchema = {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Controla ventas, caja, inventario y reportes con Criptón. Conoce los planes y solicita una demostración para tu negocio." />
-    <meta name="theme-color" content="#123f38" />
+    <meta name="description" content="Cripton POS: ventas, caja, inventario y reportes para una operación más ágil." />
+    <meta name="theme-color" content="#002552" />
     <meta name="robots" content="index, follow" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="es_CO" />
-    <meta property="og:title" content="Criptón | Tu negocio bajo control" />
+    <meta property="og:title" content="Cripton | Software para una operación más ágil" />
     <meta property="og:description" content="Ventas ágiles, caja organizada e inventario al día desde una sola plataforma." />
     <meta property="og:image" content="/images/og-sistema-pos.jpg" />
     <meta name="twitter:card" content="summary_large_image" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="/brand/v1.0/favicon.svg" />
+    <link rel="icon" href="/brand/v1.0/favicon.ico" sizes="any" />
+    <link rel="manifest" href="/site.webmanifest" />
     <meta name="generator" content={Astro.generator} />
     <script is:inline type="application/ld+json" set:html={JSON.stringify(softwareSchema)} />
-    <title>Criptón | Ventas, caja e inventario para tu negocio</title>
+    <title>Cripton | Ventas, caja e inventario para tu negocio</title>
   </head>
   <body>
     <a class="skip-link" href="#contenido">Saltar al contenido</a>
     <header class="site-header" aria-label="Navegación principal">
-      <a class="brand" href="#inicio" aria-label="Criptón, inicio">
-        <span class="brand-mark" aria-hidden="true">C</span>
-        <span>Criptón</span>
-      </a>
+      <Brand className="site-brand" href="#inicio" mobileNameOnly />
       <nav class="desktop-nav" aria-label="Secciones">
         <a href="#solucion">Solución</a>
         <a href="#modulos">Módulos</a>
@@ -183,11 +182,12 @@ const softwareSchema = {
         <div class="hero-shade" aria-hidden="true"></div>
         <div class="hero-content">
           <p class="eyebrow light">Control para comercios que quieren crecer</p>
-          <h1>Criptón</h1>
+          <img class="hero-brand" src="/brand/v1.0/cripton_vertical_reverso_v1.0.svg" alt="Cripton" width="1082" height="1048" />
+          <h1>Software para una operación más ágil.</h1>
           <p class="hero-lead">Vende con agilidad, mantén tu caja organizada y conoce tu inventario desde una sola plataforma.</p>
           <div class="hero-actions" aria-label="Acciones principales">
             <a class="button primary light-button" href="/registro?plan=professional">Empezar ahora</a>
-            <a class="text-link light-link" href={whatsappUrl("Hola, quiero conocer Criptón para mi negocio.")} target="_blank" rel="noreferrer">Hablar por WhatsApp <span aria-hidden="true">→</span></a>
+            <a class="text-link light-link" href={whatsappUrl("Hola, quiero conocer Cripton para mi negocio.")} target="_blank" rel="noreferrer">Hablar por WhatsApp <span aria-hidden="true">→</span></a>
           </div>
           <p class="hero-note">Planes desde <strong>$49.900 al mes</strong> · Implementación acompañada</p>
         </div>
@@ -218,7 +218,7 @@ const softwareSchema = {
           <p>Consulta el ticket actual, las alertas de inventario y el avance de ventas desde una experiencia consistente.</p>
           <ul class="check-list"><li>Información útil en el momento de la venta</li><li>Alertas visibles para actuar a tiempo</li><li>Indicadores fáciles de leer</li></ul>
         </div>
-        <div class="product-visual" aria-label="Vista ilustrativa del tablero de Criptón">
+        <div class="product-visual" aria-label="Vista ilustrativa del tablero de Cripton">
           <div class="screen-top"><span aria-hidden="true"></span><strong>Venta en mostrador</strong><em>Sesión activa</em></div>
           <div class="pos-grid">
             <section class="ticket-panel"><h3>Ticket actual</h3><div class="line-item"><span>Café premium</span><strong>$18.000</strong></div><div class="line-item"><span>Pan artesanal</span><strong>$7.500</strong></div><div class="line-item"><span>Bebida fría</span><strong>$6.900</strong></div><div class="total-row"><span>Total</span><strong>$32.400</strong></div><button type="button" tabindex="-1">Cobrar venta</button></section>
@@ -282,7 +282,7 @@ const softwareSchema = {
       </section>
     </main>
 
-    <footer><a class="brand" href="#inicio"><span class="brand-mark" aria-hidden="true">C</span><span>Criptón</span></a><p>Ventas, caja e inventario para comercios que quieren crecer con control.</p><a href="#contacto">Agendar demostración</a><span>© {new Date().getFullYear()} Criptón</span></footer>
+    <footer><Brand className="footer-brand" href="#inicio" tone="reverse" kind="nombre" /><p>Ventas, caja e inventario para comercios que quieren crecer con control.</p><a href="#contacto">Agendar demostración</a><span>© {new Date().getFullYear()} Cripton</span></footer>
 
     <script>
       const menu = document.querySelector<HTMLDetailsElement>(".mobile-menu");
@@ -295,7 +295,7 @@ const softwareSchema = {
         const data = new FormData(form);
         const number = form.dataset.whatsappNumber ?? "";
         const message = [
-          "Hola, quiero agendar una demostración de Criptón.",
+          "Hola, quiero agendar una demostración de Cripton.",
           `Nombre: ${data.get("name")}`,
           `Teléfono: ${data.get("phone")}`,
           `Plan de interés: ${data.get("plan")}`,
@@ -314,6 +314,27 @@ const softwareSchema = {
   @media(max-width:980px){.site-header{grid-template-columns:1fr auto auto;gap:18px}.desktop-nav{display:none}.mobile-menu{display:block;position:relative;order:3}.mobile-menu summary{display:grid;width:42px;height:42px;place-content:center;gap:5px;padding:0;border:1px solid var(--line);border-radius:5px;list-style:none}.mobile-menu summary span{display:block;width:19px;height:2px;background:var(--ink)}.mobile-menu nav{position:absolute;top:50px;right:0;display:grid;min-width:220px;border:1px solid var(--line);border-radius:6px;background:var(--white);box-shadow:var(--shadow);padding:8px}.mobile-menu nav a{padding:11px 12px}.hero{min-height:760px}.hero-shade{background:linear-gradient(90deg,rgba(13,22,20,.92),rgba(13,22,20,.58))}.product-section,.contact-section{grid-template-columns:1fr}.product-copy{max-width:680px}.plans-grid{grid-template-columns:1fr}.plan-card{max-width:650px;width:100%;margin:auto}.footer{grid-template-columns:1fr}.split-heading{grid-template-columns:1fr;gap:8px}footer{grid-template-columns:1fr 1fr}footer p{grid-column:1/-1;grid-row:2}}
   @media(max-width:680px){html{scroll-padding-top:64px}.site-header{min-height:64px;padding:0 16px}.brand-mark{width:32px;height:32px}.brand>span:last-child{font-size:.93rem}.header-cta{display:none}.hero{min-height:720px;align-items:flex-end}.hero-image{object-position:63% center}.hero-shade{background:linear-gradient(0deg,rgba(11,23,20,.96) 0%,rgba(11,23,20,.8) 50%,rgba(11,23,20,.2) 100%)}.hero-content{width:100%;padding:74px 18px 54px}h1{font-size:clamp(3.8rem,18vw,5.2rem)}h2{font-size:clamp(2.25rem,12vw,3.35rem)}.hero-lead{font-size:1.12rem}.hero-actions{align-items:stretch;flex-direction:column}.hero-actions .button{width:100%}.light-link{text-align:center}.proof-strip{grid-template-columns:1fr;padding:0 18px}.proof-strip p{border-right:0;border-left:0;border-bottom:1px solid var(--line);padding:18px 0}.proof-strip p:last-child{border-right:0;border-bottom:0}.section{padding:68px 18px}.outcomes,.module-list,.steps{grid-template-columns:1fr}.outcomes article,.outcomes article+article{border-right:0;border-bottom:1px solid var(--line);padding:24px 0}.product-section{padding-inline:14px}.product-copy{padding-inline:4px}.product-visual{transform:none}.pos-grid{grid-template-columns:1fr}.ticket-panel{grid-row:auto}.screen-top{font-size:.78rem}.module-list article,.module-list article:nth-child(even){grid-template-columns:34px 1fr;border-right:0;padding:24px 0}.steps{gap:26px}.steps li,.steps li+li{border:0;padding:0}.plan-card{padding:26px 22px}.comparison-section{padding-inline:0}.comparison-section .section-heading{padding-inline:18px}.comparison-scroll{border-right:0;border-left:0;border-radius:0}.cta-band{align-items:stretch;flex-direction:column;padding:58px 18px}.cta-band .button{width:100%}.contact-copy dl div{grid-template-columns:1fr;gap:3px}form{grid-template-columns:1fr;padding:22px 18px}form label,form input,form select{grid-column:1/-1}footer{grid-template-columns:1fr;gap:16px;padding:28px 18px}footer p{grid-row:auto}}
   @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.button,.text-link span,summary span{transition:none}}
+
+  :root{--ink:#002552;--muted:#526675;--paper:#f4f7fa;--line:#d3dde6;--green:#002552;--green-2:#006b80;--mint:#eaf4f8;--coral:#006b80;--gold:#00def8;--shadow:0 22px 55px rgba(0,37,82,.14)}
+  html{scroll-padding-top:108px}
+  .site-header{min-height:88px;border-bottom-color:#d3dde6;background:rgba(255,255,255,.96)}
+  .site-brand{--brand-horizontal-width:300px;--brand-name-width:136px}
+  .site-header{grid-template-columns:auto minmax(0,1fr) auto;column-gap:clamp(22px,3vw,48px)}
+  .site-brand{justify-self:start;flex:none}
+  .desktop-nav{justify-content:center;white-space:nowrap}
+  .header-cta{white-space:nowrap}
+  .hero{background:#002552}.hero-shade{background:linear-gradient(90deg,rgba(0,37,82,.96) 0%,rgba(0,37,82,.8) 40%,rgba(0,37,82,.18) 75%,rgba(0,37,82,.08) 100%)}
+  .hero-brand{display:block;width:min(260px,52vw);height:auto;margin:0 0 26px}
+  h1,h2,.price strong,.annual-price strong,.plan-group-heading h3{font-family:Inter,"Aptos","Segoe UI",Arial,sans-serif;font-weight:700;letter-spacing:0}
+  .hero h1{max-width:680px;font-size:clamp(2.9rem,5.4vw,5.5rem);line-height:.98}
+  .eyebrow.light{color:var(--gold)}
+  .light-button{border-color:var(--gold);background:var(--gold);color:var(--ink)}
+  .product-visual{background:#001f45;box-shadow:0 32px 70px rgba(0,20,55,.4)}.pos-grid{background:#00396f}.ticket-panel button{background:var(--green-2)}
+  .cta-band{background:#006b80}.cta-band p:last-child{color:#d8f6fb}.check-list li::before{color:var(--gold)}.screen-top>span,.bars span{background-color:var(--gold)}
+  .footer-brand{--brand-name-width:148px}
+  @media(max-width:1120px){.site-header{grid-template-columns:minmax(0,1fr) auto auto;column-gap:18px}.desktop-nav{display:none}.mobile-menu{display:block;position:relative;order:3}.mobile-menu summary{display:grid;width:42px;height:42px;place-content:center;gap:5px;padding:0;border:1px solid var(--line);border-radius:5px;list-style:none}.mobile-menu summary span{display:block;width:19px;height:2px;background:var(--ink)}.mobile-menu nav{position:absolute;top:50px;right:0;display:grid;min-width:220px;border:1px solid var(--line);border-radius:6px;background:var(--white);box-shadow:var(--shadow);padding:8px}.mobile-menu nav a{padding:11px 12px}}
+  @media(max-width:980px){html{scroll-padding-top:96px}.site-header{min-height:76px}.hero-shade{background:linear-gradient(90deg,rgba(0,37,82,.92),rgba(0,37,82,.58))}}
+  @media(max-width:680px){html{scroll-padding-top:80px}.site-header{min-height:64px}.hero-brand{width:220px;margin-bottom:20px}.hero-shade{background:linear-gradient(0deg,rgba(0,37,82,.96) 0%,rgba(0,37,82,.8) 50%,rgba(0,37,82,.2) 100%)}}
 </style>
 
 <style>

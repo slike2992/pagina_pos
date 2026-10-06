@@ -1,0 +1,48 @@
+---
+interface Props {
+  href?: string;
+  tone?: "color" | "reverse";
+  kind?: "horizontal" | "nombre";
+  mobileNameOnly?: boolean;
+  className?: string;
+  label?: string;
+}
+
+const {
+  href = "/",
+  tone = "color",
+  kind = "horizontal",
+  mobileNameOnly = false,
+  className = "",
+  label = "Cripton, inicio",
+} = Astro.props;
+
+const toneFile = tone === "reverse" ? "reverso" : tone;
+const asset = (composition: "horizontal" | "nombre") =>
+  `/brand/v1.0/cripton_${composition}_${toneFile}_v1.0.svg`;
+---
+
+<a class:list={["brand", className, { "brand--mobile-name": mobileNameOnly }]} href={href} aria-label={label}>
+  <img
+    class:list={[`brand__${kind}`, { "brand__horizontal": kind === "horizontal" }]}
+    src={asset(kind)}
+    alt=""
+    width={kind === "horizontal" ? 1517 : 1082}
+    height={kind === "horizontal" ? 409 : 307}
+  />
+  {mobileNameOnly && (
+    <img class="brand__name" src={asset("nombre")} alt="" width="1082" height="307" />
+  )}
+</a>
+
+<style>
+  .brand { display: inline-flex; align-items: center; max-width: 100%; text-decoration: none; }
+  .brand img { display: block; max-width: 100%; height: auto; object-fit: contain; }
+  .brand__horizontal { width: var(--brand-horizontal-width, 300px); }
+  .brand__nombre { width: var(--brand-name-width, 160px); }
+  .brand .brand__name { display: none; width: var(--brand-name-width, 160px); }
+  @media (max-width: 680px) {
+    .brand--mobile-name .brand__horizontal { display: none; }
+    .brand--mobile-name .brand__name { display: block; }
+  }
+</style>

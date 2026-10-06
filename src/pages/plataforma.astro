@@ -1,4 +1,6 @@
 ---
+import Brand from "../components/Brand.astro";
+
 const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
 ---
 <!doctype html>
@@ -7,12 +9,16 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="description" content="Administración de la plataforma Criptón." />
-    <title>Plataforma | Criptón</title>
+    <meta name="description" content="Administración de la plataforma Cripton." />
+    <meta name="theme-color" content="#002552" />
+    <link rel="icon" type="image/svg+xml" href="/brand/v1.0/favicon.svg" />
+    <link rel="icon" href="/brand/v1.0/favicon.ico" sizes="any" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <title>Plataforma | Cripton</title>
   </head>
   <body>
     <header class="topbar">
-      <a class="brand" href="/"><span aria-hidden="true">C</span><strong>Criptón</strong></a>
+      <Brand className="platform-brand" kind="nombre" />
       <div class="operator" id="operator" hidden>
         <span data-field="operator-name"></span>
         <button class="quiet-button" data-action="logout" type="button">Cerrar sesión</button>
@@ -490,4 +496,6 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
   dialog{width:min(760px,calc(100% - 28px));max-height:calc(100vh - 40px);overflow:auto;border:1px solid var(--line);border-radius:7px;padding:0;color:var(--ink)}dialog::backdrop{background:rgba(10,28,24,.55)}.dialog-heading{display:flex;align-items:flex-start;justify-content:space-between;border-bottom:1px solid var(--line);padding:24px}.dialog-heading h2{margin:0;font-family:Georgia,"Times New Roman",serif;font-size:2rem;font-weight:500;letter-spacing:0}.dialog-heading p:last-child{margin:3px 0 0;color:var(--muted)}.close-button{width:40px;height:40px;font-size:1.7rem}.detail-grid{display:grid;grid-template-columns:1fr 1fr;margin:0;padding:8px 24px}.detail-grid div{border-bottom:1px solid var(--line);padding:14px 8px 14px 0}.detail-grid dt{color:var(--muted);font-size:.75rem}.detail-grid dd{margin:3px 0 0;font-weight:750;overflow-wrap:anywhere}.steps-section{padding:16px 24px 24px}.steps-section h3,.lifecycle-form h3{font-size:.95rem}.steps-section ol{display:grid;gap:0;margin:0;padding:0;list-style:none}.steps-section li{display:flex;justify-content:space-between;gap:16px;border-top:1px solid var(--line);padding:10px 0;font-size:.85rem}.lifecycle-form{display:grid;gap:14px;border-top:1px solid var(--line);padding:22px 24px}.lifecycle-form h3,.lifecycle-form p{margin:0}.lifecycle-form p{margin-top:4px;color:var(--muted);font-size:.84rem}.lifecycle-form>label{display:grid;gap:6px;font-size:.82rem;font-weight:800}.lifecycle-form textarea{resize:vertical;min-height:82px;border:1px solid #b9c6bf;border-radius:5px;padding:9px 11px;color:var(--ink);font:inherit}.lifecycle-form .confirmation{display:flex;align-items:flex-start;font-weight:600}.confirmation input{width:18px;height:18px;margin:1px 0 0}.danger-button{border-color:var(--coral);background:var(--coral)}.dialog-status{padding:0 24px 18px}
   @media(max-width:820px){.access{grid-template-columns:1fr}.access-heading{min-height:240px;padding:42px 24px}.access h1{font-size:3rem}.workspace-heading{align-items:flex-start;flex-direction:column}.toolbar{align-items:stretch;flex-direction:column;padding:16px 0}.toolbar .table-status{text-align:left}.toolbar select,.toolbar .secondary-button{width:100%}}
   @media(max-width:540px){.topbar{padding:0 14px}.brand strong{font-size:.88rem}.operator>span{display:none}.access-tool{padding:20px}.detail-grid{grid-template-columns:1fr}.workspace{padding-inline:14px}}
+  :root{--ink:#002552;--muted:#526675;--paper:#f4f7fa;--line:#d3dde6;--green:#002552;--green-2:#006b80;--coral:#a33d28;--gold:#00def8}
+  .topbar{min-height:68px}.platform-brand{--brand-name-width:160px}.access-heading{background:#002552}.access-heading>p:last-child{color:#d7e8f1}.access h1,.dialog-heading h2{font-family:Inter,"Aptos","Segoe UI",Arial,sans-serif;font-weight:700}.segment.active{border-bottom-color:#006b80}.badge{background:#eaf4f8}.badge[data-state="provisioning"],.badge[data-state="pending"]{background:#eaf4f8;border-color:#006b80}.secret-block{border-left-color:#00def8}dialog::backdrop{background:rgba(0,37,82,.55)}
 </style>
