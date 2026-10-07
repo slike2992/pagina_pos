@@ -30,6 +30,7 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
         if (!response.ok) throw body;
         form.reset();
         const passwordSetupUrl = typeof body?.passwordSetupUrl === "string" ? body.passwordSetupUrl : "";
+        const localDemoAccountFound = body?.localDemoAccountFound === false ? false : null;
         if (passwordSetupUrl) {
           const url = new URL(passwordSetupUrl);
           if (url.origin !== location.origin || url.pathname !== "/registro/configurar-clave") {
@@ -40,6 +41,12 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
           link.href = url.href;
           link.textContent = "definir nueva contraseña";
           status.append(link, ". El enlace vence en 30 minutos y se puede usar una sola vez.");
+        } else if (localDemoAccountFound === false) {
+          status.replaceChildren("No encontramos una cuenta activa en este entorno de pruebas. ");
+          const link = document.createElement("a");
+          link.href = "/registro";
+          link.textContent = "Crear cuenta de prueba";
+          status.append(link, ".");
         } else {
           status.textContent = "Si existe una cuenta activa con ese correo, recibirás un enlace para restablecer tu contraseña.";
         }
