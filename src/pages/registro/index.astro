@@ -25,10 +25,22 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
     const setStatus = (message: string, state = "") => { if (status) { status.textContent = message; status.dataset.state = state; } };
     const errorMessage = (value: unknown) => {
       if (typeof value === "object" && value && "error" in value) {
-        const error = (value as { error?: { message?: string } }).error;
+        const error = (value as {
+          error?: { message?: string; issues?: Array<{ path?: string; message?: string }> };
+        }).error;
+        const issues = error?.issues
+          ?.map((issue) => issue.message ? `${issue.path ? `${issue.path}: ` : ""}${issue.message}` : "")
+          .filter(Boolean);
+        if (issues?.length) return issues.join(" ");
         if (error?.message) return error.message;
       }
       return "No fue posible completar la solicitud. Intenta de nuevo.";
+    };
+
+    const resetInvalidAttempt = () => {
+      sessionStorage.removeItem("signup-draft");
+      sessionStorage.removeItem("signup-accepted-at");
+      sessionStorage.removeItem("signup-key");
     };
     const showLocalResume = (verificationUrl: string) => {
       const url = new URL(verificationUrl);
@@ -91,7 +103,13 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
       const legalAcceptance = { termsVersion: terms.version, privacyVersion: privacy.version };
       const fingerprint = JSON.stringify({ ...draft, legalAcceptance });
       const previous = sessionStorage.getItem("signup-draft");
-      if (previous !== fingerprint || !sessionStorage.getItem("signup-accepted-at")) {
+      const signupKey = sessionStorage.getItem("signup-key");
+      if (
+        previous !== fingerprint
+        || !sessionStorage.getItem("signup-accepted-at")
+        || !signupKey
+        || signupKey.length < 16
+      ) {
         sessionStorage.setItem("signup-draft", fingerprint);
         sessionStorage.setItem("signup-accepted-at", new Date().toISOString());
         sessionStorage.setItem("signup-key", crypto.randomUUID());
@@ -140,6 +158,10 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
         form.append(result);
       } catch (error) {
         submit!.disabled = false;
+        if (
+          typeof error === "object" && error && "error" in error
+          && (error as { error?: { code?: string } }).error?.code === "invalid_request"
+        ) resetInvalidAttempt();
         setStatus(errorMessage(error), "error");
       }
     });
