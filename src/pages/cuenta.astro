@@ -83,6 +83,8 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
   </div>
 
   <script>
+    import { createIdempotencyKey } from "../scripts/client-idempotency";
+
     type Tenant = { tenantId: string; tenantKey: string; name: string; status: string; role: string };
     type LoginResult = { accessToken: string; expiresAt: string; principal: { displayName: string }; tenant: Tenant };
     type Subscription = { status: string; plan: { code: string; name: string }; price: { amountMinor: number; currency: string; billingInterval: string }; currentPeriodEnd: string | null; cancelAtPeriodEnd: boolean };
@@ -300,7 +302,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
             headers: {
               authorization: `Bearer ${accessToken}`,
               "content-type": "application/json",
-              "idempotency-key": crypto.randomUUID()
+              "idempotency-key": createIdempotencyKey()
             },
             body: JSON.stringify({
               type: source.type,
@@ -331,7 +333,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       });
     });
     const continueToUpgradeCheckout = async (change: PlanChange) => {
-      if (!checkoutIdempotencyKey) checkoutIdempotencyKey = crypto.randomUUID();
+      if (!checkoutIdempotencyKey) checkoutIdempotencyKey = createIdempotencyKey();
       const response = await fetch(`${apiUrl}/v1/me/billing/checkout-sessions`, {
         method: "POST",
         headers: {
@@ -373,7 +375,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     confirmPlanChange.addEventListener("click", async (event) => {
       event.preventDefault();
       confirmPlanChange.disabled = true;
-      if (!changeIdempotencyKey) changeIdempotencyKey = crypto.randomUUID();
+      if (!changeIdempotencyKey) changeIdempotencyKey = createIdempotencyKey();
       try {
         const response = await fetch(`${apiUrl}/v1/me/subscription/change`, {
           method: "POST",

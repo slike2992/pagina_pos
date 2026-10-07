@@ -14,6 +14,8 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
     <p class="status" role="status" aria-live="polite">Consultando condiciones vigentes…</p>
   </form>
   <script>
+    import { createIdempotencyKey } from "../../scripts/client-idempotency";
+
     type LegalDocument = { type: "terms" | "privacy"; version: string; contentUrl: string };
     const form = document.querySelector<HTMLFormElement>("#signup-form");
     const status = form?.querySelector<HTMLElement>(".status");
@@ -42,6 +44,7 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
       sessionStorage.removeItem("signup-accepted-at");
       sessionStorage.removeItem("signup-key");
     };
+
     const showLocalResume = (verificationUrl: string) => {
       const url = new URL(verificationUrl);
       if (url.origin !== location.origin || url.pathname !== "/registro/verificar") return;
@@ -112,7 +115,7 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
       ) {
         sessionStorage.setItem("signup-draft", fingerprint);
         sessionStorage.setItem("signup-accepted-at", new Date().toISOString());
-        sessionStorage.setItem("signup-key", crypto.randomUUID());
+        sessionStorage.setItem("signup-key", createIdempotencyKey());
       }
       const payload = {
         ...draft,

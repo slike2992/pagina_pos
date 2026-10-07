@@ -8,6 +8,8 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
     <div class="actions" hidden><a class="button" id="checkout-link" href="#">Continuar al pago seguro</a></div>
   </div>
   <script>
+    import { createIdempotencyKey } from "../../scripts/client-idempotency";
+
     const root = document.querySelector<HTMLElement>("#verification")!;
     const status = root.querySelector<HTMLElement>(".status")!;
     const actions = root.querySelector<HTMLElement>(".actions")!;
@@ -42,7 +44,7 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
         }
         status.textContent = "Correo confirmado. Estamos preparando tu orden…";
         const keyName = `checkout-key:${signupIntentId}`;
-        if (!sessionStorage.getItem(keyName)) sessionStorage.setItem(keyName, crypto.randomUUID());
+        if (!sessionStorage.getItem(keyName)) sessionStorage.setItem(keyName, createIdempotencyKey());
         const checkout = await fetch(`${apiUrl}/v1/checkout-sessions`, { method: "POST", headers: { "content-type": "application/json", "idempotency-key": sessionStorage.getItem(keyName)! }, body: JSON.stringify({ signupIntentId }) });
         const checkoutBody = await checkout.json();
         if (!checkout.ok) throw checkoutBody;
