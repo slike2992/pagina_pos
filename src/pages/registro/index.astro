@@ -30,6 +30,33 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
       }
       return "No fue posible completar la solicitud. Intenta de nuevo.";
     };
+    const showLocalResume = (verificationUrl: string) => {
+      const url = new URL(verificationUrl);
+      if (url.origin !== location.origin || url.pathname !== "/registro/verificar") return;
+      const existing = form?.querySelector<HTMLElement>("[data-local-resume]");
+      if (existing) existing.remove();
+      const resume = document.createElement("p");
+      resume.className = "status";
+      resume.dataset.state = "success";
+      resume.dataset.localResume = "true";
+      resume.append("Tienes un registro local pendiente. ");
+      const link = document.createElement("a");
+      link.href = url.href;
+      link.textContent = "Continuar verificación";
+      resume.append(link, ".");
+      status?.after(resume);
+    };
+    const restoreLocalSignup = async () => {
+      const signupIntentId = sessionStorage.getItem("signup-intent-id");
+      if (!signupIntentId) return;
+      try {
+        const response = await fetch(`${apiUrl}/v1/development/signup-intents/${encodeURIComponent(signupIntentId)}/verification`);
+        const body = await response.json();
+        if (response.ok && typeof body?.verificationUrl === "string") showLocalResume(body.verificationUrl);
+      } catch {
+        // The standard registration form remains usable if no local continuation is available.
+      }
+    };
     const selected = new URLSearchParams(location.search).get("plan");
     if (plan && ["basic", "professional", "enterprise", "basic-fe", "professional-fe", "enterprise-fe"].includes(selected ?? "")) plan.value = selected!;
     fetch(`${apiUrl}/v1/public/legal-documents`)
@@ -49,6 +76,7 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
         setStatus(`Condiciones vigentes: ${terms.version}.`);
       })
       .catch(() => setStatus("No pudimos consultar las condiciones vigentes. Recarga la página.", "error"));
+    void restoreLocalSignup();
     form?.addEventListener("submit", async (event) => {
       event.preventDefault();
       if (!form.reportValidity() || documents.length < 2) return;
