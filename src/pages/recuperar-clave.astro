@@ -1,0 +1,56 @@
+---
+import FlowLayout from "../layouts/FlowLayout.astro";
+const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
+---
+<FlowLayout title="Recuperar contraseña" eyebrow="Acceso seguro" heading="Recupera tu acceso" lead="Te enviaremos un enlace para definir una nueva contraseña.">
+  <form class="flow-form" id="password-reset-form" data-api-url={apiUrl}>
+    <div class="field full"><label for="email">Correo</label><input id="email" name="email" type="email" autocomplete="email" maxlength="320" required /></div>
+    <div class="actions"><button class="button" type="submit">Enviar enlace</button><a class="button secondary" href="/cuenta">Volver a Mi cuenta</a></div>
+    <p class="status" role="status" aria-live="polite"></p>
+  </form>
+  <script>
+    const form = document.querySelector<HTMLFormElement>("#password-reset-form")!;
+    const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+    const status = form.querySelector<HTMLElement>(".status")!;
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      button.disabled = true;
+      status.textContent = "Enviando solicitud…";
+      status.dataset.state = "";
+      try {
+        const apiUrl = form.dataset.apiUrl?.replace(/\/$/, "") ?? "";
+        const email = String(new FormData(form).get("email") ?? "");
+        const response = await fetch(`${apiUrl}/v1/password-reset/request`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ email })
+        });
+        const body = await response.json();
+        if (!response.ok) throw body;
+        form.reset();
+        const passwordSetupUrl = typeof body?.passwordSetupUrl === "string" ? body.passwordSetupUrl : "";
+        if (passwordSetupUrl) {
+          const url = new URL(passwordSetupUrl);
+          if (url.origin !== location.origin || url.pathname !== "/registro/configurar-clave") {
+            throw new Error("El enlace temporal no pertenece al portal.");
+          }
+          status.replaceChildren("Entorno de pruebas: ");
+          const link = document.createElement("a");
+          link.href = url.href;
+          link.textContent = "definir nueva contraseña";
+          status.append(link, ". El enlace vence en 30 minutos y se puede usar una sola vez.");
+        } else {
+          status.textContent = "Si existe una cuenta activa con ese correo, recibirás un enlace para restablecer tu contraseña.";
+        }
+        status.dataset.state = "success";
+      } catch (error) {
+        button.disabled = false;
+        status.textContent = typeof error === "object" && error && "error" in error
+          ? (error as { error?: { message?: string } }).error?.message ?? "No fue posible solicitar el enlace."
+          : "No fue posible solicitar el enlace.";
+        status.dataset.state = "error";
+      }
+    });
+  </script>
+</FlowLayout>

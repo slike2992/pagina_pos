@@ -10,6 +10,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       <div class="field full"><label for="password">Contraseña</label><input id="password" name="password" type="password" autocomplete="current-password" maxlength="72" required /></div>
       <div class="field full" id="tenant-field" hidden><label for="tenant">Empresa</label><select id="tenant" name="tenantId"></select></div>
       <button class="button" type="submit">Ingresar</button>
+      <a class="password-recovery-link" href="/recuperar-clave">¿Olvidaste tu contraseña?</a>
       <p class="status" role="status" aria-live="polite"></p>
     </form>
 
@@ -515,6 +516,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
 <style>
   .account{width:min(680px,100%)}
   .login-form{display:grid;gap:12px}
+  .password-recovery-link{justify-self:start;color:var(--green);font-size:.9rem;font-weight:750;text-decoration-thickness:1px;text-underline-offset:3px}
   .account-panel{display:grid;gap:22px}
   .account-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;border-bottom:1px solid var(--line);padding-bottom:18px}
   .account-heading h2{margin:0;font-family:Georgia,"Times New Roman",serif;font-size:2rem;font-weight:500;letter-spacing:0}

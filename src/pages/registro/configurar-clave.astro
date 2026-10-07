@@ -2,7 +2,7 @@
 import FlowLayout from "../../layouts/FlowLayout.astro";
 const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
 ---
-<FlowLayout title="Configurar contraseña" eyebrow="Empresa lista" heading="Crea tu acceso" lead="Define la contraseña inicial del propietario para entrar al POS.">
+<FlowLayout title="Configurar contraseña" eyebrow="Acceso seguro" heading="Define tu contraseña" lead="Crea una contraseña segura para ingresar a tu cuenta y al POS.">
   <form class="flow-form" id="password-form" data-api-url={apiUrl}>
     <div class="field full"><label for="password">Contraseña</label><input id="password" name="password" type="password" autocomplete="new-password" minlength="12" maxlength="72" required aria-describedby="password-help" /></div>
     <div class="field full"><label for="confirmation">Confirmar contraseña</label><input id="confirmation" name="confirmation" type="password" autocomplete="new-password" minlength="12" maxlength="72" required /></div>
@@ -31,8 +31,8 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
         form.replaceChildren();
         const result = document.createElement("div");
         result.className = "result";
-        const label = document.createElement("p"); label.className = "eyebrow"; label.textContent = "Acceso creado";
-        const heading = document.createElement("h2"); heading.textContent = "Tu POS está listo";
+        const label = document.createElement("p"); label.className = "eyebrow"; label.textContent = "Acceso actualizado";
+        const heading = document.createElement("h2"); heading.textContent = "Tu contraseña está lista";
         const details = document.createElement("dl");
         for (const [name, value] of [["Empresa", body.tenantKey], ["Usuario", body.username]]) {
           const row = document.createElement("div"); const term = document.createElement("dt"); const description = document.createElement("dd");
