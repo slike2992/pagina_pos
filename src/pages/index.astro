@@ -1,5 +1,5 @@
 ---
-import { Image } from "astro:assets";
+import { Picture } from "astro:assets";
 import heroImage from "../assets/hero-comercio-pos.png";
 import "../styles/base.css";
 import "../styles/landing.css";
@@ -196,12 +196,12 @@ const siteSchema = {
 
     <main id="contenido" tabindex="-1">
       <section class="hero" id="inicio">
-        <Image class="hero-image" src={heroImage} alt="Comerciante usando un terminal de punto de venta en su tienda" widths={[768, 1280, 1920]} sizes="100vw" format="webp" loading="eager" fetchpriority="high" />
+        <Picture class="hero-image" src={heroImage} alt="Comerciante usando un terminal de punto de venta en su tienda" widths={[768, 1280, 1920]} sizes="100vw" formats={["avif", "webp"]} fallbackFormat="webp" loading="eager" fetchpriority="high" />
         <div class="hero-shade" aria-hidden="true"></div>
         <div class="hero-content">
           <p class="eyebrow light">Control para comercios que quieren crecer</p>
           <h1>Software POS para comercios en Colombia.</h1>
-          <p class="hero-lead">Vende con agilidad, mantén tu caja organizada y conoce tu inventario desde una sola plataforma.</p>
+          <p class="hero-lead">Para tiendas, papelerías y comercios especializados: vende con agilidad, organiza tu caja y conoce tu inventario en una sola plataforma.</p>
           <div class="hero-actions" aria-label="Acciones principales">
             <a class="button primary light-button" href="#planes" data-track="plans" data-track-location="hero">Ver planes para mi negocio</a>
             <a class="text-link light-link" href="#contacto" data-track="demo" data-track-location="hero">Solicitar una demostración <span aria-hidden="true">→</span></a>
@@ -247,7 +247,7 @@ const siteSchema = {
 
       <section class="modules-section section" id="modulos">
         <div class="section-heading"><p class="eyebrow">Capacidades</p><h2>Herramientas para la operación diaria</h2><p>Empieza por lo esencial y amplía el control a medida que tu negocio lo necesite.</p></div>
-        <div class="module-list">{modules.map((module, index) => <article><span>{module.number}</span><div><h3>{module.title}</h3><p>{module.text}</p><a href={moduleLinks[index]}>Conocer el flujo <span aria-hidden="true">→</span></a></div></article>)}</div>
+        <div class="module-list">{modules.map((module, index) => <article><span>{module.number}</span><div><h3>{module.title}</h3><p>{module.text}</p><a href={moduleLinks[index]} aria-label={`Conocer el flujo: ${module.title.toLowerCase()}`}>Conocer el flujo <span aria-hidden="true">→</span></a></div></article>)}</div>
       </section>
 
       <section class="steps-section section">
@@ -259,11 +259,11 @@ const siteSchema = {
         <div class="section-heading centered"><p class="eyebrow">Planes</p><h2>Elige el nivel de control que necesitas</h2><p>Dos modalidades independientes para que contrates solo lo que tu operación necesita. Valores en pesos colombianos.</p></div>
         <div class="plan-group" aria-labelledby="plans-without-fe-title">
           <div class="plan-group-heading"><div><p class="eyebrow">Operación POS</p><h3 id="plans-without-fe-title">Planes sin facturación electrónica</h3></div><p>Ideales si ya tienes un proveedor de facturación o todavía no necesitas emitir documentos electrónicos.</p></div>
-          <div class="plans-grid">{planCatalog.map((plan) => <article class:list={["plan-card", { highlighted: plan.highlighted }]}>{plan.highlighted && <span class="plan-badge">Recomendado</span>}<p class="plan-name">Plan {plan.name}</p><div class="price"><strong>{plan.monthly}</strong><span>COP / mes</span></div><div class="annual-price"><strong>{plan.annual}</strong><span>COP / año</span><em>Ahorra {planSaving(plan)}</em></div><p>{plan.summary}</p><dl class="plan-limits"><div><dt>Usuarios</dt><dd>{plan.users}</dd></div><div><dt>Sucursales</dt><dd>{plan.branches}</dd></div><div><dt>Cajas</dt><dd>{plan.registers}</dd></div><div><dt>Inventario</dt><dd>{plan.items}</dd></div></dl><ul class="check-list">{plan.features.map((feature) => <li>{feature}</li>)}</ul><a class:list={["button plan-button", { primary: plan.highlighted }]} href={`/registro?plan=${plan.code}`} data-track="signup" data-track-location="plan" data-track-plan={plan.code}>{plan.cta}</a></article>)}</div>
+          <div class="plans-grid">{planCatalog.map((plan) => <article class:list={["plan-card", { highlighted: plan.highlighted }]}>{plan.highlighted && <span class="plan-badge">Recomendado</span>}<h4 class="plan-name">Plan {plan.name}</h4><div class="price"><strong>{plan.monthly}</strong><span>COP / mes</span></div><div class="annual-price"><strong>{plan.annual}</strong><span>COP / año</span><em>Ahorra {planSaving(plan)}</em></div><p>{plan.summary}</p><dl class="plan-limits"><div><dt>Usuarios</dt><dd>{plan.users}</dd></div><div><dt>Sucursales</dt><dd>{plan.branches}</dd></div><div><dt>Cajas</dt><dd>{plan.registers}</dd></div><div><dt>Inventario</dt><dd>{plan.items}</dd></div></dl><ul class="check-list">{plan.features.map((feature) => <li>{feature}</li>)}</ul><a class:list={["button plan-button", { primary: plan.highlighted }]} href={`/registro?plan=${plan.code}`} data-track="signup" data-track-location="plan" data-track-plan={plan.code}>{plan.cta}</a></article>)}</div>
         </div>
         <div class="plan-group plan-group-fe" aria-labelledby="plans-with-fe-title">
           <div class="plan-group-heading"><div><p class="eyebrow fe-eyebrow">Facturación electrónica</p><h3 id="plans-with-fe-title">Planes con facturación electrónica</h3></div><p>POS y facturación electrónica con límites claros. Emitir requiere preparar y habilitar el emisor, su numeración y el ambiente correspondiente.</p></div>
-          <div class="plans-grid">{electronicInvoicingPlans.map((plan) => <article class:list={["plan-card", "fe-card", { highlighted: plan.highlighted }]}>{plan.highlighted && <span class="plan-badge">Recomendado</span>}<p class="plan-name">Plan {plan.name}</p><div class="price"><strong>{plan.monthly}</strong><span>COP / mes</span></div><div class="annual-price"><strong>{plan.annual}</strong><span>COP / año</span><em>Ahorra {planSaving(plan)}</em></div><p>{plan.summary}</p><dl class="plan-limits"><div><dt>Usuarios</dt><dd>{plan.users}</dd></div><div><dt>Sucursales</dt><dd>{plan.branches}</dd></div><div><dt>Cajas</dt><dd>{plan.registers}</dd></div><div><dt>Inventario</dt><dd>{plan.items}</dd></div></dl><ul class="check-list"><li>Facturación electrónica incluida</li><li>{plan.documents}</li>{plan.features.map((feature) => <li>{feature}</li>)}</ul><a class:list={["button plan-button", { primary: plan.highlighted }]} href={`/registro?plan=${plan.code}`} data-track="signup" data-track-location="plan" data-track-plan={plan.code}>{plan.cta}</a></article>)}</div>
+          <div class="plans-grid">{electronicInvoicingPlans.map((plan) => <article class:list={["plan-card", "fe-card", { highlighted: plan.highlighted }]}>{plan.highlighted && <span class="plan-badge">Recomendado</span>}<h4 class="plan-name">Plan {plan.name}</h4><div class="price"><strong>{plan.monthly}</strong><span>COP / mes</span></div><div class="annual-price"><strong>{plan.annual}</strong><span>COP / año</span><em>Ahorra {planSaving(plan)}</em></div><p>{plan.summary}</p><dl class="plan-limits"><div><dt>Usuarios</dt><dd>{plan.users}</dd></div><div><dt>Sucursales</dt><dd>{plan.branches}</dd></div><div><dt>Cajas</dt><dd>{plan.registers}</dd></div><div><dt>Inventario</dt><dd>{plan.items}</dd></div></dl><ul class="check-list"><li>Facturación electrónica incluida</li><li>{plan.documents}</li>{plan.features.map((feature) => <li>{feature}</li>)}</ul><a class:list={["button plan-button", { primary: plan.highlighted }]} href={`/registro?plan=${plan.code}`} data-track="signup" data-track-location="plan" data-track-plan={plan.code}>{plan.cta}</a></article>)}</div>
         </div>
         <p class="price-note">Los límites de usuarios, cajas, sucursales, ítems y documentos se aplican por empresa. El ahorro anual compara doce mensualidades con el valor anual publicado. Confirma la periodicidad y el desglose aplicable antes de pagar.</p>
       </section>
@@ -297,7 +297,7 @@ const siteSchema = {
       <section class="contact-section section" id="contacto">
         <div class="contact-copy"><p class="eyebrow light">Hablemos de tu operación</p><h2>Trae un caso de tu negocio a la demostración</h2><p>Cuéntanos qué vendes, cuántas personas usan el sistema y qué necesitas ordenar. Prepararemos el mensaje para que puedas revisarlo antes de enviarlo.</p><p>También puedes escribir a <a href={`mailto:${commercialEmail}`}>{commercialEmail}</a>.</p><dl><div><dt>Demostración</dt><dd>Recorrido según tu operación</dd></div><div><dt>Plan</dt><dd>Capacidades y requisitos claros</dd></div><div><dt>Arranque</dt><dd>Preparación de tus primeros pasos</dd></div></dl></div>
         <form class="lead-form" id="lead-form" data-whatsapp-number={whatsappNumber}>
-          <div class="lead-field"><label for="name">Nombre</label><input id="name" type="text" name="name" autocomplete="name" minlength="2" maxlength="120" required placeholder="Tu nombre" disabled /></div>
+          <div class="lead-field"><label for="name">Nombre (obligatorio)</label><input id="name" type="text" name="name" autocomplete="name" minlength="2" maxlength="120" required placeholder="Tu nombre" disabled /></div>
           <div class="lead-field"><label for="phone">Teléfono o WhatsApp (opcional)</label><input id="phone" type="tel" name="phone" autocomplete="tel" maxlength="40" inputmode="tel" placeholder="300 000 0000" disabled /></div>
           <div class="lead-field"><label for="plan">Plan de interés</label><select id="plan" name="plan" disabled>{plans.map(plan => <option value={plan.name} selected={plan.code === "professional"}>{plan.name}</option>)}</select></div>
           <div class="lead-field"><label for="message">¿Qué te gustaría mejorar?</label><textarea id="message" name="message" rows="4" maxlength="1500" placeholder="Por ejemplo: controlar inventario y cierres de caja" disabled></textarea></div>
@@ -312,25 +312,31 @@ const siteSchema = {
 
     <SiteFooter />
     <script>
+      import { bindFormFeedback } from "../lib/form-feedback";
       const form = document.querySelector<HTMLFormElement>("#lead-form");
       form?.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | HTMLButtonElement>("input, select, textarea, button").forEach(control => { control.disabled = false; });
+      const feedback = form ? bindFormFeedback(form) : null;
       const ready = form?.querySelector<HTMLButtonElement>("[data-contact-ready]");
+      const status = form?.querySelector<HTMLElement>(".form-status");
       let preparedUrl = "";
       ready?.addEventListener("click", event => {
         event.stopPropagation();
         if (preparedUrl) window.open(preparedUrl, "_blank", "noopener,noreferrer");
       });
-      form?.addEventListener("input", () => { preparedUrl = ""; if (ready) ready.hidden = true; });
+      form?.addEventListener("input", () => {
+        if (preparedUrl && status) status.textContent = "Has cambiado los datos. Vuelve a preparar el mensaje para revisarlo.";
+        preparedUrl = "";
+        if (ready) ready.hidden = true;
+      });
       form?.addEventListener("submit", event => {
         event.preventDefault();
-        if (!form.reportValidity() || !ready) return;
+        if (!feedback?.validate() || !ready) return;
         const data = new FormData(form);
         const lines = ["Hola, quiero agendar una demostración de Cripton.", `Nombre: ${String(data.get("name") ?? "").trim()}`, data.get("phone") ? `Teléfono: ${String(data.get("phone")).trim()}` : "", `Plan de interés: ${data.get("plan")}`, data.get("message") ? `Necesidad: ${String(data.get("message")).trim()}` : ""].filter(Boolean).join("\n");
         const number = form.dataset.whatsappNumber ?? "";
         preparedUrl = number ? `https://wa.me/${number}?text=${encodeURIComponent(lines)}` : `mailto:ventas@cripton.com.co?subject=${encodeURIComponent("Demostración de Cripton POS")}&body=${encodeURIComponent(lines)}`;
         ready.textContent = number ? "Revisar y abrir mi mensaje en WhatsApp" : "Revisar y abrir mi aplicación de correo";
         ready.hidden = false;
-        const status = form.querySelector<HTMLElement>(".form-status");
         if (status) status.textContent = "Tu mensaje está preparado. Abre el mensaje para revisarlo en el canal y enviarlo cuando decidas.";
         ready.focus();
       });

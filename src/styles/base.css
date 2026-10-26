@@ -10,6 +10,8 @@
   --mint: #eaf4f8;
   --coral: #056877;
   --gold: #31ccd4;
+  --error: #a12622;
+  --field-border: #748692;
   --shadow: 0 18px 48px rgb(5 24 40 / 10%);
   font-family: Inter, Aptos, "Segoe UI", Arial, sans-serif;
   font-synthesis: none;
@@ -46,6 +48,9 @@ h1, h2, h3, p { margin-top: 0; }
 .content-card a { font-weight: 750; }
 .callout { margin-block: 28px; padding: 22px 26px; border-left: 4px solid var(--green-2); border-radius: 0 8px 8px 0; background: var(--mint); }
 .callout p:last-child { margin-bottom: 0; }
+.field-error { margin: 0; color: var(--error); font-size: .875rem; overflow-wrap: anywhere; }
+.flow-form > .field-error { grid-column: 1 / -1; }
+form :is(input, select, textarea)[aria-invalid="true"] { border-color: var(--error); }
 .steps-list { padding-left: 24px; }
 .steps-list li { padding-left: 8px; margin-block: 18px; }
 .editorial-copy { width: min(100%, 1040px); margin-inline: auto; padding: clamp(36px, 5vw, 72px) clamp(20px, 5vw, 56px); overflow-wrap: anywhere; }

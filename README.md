@@ -27,6 +27,7 @@ según su política CORS; no ampliar CORS por conveniencia de un preview.
 ```sh
 pnpm qa:web
 pnpm build:public
+pnpm audit:performance
 ```
 
 `qa:web` valida tipos, construye una preview sin indexación por defecto y audita
@@ -81,3 +82,6 @@ operativas, revisión y una publicación versionada en la cadena canónica SaaS.
 
 Consultar el [plan y pendientes](docs/WEB_GROWTH_PLAN_2026-10-26.md) y la
 [revisión jurídica](docs/LEGAL_REVIEW_2026-10-26.md).
+
+Calidad frontend y evidencia: [bloque 2026-10-26](docs/WEB_QUALITY_2026-10-26.md).
+Helpers y comprobaciones: [lib](src/lib/README.md) y [scripts](scripts/README.md).

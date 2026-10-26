@@ -16,15 +16,15 @@ const analyticsAvailable = indexableSite(import.meta.env.PROD, import.meta.env.P
 <ConsentPanel />
 <style>
   .site-footer { padding: 48px clamp(20px, 5vw, 76px) 24px; background: var(--ink); color: white; border-top: 1px solid #315567; }
-  .footer-grid { display: grid; grid-template-columns: 1.25fr repeat(3, minmax(0, 1fr)); gap: clamp(24px, 4vw, 56px); max-width: 1440px; margin: auto; }
+  .footer-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) repeat(3, minmax(0, 1fr)); gap: clamp(24px, 4vw, 56px); max-width: 1440px; margin: auto; }
   .footer-brand { --brand-name-width: 148px; }
   .footer-about p { max-width: 30ch; margin-top: 18px; color: #c2d6e1; font-size: .9rem; }
-  nav { display: grid; align-content: start; gap: 12px; }
+  nav { display: grid; align-content: start; gap: 4px; }
   h2 { margin: 0 0 6px; color: white; font: inherit; font-weight: 750; }
-  a, button { color: #c2d6e1; font-size: .87rem; text-decoration: none; overflow-wrap: anywhere; }
+  a, button { display: inline-flex; align-items: center; min-height: 44px; padding-block: 8px; color: #c2d6e1; font-size: .87rem; text-decoration: none; overflow-wrap: anywhere; }
   a:hover, button:hover { color: var(--gold); text-decoration: underline; }
   a:focus-visible, button:focus-visible { outline-color: var(--gold); }
-  button { width: fit-content; border: 0; padding: 0; background: none; text-align: left; }
+  button { width: fit-content; border: 0; background: none; text-align: left; }
   .footer-bottom { display: flex; justify-content: space-between; gap: 18px; max-width: 1440px; margin: 38px auto 0; padding-top: 22px; border-top: 1px solid #315567; color: #a9c5d4; font-size: .8rem; }
   @media (max-width: 1000px) { .footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   @media (max-width: 560px) { .footer-grid { grid-template-columns: 1fr; gap: 30px; } .footer-bottom { flex-direction: column; gap: 8px; } }

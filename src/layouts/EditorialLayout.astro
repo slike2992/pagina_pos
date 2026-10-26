@@ -59,17 +59,17 @@ const schema = canonical ? {
   </body>
 </html>
 <style>
-  .editorial-hero { padding: 26px clamp(20px, 7vw, 104px) clamp(40px, 6vw, 72px); background: var(--ink); color: white; }
+  .editorial-hero { padding: 26px clamp(20px, 7vw, 104px) clamp(40px, 6vw, 72px); background: var(--ink); color: white; overflow-wrap: anywhere; }
   .editorial-hero > * { max-width: 1040px; margin-inline: auto; }
   nav { margin-bottom: 40px; }
   nav ol { display: flex; gap: 8px 14px; flex-wrap: wrap; padding: 0; list-style: none; color: #b9d1dc; font-size: .82rem; }
   nav li + li::before { content: "/"; padding-right: 14px; color: #6d98aa; }
-  nav a { color: inherit; }
-  nav a:focus-visible { outline-color: var(--gold); }
+  nav a { display: inline-flex; align-items: center; min-height: 44px; color: inherit; }
+  .editorial-hero :focus-visible { outline-color: var(--gold); }
   .eyebrow { color: var(--gold); }
   h1 { margin-bottom: 22px; font-size: clamp(2.25rem, 4.8vw, 4rem); line-height: 1.08; }
   .editorial-actions { display:flex; align-items:center; flex-wrap:wrap; gap:20px; margin-top:28px; }
   .editorial-actions .button { background:var(--gold); border-color:var(--gold); color:var(--ink); }
-  .editorial-actions>a:not(.button) { color:white; font-weight:700; }
+  .editorial-actions>a:not(.button) { display: inline-flex; align-items: center; min-height: 44px; color:white; font-weight:700; }
   .lead { margin-bottom: 0; color: #d6e8f0; font-size: clamp(1.08rem, 1.8vw, 1.3rem); max-width: 1040px; }
 </style>

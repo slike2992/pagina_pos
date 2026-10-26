@@ -2,22 +2,24 @@
 import FlowLayout from "../../layouts/FlowLayout.astro";
 const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
 ---
-<FlowLayout title="Crear cuenta" eyebrow="Alta SaaS" heading="Prepara tu empresa" lead="Elige el plan, confirma tus datos y valida tu correo antes del pago.">
+<FlowLayout title="Crear cuenta" eyebrow="Empieza con Cripton" heading="Prepara tu empresa" lead="Elige el plan, confirma tus datos y valida tu correo antes del pago.">
   <form class="flow-form" id="signup-form" data-api-url={apiUrl}>
-    <div class="field"><label for="contactName">Nombre completo</label><input id="contactName" name="contactName" autocomplete="name" minlength="2" maxlength="180" required /></div>
-    <div class="field"><label for="email">Correo</label><input id="email" name="email" type="email" autocomplete="email" maxlength="320" required /></div>
-    <div class="field"><label for="companyName">Empresa</label><input id="companyName" name="companyName" autocomplete="organization" minlength="2" maxlength="200" required /></div>
-    <div class="field"><label for="phone">Teléfono</label><input id="phone" name="phone" type="tel" autocomplete="tel" minlength="5" maxlength="40" /></div>
-    <div class="field full"><label for="priceCode">Plan</label><select id="priceCode" name="priceCode" required><optgroup label="Sin facturación electrónica"><option value="basic">Básico · $49.900/mes</option><option value="professional">Profesional · $79.900/mes</option><option value="enterprise">Empresarial · $129.900/mes</option></optgroup><optgroup label="Con facturación electrónica"><option value="basic-fe">Básico FE · $69.900/mes</option><option value="professional-fe">Profesional FE · $99.900/mes</option><option value="enterprise-fe">Empresarial FE · $159.900/mes</option></optgroup></select></div>
-    <label class="legal-check"><input id="legal" type="checkbox" required disabled /><span>Acepto los <a id="terms-link" href="/legal/terminos" target="_blank" rel="noopener">términos</a> y la <a id="privacy-link" href="/legal/privacidad" target="_blank" rel="noopener">política de privacidad</a> vigentes.</span></label>
+    <div class="field"><label for="contactName">Nombre completo (obligatorio)</label><input id="contactName" name="contactName" autocomplete="name" minlength="2" maxlength="180" required /></div>
+    <div class="field"><label for="email">Correo (obligatorio)</label><input id="email" name="email" type="email" autocomplete="email" maxlength="320" required /></div>
+    <div class="field"><label for="companyName">Empresa (obligatorio)</label><input id="companyName" name="companyName" autocomplete="organization" minlength="2" maxlength="200" required /></div>
+    <div class="field"><label for="phone">Teléfono (opcional)</label><input id="phone" name="phone" type="tel" autocomplete="tel" minlength="5" maxlength="40" /></div>
+    <div class="field full"><label for="priceCode">Plan (obligatorio)</label><select id="priceCode" name="priceCode" required><optgroup label="Sin facturación electrónica"><option value="basic">Básico · $49.900/mes</option><option value="professional">Profesional · $79.900/mes</option><option value="enterprise">Empresarial · $129.900/mes</option></optgroup><optgroup label="Con facturación electrónica"><option value="basic-fe">Básico FE · $69.900/mes</option><option value="professional-fe">Profesional FE · $99.900/mes</option><option value="enterprise-fe">Empresarial FE · $159.900/mes</option></optgroup></select></div>
+    <label class="legal-check"><input id="legal" type="checkbox" required disabled /><span>Acepto los <a id="terms-link" href="/legal/terminos" target="_blank" rel="noopener">términos</a> y la <a id="privacy-link" href="/legal/privacidad" target="_blank" rel="noopener">política de privacidad</a> vigentes. (obligatorio)</span></label>
     <div class="actions"><button class="button" type="submit" disabled>Continuar</button></div>
     <p class="status" role="status" aria-live="polite">Consultando condiciones vigentes…</p>
   </form>
   <script>
+    import { bindFormFeedback } from "../../lib/form-feedback";
     import { createIdempotencyKey } from "../../scripts/client-idempotency";
 
     type LegalDocument = { type: "terms" | "privacy"; version: string; contentUrl: string };
     const form = document.querySelector<HTMLFormElement>("#signup-form");
+    const feedback = form ? bindFormFeedback(form) : null;
     const status = form?.querySelector<HTMLElement>(".status");
     const submit = form?.querySelector<HTMLButtonElement>('button[type="submit"]');
     const legal = form?.querySelector<HTMLInputElement>("#legal");
@@ -94,7 +96,7 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
     void restoreLocalSignup();
     form?.addEventListener("submit", async (event) => {
       event.preventDefault();
-      if (!form.reportValidity() || documents.length < 2) return;
+      if (!feedback?.validate() || documents.length < 2 || !legal || legal.disabled || !legal.checked || submit?.disabled) return;
       const data = new FormData(form);
       const terms = documents.find((item) => item.type === "terms")!;
       const privacy = documents.find((item) => item.type === "privacy")!;

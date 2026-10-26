@@ -21,7 +21,10 @@ for (const relative of ['logo-options', 'images/criptón-logo-concepto.jpeg']) {
   if (!target.startsWith(output + path.sep)) throw new Error('Unsafe release exclusion path.');
   await rm(target, { recursive: true, force: true });
 }
-const audit = spawnSync(process.execPath, ['--test', 'scripts/seo.test.mjs', 'scripts/consent.test.mjs'], { cwd: root, env, stdio: 'inherit' });
+const audit = spawnSync(process.execPath, ['--test', 'scripts/seo.test.mjs', 'scripts/consent.test.mjs', 'scripts/form-feedback.test.mjs'], { cwd: root, env, stdio: 'inherit' });
 if (audit.error) throw audit.error;
 if (audit.status !== 0) process.exit(audit.status ?? 1);
+const performance = spawnSync(process.execPath, ['scripts/audit-performance.mjs'], { cwd: root, env, stdio: 'inherit' });
+if (performance.error) throw performance.error;
+if (performance.status !== 0) process.exit(performance.status ?? 1);
 console.log('Artefacto público validado. Esto no despliega ni acredita DNS, TLS, indexación o aprobación legal.');

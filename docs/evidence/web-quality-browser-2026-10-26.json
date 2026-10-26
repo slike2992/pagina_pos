@@ -1,0 +1,443 @@
+{
+  "environment": "isolated production build, local browser, no real sends",
+  "routes": [
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/",
+      "toolbar": false,
+      "width": 320
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/soluciones/",
+      "toolbar": false,
+      "width": 320
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/soluciones/ventas-y-caja/",
+      "toolbar": false,
+      "width": 320
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/soluciones/inventario/",
+      "toolbar": false,
+      "width": 320
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/soluciones/reportes/",
+      "toolbar": false,
+      "width": 320
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/soluciones/facturacion-electronica/",
+      "toolbar": false,
+      "width": 320
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/guias/elegir-un-pos/",
+      "toolbar": false,
+      "width": 320
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/confianza/",
+      "toolbar": false,
+      "width": 320
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/legal/",
+      "toolbar": false,
+      "width": 320
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/legal/cookies/",
+      "toolbar": false,
+      "width": 320
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/legal/privacidad/",
+      "toolbar": false,
+      "width": 320
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/legal/terminos/",
+      "toolbar": false,
+      "width": 320
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/",
+      "toolbar": false,
+      "width": 768
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/soluciones/",
+      "toolbar": false,
+      "width": 768
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/soluciones/ventas-y-caja/",
+      "toolbar": false,
+      "width": 768
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/soluciones/inventario/",
+      "toolbar": false,
+      "width": 768
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/soluciones/reportes/",
+      "toolbar": false,
+      "width": 768
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/soluciones/facturacion-electronica/",
+      "toolbar": false,
+      "width": 768
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/guias/elegir-un-pos/",
+      "toolbar": false,
+      "width": 768
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/confianza/",
+      "toolbar": false,
+      "width": 768
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/legal/",
+      "toolbar": false,
+      "width": 768
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/legal/cookies/",
+      "toolbar": false,
+      "width": 768
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/legal/privacidad/",
+      "toolbar": false,
+      "width": 768
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/legal/terminos/",
+      "toolbar": false,
+      "width": 768
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/",
+      "toolbar": false,
+      "width": 1024
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/soluciones/",
+      "toolbar": false,
+      "width": 1024
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/soluciones/ventas-y-caja/",
+      "toolbar": false,
+      "width": 1024
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/soluciones/inventario/",
+      "toolbar": false,
+      "width": 1024
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/soluciones/reportes/",
+      "toolbar": false,
+      "width": 1024
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/soluciones/facturacion-electronica/",
+      "toolbar": false,
+      "width": 1024
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/guias/elegir-un-pos/",
+      "toolbar": false,
+      "width": 1024
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/confianza/",
+      "toolbar": false,
+      "width": 1024
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/legal/",
+      "toolbar": false,
+      "width": 1024
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/legal/cookies/",
+      "toolbar": false,
+      "width": 1024
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/legal/privacidad/",
+      "toolbar": false,
+      "width": 1024
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/legal/terminos/",
+      "toolbar": false,
+      "width": 1024
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/",
+      "toolbar": false,
+      "width": 1440
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/soluciones/",
+      "toolbar": false,
+      "width": 1440
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/soluciones/ventas-y-caja/",
+      "toolbar": false,
+      "width": 1440
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/soluciones/inventario/",
+      "toolbar": false,
+      "width": 1440
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/soluciones/reportes/",
+      "toolbar": false,
+      "width": 1440
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/soluciones/facturacion-electronica/",
+      "toolbar": false,
+      "width": 1440
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/guias/elegir-un-pos/",
+      "toolbar": false,
+      "width": 1440
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/confianza/",
+      "toolbar": false,
+      "width": 1440
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/legal/",
+      "toolbar": false,
+      "width": 1440
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/legal/cookies/",
+      "toolbar": false,
+      "width": 1440
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/legal/privacidad/",
+      "toolbar": false,
+      "width": 1440
+    },
+    {
+      "brokenImages": 0,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "path": "/legal/terminos/",
+      "toolbar": false,
+      "width": 1440
+    }
+  ],
+  "manual": [
+    "contact required/whitespace/clear/prepared/edit",
+    "AVIF selected at desktop",
+    "hover border 2px petroleum",
+    "short mobile menu, repeated toggle, Escape focus, link navigation"
+  ]
+}

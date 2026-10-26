@@ -1,0 +1,88 @@
+{
+  "baseline": {
+    "kind": "static-build-baseline-not-browser-vitals",
+    "baseCommit": "ce85b727e444b9c737f6148006aea570a1cbb219",
+    "html": {
+      "bytes": 38228,
+      "gzip": 10560
+    },
+    "assets": [
+      {
+        "url": "/_astro/SeoHead.Bl0DcyXh.css",
+        "bytes": 6289,
+        "gzip": 2055
+      },
+      {
+        "url": "/_astro/index.C_oouApe.css",
+        "bytes": 11791,
+        "gzip": 3050
+      },
+      {
+        "url": "/_astro/hero-comercio-pos.DOGi299B_zwojB.webp",
+        "bytes": 94248,
+        "gzip": 94296
+      }
+    ],
+    "heroVariants": [
+      {
+        "name": "hero-comercio-pos.DOGi299B_2lppai.webp",
+        "bytes": 68146
+      },
+      {
+        "name": "hero-comercio-pos.DOGi299B_ZlG2eA.webp",
+        "bytes": 36768
+      },
+      {
+        "name": "hero-comercio-pos.DOGi299B_zwojB.webp",
+        "bytes": 94248
+      }
+    ]
+  },
+  "final": {
+    "kind": "static-build-budget-not-lighthouse-or-field-vitals",
+    "html": {
+      "bytes": 38063,
+      "gzipBytes": 10368
+    },
+    "css": [
+      {
+        "url": "/_astro/SeoHead.QSzlMwpG.css",
+        "bytes": 6600,
+        "gzipBytes": 2161
+      },
+      {
+        "url": "/_astro/index.BklJ7ahH.css",
+        "bytes": 12182,
+        "gzipBytes": 3106
+      }
+    ],
+    "inlineScriptBytes": 4244,
+    "externalJs": [
+      {
+        "url": "/_astro/index.astro_astro_type_script_index_0_lang.Cm-OObbb.js",
+        "bytes": 1366,
+        "gzipBytes": 794
+      }
+    ],
+    "hero": [
+      {
+        "width": 768,
+        "url": "/_astro/hero-comercio-pos.DOGi299B_Z23mWIc.avif",
+        "bytes": 19695,
+        "gzipBytes": 19693
+      },
+      {
+        "width": 1280,
+        "url": "/_astro/hero-comercio-pos.DOGi299B_v69iP.avif",
+        "bytes": 37831,
+        "gzipBytes": 37838
+      },
+      {
+        "width": 1672,
+        "url": "/_astro/hero-comercio-pos.DOGi299B_Z1fLQwQ.avif",
+        "bytes": 53527,
+        "gzipBytes": 53536
+      }
+    ]
+  }
+}

@@ -11,9 +11,10 @@
     "check": "astro check",
     "preview": "astro preview",
     "astro": "astro",
-    "test:web": "node --test scripts/seo.test.mjs scripts/consent.test.mjs",
+    "test:web": "node --test scripts/seo.test.mjs scripts/consent.test.mjs scripts/form-feedback.test.mjs",
     "qa:web": "astro check && astro build && npm run test:web",
-    "build:public": "node scripts/build-public.mjs"
+    "build:public": "node scripts/build-public.mjs",
+    "audit:performance": "node scripts/audit-performance.mjs"
   },
   "dependencies": {
     "astro": "^7.2.7",

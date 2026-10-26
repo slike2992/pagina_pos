@@ -2,6 +2,8 @@
 
 ## Desarrollo vigente
 
+- [Calidad, conversión y accesibilidad](WEB_QUALITY_2026-10-26.md): validación compartida, responsive y peso antes/después.
+
 - [Plan de captación, SEO y condiciones](WEB_GROWTH_PLAN_2026-10-26.md): alcance implementado y dependencias reales.
 - [Investigación SEO y evidencia funcional](SEO_RESEARCH_2026-10-26.md): fuentes primarias, criterios y límites.
 - [Propuestas jurídicas](LEGAL_REVIEW_2026-10-26.md): tres borradores, decisiones del titular y mecanismo futuro de adopción.

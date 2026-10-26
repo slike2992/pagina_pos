@@ -40,14 +40,14 @@ const links = [
   .site-header { position: sticky; top: 0; z-index: 30; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: clamp(20px, 3vw, 44px); min-height: 88px; padding: 12px clamp(18px, 4vw, 64px); border-bottom: 1px solid var(--line); background: rgb(255 255 255 / 97%); }
   .site-brand { --brand-horizontal-width: 304px; --brand-name-width: 136px; justify-self: start; }
   .desktop-nav { display: flex; justify-content: center; gap: clamp(16px, 2vw, 30px); }
-  nav a { color: var(--muted); text-decoration: none; font-size: .94rem; font-weight: 600; white-space: nowrap; }
+  nav a { display: inline-flex; align-items: center; min-height: 44px; color: var(--muted); text-decoration: none; font-size: .94rem; font-weight: 600; white-space: nowrap; }
   nav a:hover, nav a[aria-current] { color: var(--green-2); text-decoration: underline; }
   .header-cta { font-size: .9rem; padding: 10px 16px; white-space: nowrap; }
   .mobile-menu { display: none; position: relative; }
   summary { display: flex; align-items: center; justify-content: center; gap: 8px; min-width: 48px; min-height: 48px; padding: 8px; border: 1px solid var(--line); border-radius: 7px; color: var(--ink); list-style: none; cursor: pointer; font-size: .85rem; font-weight: 700; }
   summary::-webkit-details-marker { display: none; }
-  .mobile-menu nav { position: absolute; right: 0; top: calc(100% + 12px); display: grid; min-width: 230px; padding: 8px; border: 1px solid var(--line); border-radius: 10px; background: white; box-shadow: var(--shadow); }
-  .mobile-menu nav a { padding: 12px; }
+  .mobile-menu nav { position: absolute; right: 0; top: calc(100% + 12px); display: grid; width: min(18rem, calc(100vw - 32px)); max-height: calc(100dvh - 120px); overflow-y: auto; overscroll-behavior: contain; padding: 8px; border: 1px solid var(--line); border-radius: 10px; background: white; box-shadow: var(--shadow); }
+  .mobile-menu nav a { padding: 12px; white-space: normal; overflow-wrap: anywhere; }
   @media (max-width: 1180px) { .site-header { grid-template-columns: minmax(0, 1fr) auto auto; gap: 16px; } .desktop-nav { display: none; } .mobile-menu { display: block; } }
   @media (max-width: 680px) { .site-header { min-height: 72px; padding: 10px 16px; grid-template-columns: minmax(0, 1fr) auto; } .header-cta { display: none; } }
 </style>

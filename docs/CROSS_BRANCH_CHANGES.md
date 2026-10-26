@@ -1,5 +1,17 @@
 # Cambios transversales de la web comercial
 
+## 2026-10-26 — Calidad de frontend y formularios
+
+- Consumidores: web/registro y despliegue comercial. Se conservan contratos HTTP,
+  payload, códigos de planes, aceptación jurídica e idempotencia de API. Sin SQL.
+- Validador accesible compartido; errores españoles y bloqueo del registro hasta
+  cargar catálogo legal. No envía datos por sí mismo ni modifica valores.
+- Hero AVIF con fallback WebP y presupuestos de peso en build:public. El hosting
+  debe servir todos los assets del build; no publicar sólo un HTML suelto.
+- No cambia configuración de analítica, indexación o versión de condiciones.
+- Evidencia y límites: [calidad](WEB_QUALITY_2026-10-26.md). No acredita pagos,
+  entregabilidad, Web Vitals reales ni certificación integral de accesibilidad.
+
 ## 2026-10-26 — Descubrimiento, captación y preparación jurídica
 
 - Repositorio: `pagina_pos`, bloque `codex/web-growth-legal` desde `ad3f8c6`.
