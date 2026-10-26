@@ -1,18 +1,22 @@
 ---
 import { Image } from "astro:assets";
 import heroImage from "../assets/hero-comercio-pos.png";
-import Brand from "../components/Brand.astro";
+import "../styles/base.css";
+import "../styles/landing.css";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
 import SeoHead from "../components/SeoHead.astro";
 import { SITE_URL } from "../lib/seo";
 
+const formatCOP = (value: number) => new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(value);
+const planSaving = (plan: { monthly: string; annual: string }) => formatCOP(Number(plan.monthly.replace(/\D/g, "")) * 12 - Number(plan.annual.replace(/\D/g, "")));
+const moduleLinks = ["/soluciones/ventas-y-caja/", "/soluciones/ventas-y-caja/", "/soluciones/inventario/", "/soluciones/reportes/", "/confianza/", "/soluciones/inventario/"];
 const commercialEmail = "ventas@cripton.com.co";
 
 const seoTitle = "Software POS en Colombia: ventas e inventario | Cripton";
 const seoDescription = "Cripton es un software POS web para comercios en Colombia. Gestiona ventas, caja, inventario, usuarios y reportes. Conoce los planes y agenda una demostración.";
 
 const whatsappNumber = import.meta.env.PUBLIC_WHATSAPP_NUMBER?.replace(/\D/g, "") ?? "";
-const whatsappUrl = (message: string) =>
-  `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
 
 const modules = [
   { number: "01", title: "Ventas ágiles", text: "Registra productos, cantidades y medios de pago desde un flujo pensado para atender sin fricción." },
@@ -30,7 +34,7 @@ const planCatalog = [
     summary: "Para empezar a vender con orden y controlar lo esencial del negocio.",
     monthly: "$49.900",
     annual: "$499.000",
-    saving: "$100.000",
+
     users: "1 usuario",
     branches: "1 sucursal",
     registers: "1 caja",
@@ -45,7 +49,7 @@ const planCatalog = [
     summary: "Para negocios en crecimiento que necesitan más control operativo y mejores reportes.",
     monthly: "$79.900",
     annual: "$799.000",
-    saving: "$100.000",
+
     users: "Hasta 3 usuarios",
     branches: "2 sucursales",
     registers: "2 cajas, una por sucursal",
@@ -60,7 +64,7 @@ const planCatalog = [
     summary: "Para operaciones con varias sedes y necesidades de gestión avanzada.",
     monthly: "$129.900",
     annual: "$1.299.000",
-    saving: "$100.000",
+
     users: "Usuarios ilimitados",
     branches: "3 sucursales",
     registers: "Hasta 6 cajas, dos por sucursal",
@@ -79,7 +83,7 @@ const electronicInvoicingPlans = [
     summary: "Vende y factura electrónicamente desde el inicio, con una operación sencilla.",
     monthly: "$69.900",
     annual: "$699.000",
-    saving: "$140.000",
+
     documents: "Hasta 1.000 documentos electrónicos al año",
     cta: "Elegir Básico FE",
   },
@@ -90,7 +94,7 @@ const electronicInvoicingPlans = [
     summary: "Mayor control, mejores reportes y facturación electrónica para equipos en crecimiento.",
     monthly: "$99.900",
     annual: "$999.000",
-    saving: "$200.000",
+
     documents: "Hasta 2.000 documentos electrónicos al año",
     cta: "Elegir Profesional FE",
   },
@@ -101,7 +105,7 @@ const electronicInvoicingPlans = [
     summary: "Control multisede y facturación electrónica para operaciones de alto volumen.",
     monthly: "$159.900",
     annual: "$1.599.000",
-    saving: "$320.000",
+
     documents: "Documentos electrónicos ilimitados",
     cta: "Elegir Empresarial FE",
   },
@@ -121,9 +125,11 @@ const comparisons = [
 const faqs = [
   ["¿Puedo conocer el sistema antes de contratar?", "Sí. Coordinamos una demostración enfocada en el flujo real de tu negocio para que puedas evaluar ventas, caja, inventario y reportes."],
   ["¿Necesito instalar el sistema en cada equipo?", "La plataforma está pensada para operar en la web. Durante la implementación revisamos tus equipos, conexión y necesidades para definir la configuración adecuada."],
-  ["¿Qué incluye la implementación inicial?", "Incluye configuración, parametrización y acompañamiento de arranque. El valor de referencia es de $150.000 y se confirma según el alcance del negocio."],
+  ["¿Qué incluye la implementación inicial?", "Revisamos los datos, equipos y pasos necesarios para iniciar. El alcance y cualquier costo de acompañamiento deben confirmarse antes de contratar; no se añade un cargo desde este formulario."],
   ["¿Puedo cambiar de plan más adelante?", "Sí. La estructura está preparada para acompañar el crecimiento del negocio y ajustar capacidades cuando la operación lo requiera."],
-  ["¿Los precios publicados son definitivos?", "Son valores mensuales de referencia. La propuesta final confirma alcance, impuestos aplicables y condiciones de servicio antes de contratar."],
+  ["¿Los precios publicados son definitivos?", "Los planes muestran su valor mensual y anual en pesos colombianos. Revisa la periodicidad, los límites y el desglose de impuestos que se te presente antes de confirmar el pago."],
+  ["¿Contratar un plan FE activa la emisión inmediatamente?", "La emisión requiere preparar el emisor, la numeración y el ambiente correspondiente. El pago del plan no reemplaza esa configuración ni la habilitación fiscal necesaria."],
+  ["¿Qué necesito para trabajar desde un navegador?", "Una conexión y equipos compatibles con el flujo de tu negocio. En la demostración revisamos los periféricos que utilizas; no asumas funcionamiento sin conexión ni compatibilidad con toda impresora."],
 ];
 
 const siteSchema = {
@@ -141,6 +147,15 @@ const siteSchema = {
         email: commercialEmail,
       },
       logo: new URL("/brand/v1.0/cripton_horizontal_color_v1.0.svg", SITE_URL).href,
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${SITE_URL}/#website`,
+      name: "Cripton",
+      alternateName: "Cripton POS",
+      url: `${SITE_URL}/`,
+      inLanguage: "es-CO",
+      publisher: { "@id": `${SITE_URL}/#organization` },
     },
     {
       "@type": "SoftwareApplication",
@@ -176,38 +191,20 @@ const siteSchema = {
     <meta name="generator" content={Astro.generator} />
     <script is:inline type="application/ld+json" set:html={JSON.stringify(siteSchema).replace(/</g, "\\u003c")} />
   </head>
-  <body>
-    <a class="skip-link" href="#contenido">Saltar al contenido</a>
-    <header class="site-header" aria-label="Navegación principal">
-      <Brand className="site-brand" href="#inicio" mobileNameOnly />
-      <nav class="desktop-nav" aria-label="Secciones">
-        <a href="#solucion">Solución</a>
-        <a href="#modulos">Módulos</a>
-        <a href="#planes">Planes</a>
-        <a href="#faq">Preguntas</a>
-        <a href="/cuenta">Ingresar</a>
-      </nav>
-      <a class="header-cta" href="/registro?plan=professional">Crear cuenta</a>
-      <details class="mobile-menu">
-        <summary aria-label="Abrir menú"><span></span><span></span><span></span></summary>
-        <nav aria-label="Secciones móviles">
-          <a href="#solucion">Solución</a><a href="#modulos">Módulos</a><a href="#planes">Planes</a><a href="#faq">Preguntas</a><a href="/cuenta">Ingresar</a><a href="#contacto">Agendar demo</a>
-        </nav>
-      </details>
-    </header>
+  <body class="landing-page">
+    <SiteHeader />
 
-    <main id="contenido">
+    <main id="contenido" tabindex="-1">
       <section class="hero" id="inicio">
         <Image class="hero-image" src={heroImage} alt="Comerciante usando un terminal de punto de venta en su tienda" widths={[768, 1280, 1920]} sizes="100vw" format="webp" loading="eager" fetchpriority="high" />
         <div class="hero-shade" aria-hidden="true"></div>
         <div class="hero-content">
           <p class="eyebrow light">Control para comercios que quieren crecer</p>
-          <img class="hero-brand" src="/brand/v1.0/cripton_vertical_reverso_v1.0.svg" alt="Cripton" width="1082" height="1048" />
           <h1>Software POS para comercios en Colombia.</h1>
           <p class="hero-lead">Vende con agilidad, mantén tu caja organizada y conoce tu inventario desde una sola plataforma.</p>
           <div class="hero-actions" aria-label="Acciones principales">
-            <a class="button primary light-button" href="/registro?plan=professional">Empezar ahora</a>
-            <a class="text-link light-link" href={whatsappUrl("Hola, quiero conocer Cripton para mi negocio.")} target="_blank" rel="noreferrer">Hablar por WhatsApp <span aria-hidden="true">→</span></a>
+            <a class="button primary light-button" href="#planes" data-track="plans" data-track-location="hero">Ver planes para mi negocio</a>
+            <a class="text-link light-link" href="#contacto" data-track="demo" data-track-location="hero">Solicitar una demostración <span aria-hidden="true">→</span></a>
           </div>
           <p class="hero-note">Planes desde <strong>$49.900 al mes</strong> · Implementación acompañada</p>
         </div>
@@ -239,9 +236,9 @@ const siteSchema = {
           <ul class="check-list"><li>Información útil en el momento de la venta</li><li>Alertas visibles para actuar a tiempo</li><li>Indicadores fáciles de leer</li></ul>
         </div>
         <div class="product-visual" aria-label="Vista ilustrativa del tablero de Cripton">
-          <div class="screen-top"><span aria-hidden="true"></span><strong>Venta en mostrador</strong><em>Sesión activa</em></div>
+          <div class="screen-top"><span aria-hidden="true"></span><strong>Venta en mostrador</strong><em>Ejemplo ilustrativo</em></div>
           <div class="pos-grid">
-            <section class="ticket-panel"><h3>Ticket actual</h3><div class="line-item"><span>Café premium</span><strong>$18.000</strong></div><div class="line-item"><span>Pan artesanal</span><strong>$7.500</strong></div><div class="line-item"><span>Bebida fría</span><strong>$6.900</strong></div><div class="total-row"><span>Total</span><strong>$32.400</strong></div><button type="button" tabindex="-1">Cobrar venta</button></section>
+            <section class="ticket-panel"><h3>Ticket actual</h3><div class="line-item"><span>Café premium</span><strong>$18.000</strong></div><div class="line-item"><span>Pan artesanal</span><strong>$7.500</strong></div><div class="line-item"><span>Bebida fría</span><strong>$6.900</strong></div><div class="total-row"><span>Total</span><strong>$32.400</strong></div><span class="mock-control">Resumen de venta</span></section>
             <section class="stock-panel"><h3>Inventario</h3><div class="stock ok"><span>Arroz libra</span><strong>84</strong></div><div class="stock warn"><span>Azúcar</span><strong>9</strong></div><div class="stock ok"><span>Aceite</span><strong>31</strong></div></section>
             <section class="sales-panel"><p>Ventas de hoy</p><strong>$1.284.600</strong><div class="bars" aria-hidden="true"><span style="height:44%"></span><span style="height:72%"></span><span style="height:56%"></span><span style="height:86%"></span><span style="height:64%"></span></div></section>
           </div>
@@ -250,7 +247,7 @@ const siteSchema = {
 
       <section class="modules-section section" id="modulos">
         <div class="section-heading"><p class="eyebrow">Capacidades</p><h2>Herramientas para la operación diaria</h2><p>Empieza por lo esencial y amplía el control a medida que tu negocio lo necesite.</p></div>
-        <div class="module-list">{modules.map((module) => <article><span>{module.number}</span><div><h3>{module.title}</h3><p>{module.text}</p></div></article>)}</div>
+        <div class="module-list">{modules.map((module, index) => <article><span>{module.number}</span><div><h3>{module.title}</h3><p>{module.text}</p><a href={moduleLinks[index]}>Conocer el flujo <span aria-hidden="true">→</span></a></div></article>)}</div>
       </section>
 
       <section class="steps-section section">
@@ -262,13 +259,13 @@ const siteSchema = {
         <div class="section-heading centered"><p class="eyebrow">Planes</p><h2>Elige el nivel de control que necesitas</h2><p>Dos modalidades independientes para que contrates solo lo que tu operación necesita. Valores en pesos colombianos.</p></div>
         <div class="plan-group" aria-labelledby="plans-without-fe-title">
           <div class="plan-group-heading"><div><p class="eyebrow">Operación POS</p><h3 id="plans-without-fe-title">Planes sin facturación electrónica</h3></div><p>Ideales si ya tienes un proveedor de facturación o todavía no necesitas emitir documentos electrónicos.</p></div>
-          <div class="plans-grid">{planCatalog.map((plan) => <article class:list={["plan-card", { highlighted: plan.highlighted }]}>{plan.highlighted && <span class="plan-badge">Más elegido</span>}<p class="plan-name">Plan {plan.name}</p><div class="price"><strong>{plan.monthly}</strong><span>COP / mes</span></div><div class="annual-price"><strong>{plan.annual}</strong><span>COP / año</span><em>Ahorra {plan.saving}</em></div><p>{plan.summary}</p><dl class="plan-limits"><div><dt>Usuarios</dt><dd>{plan.users}</dd></div><div><dt>Sucursales</dt><dd>{plan.branches}</dd></div><div><dt>Cajas</dt><dd>{plan.registers}</dd></div><div><dt>Inventario</dt><dd>{plan.items}</dd></div></dl><ul class="check-list">{plan.features.map((feature) => <li>{feature}</li>)}</ul><a class:list={["button plan-button", { primary: plan.highlighted }]} href={`/registro?plan=${plan.code}`}>{plan.cta}</a></article>)}</div>
+          <div class="plans-grid">{planCatalog.map((plan) => <article class:list={["plan-card", { highlighted: plan.highlighted }]}>{plan.highlighted && <span class="plan-badge">Recomendado</span>}<p class="plan-name">Plan {plan.name}</p><div class="price"><strong>{plan.monthly}</strong><span>COP / mes</span></div><div class="annual-price"><strong>{plan.annual}</strong><span>COP / año</span><em>Ahorra {planSaving(plan)}</em></div><p>{plan.summary}</p><dl class="plan-limits"><div><dt>Usuarios</dt><dd>{plan.users}</dd></div><div><dt>Sucursales</dt><dd>{plan.branches}</dd></div><div><dt>Cajas</dt><dd>{plan.registers}</dd></div><div><dt>Inventario</dt><dd>{plan.items}</dd></div></dl><ul class="check-list">{plan.features.map((feature) => <li>{feature}</li>)}</ul><a class:list={["button plan-button", { primary: plan.highlighted }]} href={`/registro?plan=${plan.code}`} data-track="signup" data-track-location="plan" data-track-plan={plan.code}>{plan.cta}</a></article>)}</div>
         </div>
         <div class="plan-group plan-group-fe" aria-labelledby="plans-with-fe-title">
-          <div class="plan-group-heading"><div><p class="eyebrow fe-eyebrow">Cumplimiento DIAN</p><h3 id="plans-with-fe-title">Planes con facturación electrónica</h3></div><p>POS y facturación electrónica en un solo lugar, con límites de documentos claros para cada nivel.</p></div>
-          <div class="plans-grid">{electronicInvoicingPlans.map((plan) => <article class:list={["plan-card", "fe-card", { highlighted: plan.highlighted }]}>{plan.highlighted && <span class="plan-badge">Más elegido</span>}<p class="plan-name">Plan {plan.name}</p><div class="price"><strong>{plan.monthly}</strong><span>COP / mes</span></div><div class="annual-price"><strong>{plan.annual}</strong><span>COP / año</span><em>Ahorra {plan.saving}</em></div><p>{plan.summary}</p><dl class="plan-limits"><div><dt>Usuarios</dt><dd>{plan.users}</dd></div><div><dt>Sucursales</dt><dd>{plan.branches}</dd></div><div><dt>Cajas</dt><dd>{plan.registers}</dd></div><div><dt>Inventario</dt><dd>{plan.items}</dd></div></dl><ul class="check-list"><li>Facturación electrónica incluida</li><li>{plan.documents}</li>{plan.features.map((feature) => <li>{feature}</li>)}</ul><a class:list={["button plan-button", { primary: plan.highlighted }]} href={`/registro?plan=${plan.code}`}>{plan.cta}</a></article>)}</div>
+          <div class="plan-group-heading"><div><p class="eyebrow fe-eyebrow">Facturación electrónica</p><h3 id="plans-with-fe-title">Planes con facturación electrónica</h3></div><p>POS y facturación electrónica con límites claros. Emitir requiere preparar y habilitar el emisor, su numeración y el ambiente correspondiente.</p></div>
+          <div class="plans-grid">{electronicInvoicingPlans.map((plan) => <article class:list={["plan-card", "fe-card", { highlighted: plan.highlighted }]}>{plan.highlighted && <span class="plan-badge">Recomendado</span>}<p class="plan-name">Plan {plan.name}</p><div class="price"><strong>{plan.monthly}</strong><span>COP / mes</span></div><div class="annual-price"><strong>{plan.annual}</strong><span>COP / año</span><em>Ahorra {planSaving(plan)}</em></div><p>{plan.summary}</p><dl class="plan-limits"><div><dt>Usuarios</dt><dd>{plan.users}</dd></div><div><dt>Sucursales</dt><dd>{plan.branches}</dd></div><div><dt>Cajas</dt><dd>{plan.registers}</dd></div><div><dt>Inventario</dt><dd>{plan.items}</dd></div></dl><ul class="check-list"><li>Facturación electrónica incluida</li><li>{plan.documents}</li>{plan.features.map((feature) => <li>{feature}</li>)}</ul><a class:list={["button plan-button", { primary: plan.highlighted }]} href={`/registro?plan=${plan.code}`} data-track="signup" data-track-location="plan" data-track-plan={plan.code}>{plan.cta}</a></article>)}</div>
         </div>
-        <p class="price-note">Los límites de usuarios, cajas, sucursales, ítems y documentos se aplican por empresa y quedan asociados al plan contratado. La propuesta final confirma impuestos y condiciones del servicio.</p>
+        <p class="price-note">Los límites de usuarios, cajas, sucursales, ítems y documentos se aplican por empresa. El ahorro anual compara doce mensualidades con el valor anual publicado. Confirma la periodicidad y el desglose aplicable antes de pagar.</p>
       </section>
 
       <section class="comparison-section section" id="comparador">
@@ -280,7 +277,16 @@ const siteSchema = {
 
       <section class="cta-band">
         <div><p class="eyebrow light">Decide con tranquilidad</p><h2>Conoce el sistema aplicado a tu negocio</h2><p>Agenda una conversación y revisemos juntos el flujo que hoy quieres mejorar.</p></div>
-        <a class="button light-button" href="#contacto">Quiero una demostración</a>
+        <a class="button light-button" href="#contacto" data-track="demo" data-track-location="content">Quiero una demostración</a>
+      </section>
+
+      <section class="decision-section section" aria-labelledby="decision-title">
+        <div class="section-heading"><p class="eyebrow">Evalúa antes de elegir</p><h2 id="decision-title">Resuelve las dudas que importan en tu negocio</h2><p>Conoce los requisitos, revisa el flujo y decide qué necesitas contratar.</p></div>
+        <div class="decision-grid">
+          <article class="decision-card"><h3>¿Qué debes probar en un POS?</h3><p>Una guía para revisar ventas, inventario, caja y costos con casos de tu jornada.</p><a href="/guias/elegir-un-pos/">Preparar mi evaluación</a></article>
+          <article class="decision-card"><h3>¿Vas a facturar electrónicamente?</h3><p>Separa la elección del plan de la preparación del emisor y del ambiente de emisión.</p><a href="/soluciones/facturacion-electronica/">Revisar requisitos de emisión</a></article>
+          <article class="decision-card"><h3>¿Cómo se cuida tu información?</h3><p>Conoce los accesos por empresa, las responsabilidades y los canales de atención.</p><a href="/confianza/">Consultar seguridad y condiciones</a></article>
+        </div>
       </section>
 
       <section class="faq-section section" id="faq">
@@ -289,104 +295,45 @@ const siteSchema = {
       </section>
 
       <section class="contact-section section" id="contacto">
-        <div class="contact-copy"><p class="eyebrow light">Hablemos</p><h2>Cuéntanos cómo funciona tu negocio</h2><p>Completa los datos y prepararemos un mensaje de WhatsApp. No almacenamos esta información en la página.</p><p>Contacto comercial: <a href={`mailto:${commercialEmail}`}>{commercialEmail}</a>.</p><dl><div><dt>Respuesta</dt><dd>Atención personalizada</dd></div><div><dt>Demostración</dt><dd>Enfocada en tu operación</dd></div><div><dt>Implementación</dt><dd>Acompañada de principio a fin</dd></div></dl></div>
-        <form id="lead-form" data-whatsapp-number={whatsappNumber}>
-          <label for="name">Nombre</label><input id="name" type="text" name="name" autocomplete="name" required placeholder="Tu nombre" />
-          <label for="phone">Teléfono o WhatsApp</label><input id="phone" type="tel" name="phone" autocomplete="tel" required inputmode="tel" placeholder="300 000 0000" />
-          <label for="plan">Plan de interés</label><select id="plan" name="plan"><option>Básico</option><option selected>Profesional</option><option>Empresarial</option></select>
-          <label for="message">¿Qué te gustaría mejorar?</label><textarea id="message" name="message" rows="4" placeholder="Por ejemplo: controlar inventario y cierres de caja"></textarea>
-          <button class="button primary" type="submit">Preparar mensaje en WhatsApp</button>
-          <p class="form-note">Al continuar, WhatsApp abrirá el mensaje para que puedas revisarlo antes de enviarlo.</p>
+        <div class="contact-copy"><p class="eyebrow light">Hablemos de tu operación</p><h2>Trae un caso de tu negocio a la demostración</h2><p>Cuéntanos qué vendes, cuántas personas usan el sistema y qué necesitas ordenar. Prepararemos el mensaje para que puedas revisarlo antes de enviarlo.</p><p>También puedes escribir a <a href={`mailto:${commercialEmail}`}>{commercialEmail}</a>.</p><dl><div><dt>Demostración</dt><dd>Recorrido según tu operación</dd></div><div><dt>Plan</dt><dd>Capacidades y requisitos claros</dd></div><div><dt>Arranque</dt><dd>Preparación de tus primeros pasos</dd></div></dl></div>
+        <form class="lead-form" id="lead-form" data-whatsapp-number={whatsappNumber}>
+          <div class="lead-field"><label for="name">Nombre</label><input id="name" type="text" name="name" autocomplete="name" minlength="2" maxlength="120" required placeholder="Tu nombre" disabled /></div>
+          <div class="lead-field"><label for="phone">Teléfono o WhatsApp (opcional)</label><input id="phone" type="tel" name="phone" autocomplete="tel" maxlength="40" inputmode="tel" placeholder="300 000 0000" disabled /></div>
+          <div class="lead-field"><label for="plan">Plan de interés</label><select id="plan" name="plan" disabled>{plans.map(plan => <option value={plan.name} selected={plan.code === "professional"}>{plan.name}</option>)}</select></div>
+          <div class="lead-field"><label for="message">¿Qué te gustaría mejorar?</label><textarea id="message" name="message" rows="4" maxlength="1500" placeholder="Por ejemplo: controlar inventario y cierres de caja" disabled></textarea></div>
+          <button class="button" type="submit" disabled>Preparar mensaje para ventas</button>
+          <p class="form-note">Este formulario prepara un mensaje en tu navegador. No almacena tus datos ni los envía automáticamente. El canal elegido tiene sus propias condiciones. <a href="/legal/privacidad/">Consulta privacidad</a>.</p>
           <p class="form-status" role="status" aria-live="polite"></p>
+          <button class="button secondary contact-ready" data-contact-ready type="button" hidden></button>
+          <noscript><p>Para solicitar una demostración escribe a <a href="mailto:ventas@cripton.com.co">ventas@cripton.com.co</a>. El formulario requiere JavaScript para preparar el mensaje sin enviar datos a esta página.</p></noscript>
         </form>
       </section>
     </main>
 
-    <footer><Brand className="footer-brand" href="#inicio" tone="reverse" kind="nombre" /><p>Ventas, caja e inventario para comercios que quieren crecer con control.</p><a href="#contacto">Agendar demostración</a><span>© {new Date().getFullYear()} Cripton</span></footer>
-
+    <SiteFooter />
     <script>
-      const menu = document.querySelector<HTMLDetailsElement>(".mobile-menu");
-
-      menu?.querySelectorAll("a").forEach((link) => link.addEventListener("click", () => menu.removeAttribute("open")));
-
-      document.querySelector<HTMLFormElement>("#lead-form")?.addEventListener("submit", (event) => {
+      const form = document.querySelector<HTMLFormElement>("#lead-form");
+      form?.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | HTMLButtonElement>("input, select, textarea, button").forEach(control => { control.disabled = false; });
+      const ready = form?.querySelector<HTMLButtonElement>("[data-contact-ready]");
+      let preparedUrl = "";
+      ready?.addEventListener("click", event => {
+        event.stopPropagation();
+        if (preparedUrl) window.open(preparedUrl, "_blank", "noopener,noreferrer");
+      });
+      form?.addEventListener("input", () => { preparedUrl = ""; if (ready) ready.hidden = true; });
+      form?.addEventListener("submit", event => {
         event.preventDefault();
-        const form = event.currentTarget as HTMLFormElement;
+        if (!form.reportValidity() || !ready) return;
         const data = new FormData(form);
+        const lines = ["Hola, quiero agendar una demostración de Cripton.", `Nombre: ${String(data.get("name") ?? "").trim()}`, data.get("phone") ? `Teléfono: ${String(data.get("phone")).trim()}` : "", `Plan de interés: ${data.get("plan")}`, data.get("message") ? `Necesidad: ${String(data.get("message")).trim()}` : ""].filter(Boolean).join("\n");
         const number = form.dataset.whatsappNumber ?? "";
-        const message = [
-          "Hola, quiero agendar una demostración de Cripton.",
-          `Nombre: ${data.get("name")}`,
-          `Teléfono: ${data.get("phone")}`,
-          `Plan de interés: ${data.get("plan")}`,
-          data.get("message") ? `Necesidad: ${data.get("message")}` : "",
-        ].filter(Boolean).join("\n");
+        preparedUrl = number ? `https://wa.me/${number}?text=${encodeURIComponent(lines)}` : `mailto:ventas@cripton.com.co?subject=${encodeURIComponent("Demostración de Cripton POS")}&body=${encodeURIComponent(lines)}`;
+        ready.textContent = number ? "Revisar y abrir mi mensaje en WhatsApp" : "Revisar y abrir mi aplicación de correo";
+        ready.hidden = false;
         const status = form.querySelector<HTMLElement>(".form-status");
-        if (status) status.textContent = "Abriendo WhatsApp con tu mensaje listo…";
-        window.open(`https://wa.me/${number}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+        if (status) status.textContent = "Tu mensaje está preparado. Abre el mensaje para revisarlo en el canal y enviarlo cuando decidas.";
+        ready.focus();
       });
     </script>
   </body>
 </html>
-
-<style>
-  :root{color-scheme:light;--ink:#17201e;--muted:#596763;--paper:#f7f8f5;--white:#fff;--line:#d8dfda;--green:#123f38;--green-2:#1c5d51;--mint:#e7efeb;--coral:#b95636;--gold:#d4a647;--shadow:0 22px 55px rgba(16,35,31,.14);font-family:Inter,"Aptos","Segoe UI",Arial,sans-serif}*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:76px}body{margin:0;min-width:320px;background:var(--paper);color:var(--ink);line-height:1.55}body,button,input,select,textarea{font:inherit}a{color:inherit;text-decoration:none}button,a,summary{touch-action:manipulation}.skip-link{position:fixed;top:8px;left:8px;z-index:100;transform:translateY(-150%);background:var(--white);padding:10px 14px;border:2px solid var(--green)}.skip-link:focus{transform:none}.site-header{position:sticky;top:0;z-index:30;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;min-height:70px;padding:0 clamp(20px,4vw,64px);border-bottom:1px solid rgba(216,223,218,.8);background:rgba(247,248,245,.94);backdrop-filter:blur(16px)}.brand{display:inline-flex;align-items:center;gap:11px;width:max-content;font-weight:800}.brand-mark{display:grid;width:36px;height:36px;place-items:center;border-radius:6px;background:var(--green);color:var(--white);font-size:.76rem}.desktop-nav{display:flex;gap:clamp(18px,2.5vw,34px);color:var(--muted);font-size:.93rem}.desktop-nav a,.header-cta,footer a{transition:color .2s ease}.desktop-nav a:hover,.header-cta:hover,footer a:hover{color:var(--coral)}.header-cta{justify-self:end;color:var(--green);font-weight:800}.mobile-menu{display:none}.section{padding:clamp(72px,9vw,120px) clamp(20px,5vw,76px)}.section-heading{max-width:780px;margin-bottom:clamp(34px,5vw,58px)}.section-heading.centered{margin-inline:auto;text-align:center}.split-heading{display:grid;max-width:none;grid-template-columns:minmax(0,1fr) minmax(280px,.72fr);gap:clamp(36px,8vw,120px);align-items:end}.eyebrow{margin:0 0 12px;color:var(--coral);font-size:.76rem;font-weight:850;text-transform:uppercase}.eyebrow.light{color:#f2c078}h1,h2,h3,p{margin-top:0}h1{margin:0 0 22px;font-family:Georgia,"Times New Roman",serif;font-size:clamp(4rem,8vw,7.6rem);font-weight:500;line-height:.9;letter-spacing:0}h2{margin-bottom:16px;font-family:Georgia,"Times New Roman",serif;font-size:clamp(2.2rem,4.5vw,4.6rem);font-weight:500;line-height:1.02;letter-spacing:0}h3{margin-bottom:8px;font-size:1.12rem;letter-spacing:0}.section-heading>p:last-child,.split-heading>p,.product-copy>p,.contact-copy>p{color:var(--muted);font-size:clamp(1.02rem,1.5vw,1.2rem)}.hero{position:relative;display:flex;min-height:calc(88svh - 70px);align-items:center;overflow:hidden;background:#17201e;color:var(--white)}.hero-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}.hero-shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(13,22,20,.94) 0%,rgba(13,22,20,.76) 36%,rgba(13,22,20,.12) 70%,rgba(13,22,20,.08) 100%)}.hero-content{position:relative;z-index:1;width:min(720px,90%);padding:clamp(76px,11vw,150px) clamp(20px,6vw,90px)}.hero-lead{max-width:640px;margin-bottom:30px;color:#e8eeeb;font-size:clamp(1.18rem,2vw,1.48rem)}.hero-actions{display:flex;align-items:center;gap:24px;margin-bottom:26px}.button{display:inline-flex;min-height:48px;align-items:center;justify-content:center;border:1px solid var(--green);border-radius:6px;background:transparent;padding:12px 19px;color:var(--green);font-weight:800;text-align:center;cursor:pointer;transition:transform .2s ease,background .2s ease,color .2s ease,box-shadow .2s ease}.button:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(16,35,31,.12)}.button.primary{background:var(--green);color:var(--white)}.light-button{border-color:var(--white);background:var(--white);color:var(--green)}.text-link{font-weight:800}.light-link{color:var(--white)}.text-link span{display:inline-block;margin-left:7px;transition:transform .2s ease}.text-link:hover span{transform:translateX(4px)}.hero-note{margin:0;color:#cbd7d2;font-size:.9rem}.hero-note strong{color:var(--white)}.proof-strip{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--line);background:var(--white);padding:0 clamp(20px,5vw,76px)}.proof-strip p{display:grid;gap:3px;margin:0;padding:26px clamp(14px,3vw,42px);border-left:1px solid var(--line)}.proof-strip p:last-child{border-right:1px solid var(--line)}.proof-strip strong{font-size:.93rem}.proof-strip span{color:var(--muted);font-size:.85rem}.intro{background:var(--paper)}.outcomes{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line)}.outcomes article{padding:30px 32px 12px 0;border-right:1px solid var(--line)}.outcomes article+article{padding-left:32px}.outcomes article:last-child{border-right:0}.outcomes span,.module-list>article>span{color:var(--coral);font-size:.78rem;font-weight:900}.outcomes p,.module-list p{color:var(--muted)}.dark-section{background:var(--green);color:var(--white)}.product-section{display:grid;grid-template-columns:minmax(260px,.68fr) minmax(500px,1.32fr);gap:clamp(40px,7vw,100px);align-items:center}.product-copy>p{color:#c8d7d2}.check-list{display:grid;gap:11px;margin:24px 0 0;padding:0;list-style:none}.check-list li{position:relative;padding-left:23px}.check-list li::before{position:absolute;left:0;color:var(--gold);content:"✓";font-weight:900}.product-visual{overflow:hidden;border:1px solid rgba(255,255,255,.18);border-radius:7px;background:#0d2e29;box-shadow:0 32px 70px rgba(4,18,15,.35);transform:rotate(.35deg)}.screen-top{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;padding:15px 18px;color:var(--white)}.screen-top>span{width:10px;height:10px;border-radius:50%;background:var(--gold)}.screen-top em{color:#b6cec6;font-size:.82rem;font-style:normal}.pos-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:11px;padding:11px;background:#174c43}.pos-grid section{min-height:170px;border-radius:6px;background:#f8faf7;padding:17px;color:var(--ink)}.pos-grid h3{font-size:.92rem}.ticket-panel{grid-row:span 2}.line-item,.stock,.total-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:.9rem}.line-item span,.stock span{color:var(--muted)}.total-row{margin-top:12px;border:0;font-size:1.2rem;font-weight:900}.ticket-panel button{width:100%;border:0;border-radius:5px;background:var(--green-2);color:var(--white);padding:10px;font-weight:800}.stock strong{min-width:34px;color:var(--green)}.stock.warn strong{color:var(--coral)}.sales-panel>p{margin-bottom:2px;color:var(--muted);font-size:.8rem}.sales-panel>strong{display:block;color:var(--green);font-size:1.55rem}.bars{display:grid;height:86px;grid-template-columns:repeat(5,1fr);align-items:end;gap:8px;margin-top:12px}.bars span{border-radius:4px 4px 0 0;background:var(--gold)}.modules-section{background:var(--white)}.module-list{display:grid;grid-template-columns:repeat(2,1fr);border-top:1px solid var(--line)}.module-list article{display:grid;grid-template-columns:42px 1fr;gap:16px;padding:28px 28px 24px 0;border-bottom:1px solid var(--line)}.module-list article:nth-child(odd){border-right:1px solid var(--line)}.module-list article:nth-child(even){padding-left:32px}.module-list p{max-width:560px;margin:0}.steps-section{background:var(--mint)}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin:0;padding:0;list-style:none}.steps li{display:grid;grid-template-columns:auto 1fr;gap:16px;padding-right:36px}.steps li+li{border-left:1px solid #c5d2cc;padding-left:36px}.steps li>span{display:grid;width:38px;height:38px;place-items:center;border:1px solid var(--green);border-radius:50%;color:var(--green);font-weight:900}.steps p{color:var(--muted)}.plans-section{background:var(--paper)}.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:1200px;margin:auto}.plan-card{position:relative;display:flex;min-height:100%;flex-direction:column;border:1px solid var(--line);border-radius:7px;background:var(--white);padding:30px}.plan-card.highlighted{border:2px solid var(--green);box-shadow:var(--shadow)}.plan-badge{position:absolute;top:0;right:22px;transform:translateY(-50%);border-radius:99px;background:var(--coral);color:var(--white);padding:6px 11px;font-size:.72rem;font-weight:900;text-transform:uppercase}.plan-name{margin-bottom:8px;color:var(--green);font-weight:900}.price{display:flex;align-items:baseline;gap:8px;margin-bottom:16px}.price strong{font-family:Georgia,"Times New Roman",serif;font-size:clamp(2.25rem,3.5vw,3.2rem);font-weight:500}.price span{color:var(--muted);font-size:.8rem}.plan-card>p:not(.plan-name){color:var(--muted)}.plan-card .check-list{margin-bottom:26px}.plan-button{margin-top:auto}.price-note{margin:22px auto 0;color:var(--muted);font-size:.83rem;text-align:center}.comparison-section{background:var(--white)}.comparison-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:7px}.comparison-scroll:focus-visible{outline:3px solid rgba(185,86,54,.28);outline-offset:3px}table{width:100%;min-width:720px;border-collapse:collapse;background:var(--white)}th,td{padding:18px 20px;border-bottom:1px solid var(--line);text-align:left}thead{background:var(--green);color:var(--white)}tbody th{font-size:.9rem}.pro-cell{background:rgba(231,239,235,.65);font-weight:750}tbody tr:last-child th,tbody tr:last-child td{border-bottom:0}.cta-band{display:flex;align-items:center;justify-content:space-between;gap:36px;padding:clamp(58px,7vw,88px) clamp(20px,7vw,108px);background:var(--coral);color:var(--white)}.cta-band h2{max-width:800px;margin-bottom:10px}.cta-band p:last-child{margin:0;color:#ffe9e1}.cta-band .button{flex:none}.faq-section{background:var(--paper)}.faq-list{border-top:1px solid var(--line)}details{border-bottom:1px solid var(--line)}summary{display:flex;justify-content:space-between;gap:20px;padding:23px 4px;cursor:pointer;font-weight:800;list-style:none}summary::-webkit-details-marker{display:none}summary span{color:var(--coral);font-size:1.35rem;transition:transform .2s ease}details[open] summary span{transform:rotate(45deg)}details>p{max-width:800px;margin:0;padding:0 42px 24px 4px;color:var(--muted)}.contact-section{display:grid;grid-template-columns:minmax(0,.9fr) minmax(350px,.7fr);gap:clamp(40px,8vw,120px);background:var(--green);color:var(--white)}.contact-copy>p{color:#c8d7d2}.contact-copy dl{display:grid;gap:16px;margin:38px 0 0}.contact-copy dl div{display:grid;grid-template-columns:120px 1fr;border-top:1px solid rgba(255,255,255,.18);padding-top:14px}.contact-copy dt{color:#aac2ba;font-size:.82rem}.contact-copy dd{margin:0;font-weight:750}form{display:grid;grid-template-columns:1fr 1fr;gap:9px 14px;border-radius:7px;background:var(--white);padding:28px;color:var(--ink)}form label{font-size:.82rem;font-weight:800}form label:nth-of-type(4),form textarea,form button,.form-note,.form-status{grid-column:1/-1}input,select,textarea{width:100%;border:1px solid var(--line);border-radius:5px;background:#fafbf9;color:var(--ink);padding:12px 13px}textarea{resize:vertical}.form-note,.form-status{margin:0;color:var(--muted);font-size:.78rem}.form-status{min-height:1.2em;color:var(--green);font-weight:700}footer{display:grid;grid-template-columns:1.2fr 2fr auto auto;align-items:center;gap:28px;padding:28px clamp(20px,5vw,76px);background:#0b2d28;color:#d9e5e1;font-size:.84rem}footer p{margin:0;color:#aebfba}footer>a:not(.brand){font-weight:800}footer>span{color:#94aaa4}a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid rgba(212,166,71,.7);outline-offset:3px}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
-  @media(max-width:980px){.site-header{grid-template-columns:1fr auto auto;gap:18px}.desktop-nav{display:none}.mobile-menu{display:block;position:relative;order:3}.mobile-menu summary{display:grid;width:42px;height:42px;place-content:center;gap:5px;padding:0;border:1px solid var(--line);border-radius:5px;list-style:none}.mobile-menu summary span{display:block;width:19px;height:2px;background:var(--ink)}.mobile-menu nav{position:absolute;top:50px;right:0;display:grid;min-width:220px;border:1px solid var(--line);border-radius:6px;background:var(--white);box-shadow:var(--shadow);padding:8px}.mobile-menu nav a{padding:11px 12px}.hero{min-height:760px}.hero-shade{background:linear-gradient(90deg,rgba(13,22,20,.92),rgba(13,22,20,.58))}.product-section,.contact-section{grid-template-columns:1fr}.product-copy{max-width:680px}.plans-grid{grid-template-columns:1fr}.plan-card{max-width:650px;width:100%;margin:auto}.footer{grid-template-columns:1fr}.split-heading{grid-template-columns:1fr;gap:8px}footer{grid-template-columns:1fr 1fr}footer p{grid-column:1/-1;grid-row:2}}
-  @media(max-width:680px){html{scroll-padding-top:64px}.site-header{min-height:64px;padding:0 16px}.brand-mark{width:32px;height:32px}.brand>span:last-child{font-size:.93rem}.header-cta{display:none}.hero{min-height:720px;align-items:flex-end}.hero-image{object-position:63% center}.hero-shade{background:linear-gradient(0deg,rgba(11,23,20,.96) 0%,rgba(11,23,20,.8) 50%,rgba(11,23,20,.2) 100%)}.hero-content{width:100%;padding:74px 18px 54px}h1{font-size:clamp(3.8rem,18vw,5.2rem)}h2{font-size:clamp(2.25rem,12vw,3.35rem)}.hero-lead{font-size:1.12rem}.hero-actions{align-items:stretch;flex-direction:column}.hero-actions .button{width:100%}.light-link{text-align:center}.proof-strip{grid-template-columns:1fr;padding:0 18px}.proof-strip p{border-right:0;border-left:0;border-bottom:1px solid var(--line);padding:18px 0}.proof-strip p:last-child{border-right:0;border-bottom:0}.section{padding:68px 18px}.outcomes,.module-list,.steps{grid-template-columns:1fr}.outcomes article,.outcomes article+article{border-right:0;border-bottom:1px solid var(--line);padding:24px 0}.product-section{padding-inline:14px}.product-copy{padding-inline:4px}.product-visual{transform:none}.pos-grid{grid-template-columns:1fr}.ticket-panel{grid-row:auto}.screen-top{font-size:.78rem}.module-list article,.module-list article:nth-child(even){grid-template-columns:34px 1fr;border-right:0;padding:24px 0}.steps{gap:26px}.steps li,.steps li+li{border:0;padding:0}.plan-card{padding:26px 22px}.comparison-section{padding-inline:0}.comparison-section .section-heading{padding-inline:18px}.comparison-scroll{border-right:0;border-left:0;border-radius:0}.cta-band{align-items:stretch;flex-direction:column;padding:58px 18px}.cta-band .button{width:100%}.contact-copy dl div{grid-template-columns:1fr;gap:3px}form{grid-template-columns:1fr;padding:22px 18px}form label,form input,form select{grid-column:1/-1}footer{grid-template-columns:1fr;gap:16px;padding:28px 18px}footer p{grid-row:auto}}
-  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.button,.text-link span,summary span{transition:none}}
-
-  :root{--ink:#051828;--muted:#526675;--paper:#f4f7fa;--line:#d3dde6;--green:#051828;--green-2:#056877;--mint:#eaf4f8;--coral:#056877;--gold:#31ccd4;--shadow:0 22px 55px rgba(5,104,119,.14)}
-  html{scroll-padding-top:108px}
-  .site-header{min-height:88px;border-bottom-color:#d3dde6;background:rgba(255,255,255,.96)}
-  .site-brand{--brand-horizontal-width:300px;--brand-name-width:136px}
-  .site-header{grid-template-columns:auto minmax(0,1fr) auto;column-gap:clamp(22px,3vw,48px)}
-  .site-brand{justify-self:start;flex:none}
-  .desktop-nav{justify-content:center;white-space:nowrap}
-  .header-cta{white-space:nowrap}
-  .hero{background:#051828}.hero-shade{background:linear-gradient(90deg,rgba(5,104,119,.96) 0%,rgba(5,104,119,.8) 40%,rgba(5,104,119,.18) 75%,rgba(5,104,119,.08) 100%)}
-  .hero-brand{display:block;width:min(260px,52vw);height:auto;margin:0 0 26px}
-  h1,h2,.price strong,.annual-price strong,.plan-group-heading h3{font-family:Inter,"Aptos","Segoe UI",Arial,sans-serif;font-weight:700;letter-spacing:0}
-  .hero h1{max-width:680px;font-size:clamp(2.9rem,5.4vw,5.5rem);line-height:.98}
-  .eyebrow.light{color:var(--gold)}
-  .light-button{border-color:var(--gold);background:var(--gold);color:var(--ink)}
-  .product-visual{background:#001f45;box-shadow:0 32px 70px rgba(0,20,55,.4)}.pos-grid{background:#00396f}.ticket-panel button{background:var(--green-2)}
-  .cta-band{background:#056877}.cta-band p:last-child{color:#d8f6fb}.check-list li::before{color:var(--gold)}.screen-top>span,.bars span{background-color:var(--gold)}
-  .footer-brand{--brand-name-width:148px}
-  .contact-section{background:#051828}
-  .contact-copy>p{color:#d8eef4}
-  .contact-copy dt{color:#8bc7d4}
-  footer{border-top:1px solid rgba(0,222,248,.34);background:#001f45;color:#eaf8fb}
-  footer p{color:#c0dce4}
-  footer>span{color:#9ccbd6}
-  footer>a:not(.brand):hover{color:#31ccd4}
-  @media(max-width:1120px){.site-header{grid-template-columns:minmax(0,1fr) auto auto;column-gap:18px}.desktop-nav{display:none}.mobile-menu{display:block;position:relative;order:3}.mobile-menu summary{display:grid;width:42px;height:42px;place-content:center;gap:5px;padding:0;border:1px solid var(--line);border-radius:5px;list-style:none}.mobile-menu summary span{display:block;width:19px;height:2px;background:var(--ink)}.mobile-menu nav{position:absolute;top:50px;right:0;display:grid;min-width:220px;border:1px solid var(--line);border-radius:6px;background:var(--white);box-shadow:var(--shadow);padding:8px}.mobile-menu nav a{padding:11px 12px}}
-  @media(max-width:980px){html{scroll-padding-top:96px}.site-header{min-height:76px}.hero-shade{background:linear-gradient(90deg,rgba(5,104,119,.92),rgba(5,104,119,.58))}}
-  @media(max-width:680px){html{scroll-padding-top:80px}.site-header{min-height:64px}.hero-brand{width:220px;margin-bottom:20px}.hero-shade{background:linear-gradient(0deg,rgba(5,104,119,.96) 0%,rgba(5,104,119,.8) 50%,rgba(5,104,119,.2) 100%)}}
-</style>
-
-<style>
-  .plan-group + .plan-group{margin-top:clamp(70px,9vw,118px)}
-  .plan-group-heading{display:flex;align-items:end;justify-content:space-between;gap:36px;max-width:1200px;margin:0 auto 28px;border-bottom:1px solid var(--line);padding-bottom:18px}
-  .plan-group-heading h3{margin:0;font-family:Georgia,"Times New Roman",serif;font-size:clamp(1.8rem,3vw,2.7rem);font-weight:500;line-height:1.05}
-  .plan-group-heading>p{max-width:490px;margin:0;color:var(--muted)}
-  .fe-eyebrow{color:#1c68b4}
-  .plan-card{transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
-  .plan-card:hover,.plan-card:focus-within{border-color:var(--coral);box-shadow:0 18px 42px rgba(16,35,31,.16);transform:translateY(-5px)}
-  .plan-card.highlighted:hover,.plan-card.highlighted:focus-within{border-color:var(--green);box-shadow:0 24px 52px rgba(16,35,31,.22)}
-  .plan-card.fe-card:hover,.plan-card.fe-card:focus-within{border-color:#1c68b4}
-  .plan-card.fe-card.highlighted{border-color:#1c68b4}
-  .plan-card.fe-card.highlighted:hover,.plan-card.fe-card.highlighted:focus-within{border-color:#1c68b4}
-  .fe-card .plan-name{color:#1c68b4}
-  .annual-price{position:relative;display:grid;gap:2px;margin:0 0 20px;border-radius:6px;background:var(--mint);padding:12px 14px}
-  .annual-price strong{font-family:Georgia,"Times New Roman",serif;font-size:1.65rem;font-weight:500}
-  .annual-price span{color:var(--muted);font-size:.76rem}
-  .annual-price em{position:absolute;top:-10px;right:10px;border-radius:99px;background:#16a467;color:#fff;padding:4px 9px;font-size:.7rem;font-style:normal;font-weight:850}
-  .fe-card .annual-price{background:#e8f1fb}
-  .plan-limits{display:grid;gap:8px;margin:0 0 10px;border-top:1px solid var(--line);padding-top:16px}
-  .plan-limits div{display:flex;justify-content:space-between;gap:18px;font-size:.85rem}
-  .plan-limits dt{color:var(--muted)}
-  .plan-limits dd{margin:0;text-align:right;font-weight:800}
-  .plan-group-fe{border-top:1px solid #c8dced;padding-top:42px}
-  .plan-group-fe .plan-badge{background:#1c68b4}
-  @media(max-width:680px){.plan-group-heading{display:grid;gap:10px}.plan-group-heading>p{font-size:.94rem}.plan-card:hover,.plan-card:focus-within{transform:none}.annual-price strong{font-size:1.5rem}.plan-limits div{display:grid;gap:2px}.plan-limits dd{text-align:left}}
-</style>

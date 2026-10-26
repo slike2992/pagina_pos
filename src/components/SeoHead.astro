@@ -1,38 +1,32 @@
 ---
-import { SITE_URL, publicPageUrl } from "../lib/seo";
-
-interface Props {
-  title: string;
-  description: string;
-}
-
-const { title, description } = Astro.props;
-const canonical = publicPageUrl(Astro.url.pathname);
+import { indexableSite, SITE_URL, publicPageUrl } from "../lib/seo";
+interface Props { title: string; description: string; noindex?: boolean; }
+const { title, description, noindex = false } = Astro.props;
+const canonical = !noindex ? publicPageUrl(Astro.url.pathname) : null;
+const indexable = Boolean(canonical) && indexableSite(import.meta.env.PROD, import.meta.env.PUBLIC_SITE_INDEXABLE);
 const image = new URL("/images/og-sistema-pos.jpg", SITE_URL).href;
+const verification = import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION;
 ---
 <title>{title}</title>
 <meta name="description" content={description} />
-<meta name="robots" content={canonical ? "index, follow" : "noindex, follow"} />
-{canonical ? (
-  <>
-    <link rel="canonical" href={canonical} />
-    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
-    <meta property="og:type" content="website" />
-    <meta property="og:locale" content="es_CO" />
-    <meta property="og:site_name" content="Cripton" />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical} />
-    <meta property="og:image" content={image} />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Comerciante usando un punto de venta en su tienda" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={image} />
-    <meta name="twitter:image:alt" content="Comerciante usando un punto de venta en su tienda" />
-  </>
-) : (
-  <meta name="referrer" content="no-referrer" />
-)}
+<meta name="robots" content={indexable ? "index, follow" : "noindex, follow"} />
+{canonical ? <>
+  <link rel="canonical" href={canonical} />
+  <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="es_CO" />
+  <meta property="og:site_name" content="Cripton" />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={canonical} />
+  <meta property="og:image" content={image} />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Comerciante usando un punto de venta en su tienda" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={image} />
+  <meta name="twitter:image:alt" content="Comerciante usando un punto de venta en su tienda" />
+  {Astro.url.pathname === "/" && verification && <meta name="google-site-verification" content={verification} />}
+</> : <meta name="referrer" content="no-referrer" />}

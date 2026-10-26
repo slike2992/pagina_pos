@@ -1,0 +1,65 @@
+---
+import type { GetStaticPaths } from 'astro';
+import EditorialLayout from '../../../layouts/EditorialLayout.astro';
+import { legalDrafts, legalDraftNotice, legalDraftVersion, type LegalDraft } from '../../../content/legal-drafts';
+
+// A preview is opt-in; noindex is an additional safeguard, not a release gate.
+export const getStaticPaths: GetStaticPaths = () => {
+  const preview = import.meta.env.PUBLIC_LEGAL_DRAFT_PREVIEW === 'true';
+  const indexableRelease = import.meta.env.PROD && import.meta.env.PUBLIC_SITE_INDEXABLE === 'true';
+  if (indexableRelease && preview) {
+    throw new Error('Borradores legales: PUBLIC_LEGAL_DRAFT_PREVIEW=true es incompatible con un build productivo indexable (PUBLIC_SITE_INDEXABLE=true). Desactiva el preview antes del release.');
+  }
+  if (indexableRelease || (!import.meta.env.DEV && !preview)) return [];
+  return legalDrafts.map(document => ({ params: { document: document.slug }, props: { document } }));
+};
+
+interface Props { document: LegalDraft; }
+const { document } = Astro.props;
+---
+<EditorialLayout
+  title={document.title}
+  description={document.description}
+  eyebrow={`BORRADOR · Revisión ${legalDraftVersion}`}
+  heading={document.title}
+  lead={document.lead}
+  breadcrumbs={[{ name: 'Centro legal', href: '/legal/' }]}
+  noindex={true}
+>
+  <aside class="callout" aria-labelledby="draft-notice">
+    <h2 id="draft-notice">Documento sin vigencia</h2>
+    <p><strong>{legalDraftNotice}</strong></p>
+    <p>Revisión del <time datetime={legalDraftVersion}>{legalDraftVersion}</time>. Requiere completar los pendientes y aprobar su adopción. Esta página no recoge aceptaciones.</p>
+    <h3>Pendientes antes de adoptar este texto</h3>
+    <ul>{document.pending.map(item => <li>{item}</li>)}</ul>
+    <p>Los documentos vinculados al alta siguen siendo los de la versión 2026-09-01: <a href="/legal/terminos/">términos vigentes</a> y <a href="/legal/privacidad/">privacidad vigente</a>.</p>
+  </aside>
+
+  <nav aria-labelledby="draft-contents">
+    <h2 id="draft-contents">Contenido de este borrador</h2>
+    <ol>{document.sections.map(section => <li><a href={`#${section.id}`}>{section.heading}</a></li>)}</ol>
+  </nav>
+
+  <article aria-label={document.title}>
+    {document.sections.map(section => (
+      <section aria-labelledby={section.id}>
+        <h2 id={section.id}>{section.heading}</h2>
+        {section.paragraphs.map(paragraph => <p>{paragraph}</p>)}
+        {section.items && <ul>{section.items.map(item => <li>{item}</li>)}</ul>}
+        {section.subsections?.map(subsection => (
+          <div>
+            <h3>{subsection.heading}</h3>
+            {subsection.paragraphs.map(paragraph => <p>{paragraph}</p>)}
+          </div>
+        ))}
+      </section>
+    ))}
+  </article>
+
+  <aside class="callout" aria-labelledby="other-drafts">
+    <h2 id="other-drafts">Otros documentos para revisión</h2>
+    <ul>{legalDrafts.filter(item => item.slug !== document.slug).map(item => <li><a href={`/legal/borradores/${item.slug}/`}>{item.title}</a></li>)}</ul>
+    <p>{legalDraftNotice}</p>
+    <a class="button" href="/legal/">Consultar el centro legal</a>
+  </aside>
+</EditorialLayout>

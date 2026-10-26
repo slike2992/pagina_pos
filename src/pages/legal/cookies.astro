@@ -1,0 +1,23 @@
+---
+import EditorialLayout from "../../layouts/EditorialLayout.astro";
+---
+<EditorialLayout title="Cookies y preferencias de analítica" description="Conoce el almacenamiento necesario para los flujos de Cripton y cómo aceptar, rechazar o retirar la analítica opcional de la web comercial." eyebrow="Transparencia sobre la medición" heading="Tu visita no necesita analítica para funcionar" lead="Puedes consultar soluciones y planes, contactarnos y crear tu cuenta sin aceptar la analítica opcional." breadcrumbs={[{ name: "Centro legal", href: "/legal/" }]}>
+  <h2>Almacenamiento para que funcionen los procesos</h2>
+  <p>Los flujos de registro, cuenta y pago utilizan el almacenamiento del navegador para recordar pasos en curso, evitar solicitudes duplicadas y mantener la sesión correspondiente. Los datos concretos dependen del flujo que estés utilizando. No se usan esas funciones para autorizar analítica o publicidad.</p>
+  <p>El registro puede conservar temporalmente datos de un intento en el almacenamiento de la pestaña. Evita dejar formularios y sesiones abiertos en equipos compartidos. Los tokens y las credenciales de acceso deben tratarse como información privada.</p>
+  <h2>Analítica opcional en la web comercial</h2>
+  <p>Cuando se configura y habilita Google Analytics tras revisar su uso, se muestra una elección entre aceptar la analítica y mantener solo lo necesario. Antes de aceptar no se carga la etiqueta de Google Analytics ni se envían los eventos comerciales definidos por esta web. Si no está configurado, no se muestra el aviso ni se carga esa etiqueta.</p>
+  <p>La analítica se limita a páginas públicas: soluciones, planes y contenido informativo. La integración de esta web no se incluye en registro, verificación, recuperación de contraseña, cuenta, pago ni administración.</p>
+  <h2>Qué se mide si aceptas</h2>
+  <ul><li>Visitas a páginas públicas, utilizando su dirección editorial sin parámetros de consulta.</li><li>Acciones comerciales por categorías, como consultar planes, abrir el registro o preparar un contacto.</li><li>El código del plan elegido cuando el botón lo identifica.</li></ul>
+  <p>Los eventos propios no incluyen nombres, correos, teléfonos, texto de formularios, contraseñas, tokens, identificadores de clientes ni importes de pago. Se desactivan las señales de Google y la personalización publicitaria en esta integración. Google actúa como proveedor de la analítica opcional: consulta <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer">cómo utiliza información de sitios que emplean sus servicios</a>.</p>
+  <h2>Cómo se recuerda tu decisión</h2>
+  <p>La preferencia se conserva en el almacenamiento local bajo la clave <code>cripton.analytics-consent.v1</code> durante un máximo de 180 días. Al vencer se solicita de nuevo. Si aceptas y Google Analytics está configurado, puede crear cookies cuyo nombre comienza por <code>_ga</code>; la integración limita su duración configurada a 180 días.</p>
+  <p>El navegador también permite borrar almacenamiento y cookies. Al hacerlo puede olvidar tanto tus preferencias como pasos o sesiones en curso.</p>
+  <h2>Rechazar o retirar el permiso</h2>
+  <p>Selecciona «Solo necesarias» en el aviso o abre «Preferencias de analítica» en el pie de página cuando esa opción esté disponible. Al rechazar se desactiva el envío futuro desde esta integración y se retiran las cookies de analítica accesibles para este dominio. Retirar el permiso no elimina por sí solo los datos enviados anteriormente al proveedor.</p>
+  <p>Si el navegador comunica Global Privacy Control o Do Not Track, esta integración mantiene desactivada la analítica. Si bloqueas el almacenamiento local, tu elección funciona para la página actual y puede solicitarse otra vez al navegar.</p>
+  <h2>Servicios que abres desde la web</h2>
+  <p>WhatsApp, tu aplicación de correo y el proveedor del pago aplican sus propias condiciones cuando decides abrirlos. Preparar un mensaje en el formulario de contacto no lo envía automáticamente; el contenido se conserva en memoria y no se incluye en el enlace de un botón de la página. Revisa su contenido y destinatario antes de enviarlo.</p>
+  <p>Para una solicitud de privacidad escribe a <a href="mailto:legal@cripton.com.co">legal@cripton.com.co</a>. Consulta también la <a href="/legal/privacidad/">política de privacidad vigente</a>.</p>
+</EditorialLayout>

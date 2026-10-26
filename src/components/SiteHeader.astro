@@ -1,0 +1,53 @@
+---
+import Brand from "./Brand.astro";
+const home = Astro.url.pathname === "/";
+const section = (id: string) => home ? `#${id}` : `/#${id}`;
+const links = [
+  { href: "/soluciones/", label: "Soluciones" },
+  { href: section("planes"), label: "Planes" },
+  { href: "/confianza/", label: "Confianza" },
+  { href: section("contacto"), label: "Contacto" },
+  { href: "/cuenta", label: "Ingresar" },
+];
+---
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
+<header class="site-header" data-site-header>
+  <Brand className="site-brand" href="/" mobileNameOnly />
+  <nav class="desktop-nav" aria-label="Navegación principal">
+    {links.map(({ href, label }) => <a href={href} aria-current={Astro.url.pathname === href ? "page" : undefined}>{label}</a>)}
+  </nav>
+  <a class="header-cta button" href="/registro?plan=professional" data-track="signup" data-track-location="header" data-track-plan="professional">Crear cuenta</a>
+  <details class="mobile-menu">
+    <summary aria-label="Abrir o cerrar navegación"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" /></svg><span>Menú</span></summary>
+    <nav aria-label="Navegación móvil">
+      {links.map(({ href, label }) => <a href={href} aria-current={Astro.url.pathname === href ? "page" : undefined}>{label}</a>)}
+      <a href="/registro?plan=professional" data-track="signup" data-track-location="header" data-track-plan="professional">Crear cuenta</a>
+    </nav>
+  </details>
+</header>
+<script>
+  const menu = document.querySelector<HTMLDetailsElement>("[data-site-header] .mobile-menu");
+  const summary = menu?.querySelector("summary");
+  menu?.querySelectorAll("a").forEach(link => link.addEventListener("click", () => { menu.open = false; }));
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && menu?.open) { menu.open = false; summary?.focus(); }
+  });
+  document.addEventListener("click", event => {
+    if (menu?.open && event.target instanceof Node && !menu.contains(event.target)) menu.open = false;
+  });
+</script>
+<style>
+  .site-header { position: sticky; top: 0; z-index: 30; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: clamp(20px, 3vw, 44px); min-height: 88px; padding: 12px clamp(18px, 4vw, 64px); border-bottom: 1px solid var(--line); background: rgb(255 255 255 / 97%); }
+  .site-brand { --brand-horizontal-width: 304px; --brand-name-width: 136px; justify-self: start; }
+  .desktop-nav { display: flex; justify-content: center; gap: clamp(16px, 2vw, 30px); }
+  nav a { color: var(--muted); text-decoration: none; font-size: .94rem; font-weight: 600; white-space: nowrap; }
+  nav a:hover, nav a[aria-current] { color: var(--green-2); text-decoration: underline; }
+  .header-cta { font-size: .9rem; padding: 10px 16px; white-space: nowrap; }
+  .mobile-menu { display: none; position: relative; }
+  summary { display: flex; align-items: center; justify-content: center; gap: 8px; min-width: 48px; min-height: 48px; padding: 8px; border: 1px solid var(--line); border-radius: 7px; color: var(--ink); list-style: none; cursor: pointer; font-size: .85rem; font-weight: 700; }
+  summary::-webkit-details-marker { display: none; }
+  .mobile-menu nav { position: absolute; right: 0; top: calc(100% + 12px); display: grid; min-width: 230px; padding: 8px; border: 1px solid var(--line); border-radius: 10px; background: white; box-shadow: var(--shadow); }
+  .mobile-menu nav a { padding: 12px; }
+  @media (max-width: 1180px) { .site-header { grid-template-columns: minmax(0, 1fr) auto auto; gap: 16px; } .desktop-nav { display: none; } .mobile-menu { display: block; } }
+  @media (max-width: 680px) { .site-header { min-height: 72px; padding: 10px 16px; grid-template-columns: minmax(0, 1fr) auto; } .header-cta { display: none; } }
+</style>

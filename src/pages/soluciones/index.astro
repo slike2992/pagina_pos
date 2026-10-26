@@ -1,0 +1,57 @@
+---
+import EditorialLayout from '../../layouts/EditorialLayout.astro';
+import { solutions } from '../../content/solutions';
+
+const title = 'Soluciones POS para comercios en Colombia | Cripton';
+const description = 'Elige qué revisar con Cripton POS: ventas y caja, inventario, reportes o facturación electrónica. Conoce los flujos, sus requisitos y cómo evaluar el plan.';
+---
+
+<EditorialLayout
+  title={title}
+  description={description}
+  eyebrow="Soluciones para tu comercio"
+  heading="Un POS para conectar tu operación"
+  lead="Una venta, una diferencia de inventario y una factura pendiente plantean preguntas distintas. Elige el recorrido que más se parezca a tu necesidad y revisa qué debes preparar antes de contratar."
+  breadcrumbs={[{ name: 'Inicio', href: '/' }, { name: 'Soluciones', href: '/soluciones/' }]}
+>
+  <section aria-labelledby="solutions-title">
+    <h2 id="solutions-title">Cuatro recorridos para evaluar Cripton</h2>
+    <div class="content-grid">
+      {solutions.map((solution) => (
+        <article class="content-card">
+          <h3><a href={`/soluciones/${solution.slug}/`}>{solution.cardTitle}</a></h3>
+          <p>{solution.decisionPrompt}</p>
+          <p>{solution.lead}</p>
+          <a class="button secondary" href={`/soluciones/${solution.slug}/`}>Explorar {solution.eyebrow.toLocaleLowerCase('es-CO')}</a>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section aria-labelledby="choose-title">
+    <h2 id="choose-title">¿Por dónde te conviene empezar?</h2>
+    <ul>
+      <li><strong>Si una diferencia aparece al cerrar el turno:</strong> comienza por <a href="/soluciones/ventas-y-caja/">ventas y caja</a>. Revisa apertura, cobros y movimientos antes de sacar conclusiones.</li>
+      <li><strong>Si la cantidad disponible no coincide con el conteo:</strong> consulta <a href="/soluciones/inventario/">inventario</a>. Sigue las entradas y salidas del producto y comprueba cómo registrar una corrección.</li>
+      <li><strong>Si necesitas decidir qué revisar o reponer:</strong> explora <a href="/soluciones/reportes/">reportes</a>. Define el periodo y contrasta las referencias vendidas con tus existencias.</li>
+      <li><strong>Si necesitas emitir documentos electrónicos:</strong> revisa <a href="/soluciones/facturacion-electronica/">facturación electrónica</a> antes de elegir una modalidad FE. Hay requisitos por empresa y emisor, además del plan.</li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="demo-title">
+    <h2 id="demo-title">Haz que la demostración responda a tu operación</h2>
+    <ol class="steps-list">
+      <li><strong>Elige un caso concreto.</strong> Puede ser una venta con devolución, una recepción de productos o una consulta de ventas del día.</li>
+      <li><strong>Describe cómo trabajas.</strong> Indica cuántas personas, cajas y sucursales necesitas, qué equipos utilizas y si vas a emitir documentos electrónicos.</li>
+      <li><strong>Comprueba el recorrido completo.</strong> Revisa cómo registrar la operación, consultar el resultado y entender qué ocurre si algo queda pendiente.</li>
+      <li><strong>Confirma el alcance del plan.</strong> Contrasta funciones, límites, periodicidad y condiciones antes de crear tu cuenta.</li>
+    </ol>
+  </section>
+
+  <aside class="callout" aria-labelledby="scope-title">
+    <h2 id="scope-title">Funciones y requisitos que conviene confirmar</h2>
+    <p>La disponibilidad depende del plan y de las funciones habilitadas para la empresa. Los permisos de cada usuario también determinan qué puede consultar o modificar. Revisa la conexión, los equipos y los datos que necesitas preparar para comenzar.</p>
+    <p>La facturación electrónica requiere además la preparación del emisor y del ambiente de emisión. Una demostración no sustituye esa verificación.</p>
+    <p><a class="button" href="/#contacto">Agendar una demostración</a> <a class="button secondary" href="/#planes">Comparar planes</a></p>
+  </aside>
+</EditorialLayout>

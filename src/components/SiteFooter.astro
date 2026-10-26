@@ -1,0 +1,31 @@
+---
+import Brand from "./Brand.astro";
+import ConsentPanel from "./ConsentPanel.astro";
+import { publicPageUrl, indexableSite } from "../lib/seo";
+const analyticsAvailable = indexableSite(import.meta.env.PROD, import.meta.env.PUBLIC_SITE_INDEXABLE) && import.meta.env.PUBLIC_ANALYTICS_REVIEWED === "true" && Boolean(publicPageUrl(Astro.url.pathname)) && /^G-[A-Z0-9]{5,15}$/.test(import.meta.env.PUBLIC_GA_MEASUREMENT_ID ?? "");
+---
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div class="footer-about"><Brand className="footer-brand" kind="nombre" tone="reverse" /><p>Ventas, caja e inventario para comercios que quieren crecer con control.</p><a href="mailto:ventas@cripton.com.co" data-track="contact" data-track-location="footer">ventas@cripton.com.co</a></div>
+    <nav aria-label="Producto"><h2>Tu operación</h2><a href="/soluciones/ventas-y-caja/">Ventas y caja</a><a href="/soluciones/inventario/">Inventario</a><a href="/soluciones/reportes/">Reportes</a><a href="/soluciones/facturacion-electronica/">Facturación electrónica</a><a href="/#planes">Planes y capacidades</a></nav>
+    <nav aria-label="Ayuda y contacto"><h2>Antes de empezar</h2><a href="/guias/elegir-un-pos/">Cómo elegir un POS</a><a href="/confianza/">Seguridad y uso responsable</a><a href="/#contacto">Solicitar demostración</a><a href="mailto:servicioalcliente@cripton.com.co">Atención al cliente</a><a href="/cuenta">Mi cuenta</a></nav>
+    <nav aria-label="Información legal"><h2>Condiciones y datos</h2><a href="/legal/">Centro legal</a><a href="/legal/terminos/">Términos vigentes</a><a href="/legal/privacidad/">Privacidad</a><a href="/legal/cookies/">Cookies y medición</a><a href="mailto:legal@cripton.com.co">Solicitudes de privacidad</a>{analyticsAvailable && <button type="button" data-privacy-settings>Preferencias de analítica</button>}</nav>
+  </div>
+  <div class="footer-bottom"><span>© {new Date().getFullYear()} Cripton</span><span>Software POS web para comercios en Colombia.</span></div>
+</footer>
+<ConsentPanel />
+<style>
+  .site-footer { padding: 48px clamp(20px, 5vw, 76px) 24px; background: var(--ink); color: white; border-top: 1px solid #315567; }
+  .footer-grid { display: grid; grid-template-columns: 1.25fr repeat(3, minmax(0, 1fr)); gap: clamp(24px, 4vw, 56px); max-width: 1440px; margin: auto; }
+  .footer-brand { --brand-name-width: 148px; }
+  .footer-about p { max-width: 30ch; margin-top: 18px; color: #c2d6e1; font-size: .9rem; }
+  nav { display: grid; align-content: start; gap: 12px; }
+  h2 { margin: 0 0 6px; color: white; font: inherit; font-weight: 750; }
+  a, button { color: #c2d6e1; font-size: .87rem; text-decoration: none; overflow-wrap: anywhere; }
+  a:hover, button:hover { color: var(--gold); text-decoration: underline; }
+  a:focus-visible, button:focus-visible { outline-color: var(--gold); }
+  button { width: fit-content; border: 0; padding: 0; background: none; text-align: left; }
+  .footer-bottom { display: flex; justify-content: space-between; gap: 18px; max-width: 1440px; margin: 38px auto 0; padding-top: 22px; border-top: 1px solid #315567; color: #a9c5d4; font-size: .8rem; }
+  @media (max-width: 1000px) { .footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 560px) { .footer-grid { grid-template-columns: 1fr; gap: 30px; } .footer-bottom { flex-direction: column; gap: 8px; } }
+</style>

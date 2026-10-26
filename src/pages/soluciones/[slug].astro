@@ -1,0 +1,89 @@
+---
+import type { GetStaticPaths } from 'astro';
+import EditorialLayout from '../../layouts/EditorialLayout.astro';
+import { solutions, type Solution } from '../../content/solutions';
+
+export const getStaticPaths = (() => solutions.map((solution) => ({
+  params: { slug: solution.slug },
+  props: { solution },
+}))) satisfies GetStaticPaths;
+
+interface Props {
+  solution: Solution;
+}
+
+const { solution } = Astro.props;
+const related = solution.relatedSlugs
+  .map((slug) => solutions.find((item) => item.slug === slug))
+  .filter((item): item is Solution => Boolean(item));
+---
+
+<EditorialLayout
+  title={solution.title}
+  description={solution.description}
+  eyebrow={solution.eyebrow}
+  heading={solution.heading}
+  lead={solution.lead}
+  breadcrumbs={[
+    { name: 'Inicio', href: '/' },
+    { name: 'Soluciones', href: '/soluciones/' },
+    { name: solution.cardTitle, href: `/soluciones/${solution.slug}/` },
+  ]}
+>
+  {solution.sections.map((section, index) => (
+    <section aria-labelledby={`solution-section-${index}`}>
+      <h2 id={`solution-section-${index}`}>{section.heading}</h2>
+      {section.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+      {section.bullets && <ul>{section.bullets.map((bullet) => <li>{bullet}</li>)}</ul>}
+    </section>
+  ))}
+
+  <section aria-labelledby="workflow-title">
+    <h2 id="workflow-title">{solution.workflowHeading}</h2>
+    <ol class="steps-list">
+      {solution.steps.map((step) => <li><strong>{step.title}.</strong> {step.body}</li>)}
+    </ol>
+  </section>
+
+  <section aria-labelledby="requirements-title">
+    <h2 id="requirements-title">Qué necesitas para empezar</h2>
+    <ul>{solution.requirements.map((requirement) => <li>{requirement}</li>)}</ul>
+  </section>
+
+  <aside class="callout" aria-labelledby="limits-title">
+    <h2 id="limits-title">Alcance y condiciones que debes confirmar</h2>
+    <ul>{solution.limits.map((limit) => <li>{limit}</li>)}</ul>
+    <p><a href="/#planes">Revisa las modalidades y los límites de cada plan</a> o <a href="/#contacto">consulta el alcance para tu negocio</a>.</p>
+  </aside>
+
+  <section aria-labelledby="questions-title">
+    <h2 id="questions-title">Dudas sobre {solution.eyebrow.toLocaleLowerCase('es-CO')}</h2>
+    {solution.questions.map((item) => (
+      <div>
+        <h3>{item.question}</h3>
+        <p>{item.answer}</p>
+      </div>
+    ))}
+  </section>
+
+  <section class="callout" aria-labelledby="demo-title">
+    <h2 id="demo-title">{solution.demo.heading}</h2>
+    <p>{solution.demo.description}</p>
+    <ul>{solution.demo.checks.map((check) => <li>{check}</li>)}</ul>
+    <p><a class="button" href="/#contacto">Agendar una demostración</a> <a class="button secondary" href={solution.registration.href}>{solution.registration.label}</a></p>
+    <p>Antes de continuar, <a href="/#planes">compara el plan y sus condiciones</a>. Crear una cuenta inicia el registro; la activación del servicio requiere completar el proceso indicado.</p>
+  </section>
+
+  <nav aria-labelledby="related-title">
+    <h2 id="related-title">Continúa con una operación relacionada</h2>
+    <div class="content-grid">
+      {related.map((item) => (
+        <article class="content-card">
+          <h3><a href={`/soluciones/${item.slug}/`}>{item.cardTitle}</a></h3>
+          <p>{item.decisionPrompt}</p>
+        </article>
+      ))}
+    </div>
+    <p><a href="/soluciones/">Ver todas las soluciones</a></p>
+  </nav>
+</EditorialLayout>
