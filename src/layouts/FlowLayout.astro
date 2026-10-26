@@ -1,5 +1,6 @@
 ---
 import Brand from "../components/Brand.astro";
+import SeoHead from "../components/SeoHead.astro";
 
 interface Props {
   title: string;
@@ -15,13 +16,11 @@ const { title, eyebrow, heading, lead } = Astro.props;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={lead} />
-    <meta name="robots" content="noindex, follow" />
+    <SeoHead title={`${title} | Cripton`} description={lead} />
     <meta name="theme-color" content="#051828" />
     <link rel="icon" type="image/svg+xml" href="/brand/v1.0/favicon.svg" />
     <link rel="icon" href="/brand/v1.0/favicon.ico" sizes="any" />
     <link rel="manifest" href="/site.webmanifest" />
-    <title>{title} | Cripton</title>
   </head>
   <body>
     <header>

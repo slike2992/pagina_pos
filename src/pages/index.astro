@@ -2,6 +2,13 @@
 import { Image } from "astro:assets";
 import heroImage from "../assets/hero-comercio-pos.png";
 import Brand from "../components/Brand.astro";
+import SeoHead from "../components/SeoHead.astro";
+import { SITE_URL } from "../lib/seo";
+
+const commercialEmail = "ventas@cripton.com.co";
+
+const seoTitle = "Software POS en Colombia: ventas e inventario | Cripton";
+const seoDescription = "Cripton es un software POS web para comercios en Colombia. Gestiona ventas, caja, inventario, usuarios y reportes. Conoce los planes y agenda una demostración.";
 
 const whatsappNumber = import.meta.env.PUBLIC_WHATSAPP_NUMBER?.replace(/\D/g, "") ?? "";
 const whatsappUrl = (message: string) =>
@@ -119,42 +126,55 @@ const faqs = [
   ["¿Los precios publicados son definitivos?", "Son valores mensuales de referencia. La propuesta final confirma alcance, impuestos aplicables y condiciones de servicio antes de contratar."],
 ];
 
-const softwareSchema = {
+const siteSchema = {
   "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  name: "Cripton",
-  applicationCategory: "BusinessApplication",
-  operatingSystem: "Web",
-  description: "Cripton: ventas, caja, inventario y reportes para comercios.",
-  offers: plans.map((plan) => ({
-    "@type": "Offer",
-    name: `Plan ${plan.name}`,
-    price: plan.monthly.replace(/[$.]/g, ""),
-    priceCurrency: "COP",
-  })),
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#organization`,
+      name: "Cripton",
+      url: `${SITE_URL}/`,
+      email: commercialEmail,
+      contactPoint: {
+        "@type": "ContactPoint",
+        contactType: "sales",
+        email: commercialEmail,
+      },
+      logo: new URL("/brand/v1.0/cripton_horizontal_color_v1.0.svg", SITE_URL).href,
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": `${SITE_URL}/#software`,
+      name: "Cripton POS",
+      url: `${SITE_URL}/`,
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Web",
+      description: seoDescription,
+      publisher: { "@id": `${SITE_URL}/#organization` },
+      offers: plans.map((plan) => ({
+        "@type": "Offer",
+        name: `Plan ${plan.name}, mensual`,
+        url: `${SITE_URL}/#planes`,
+        price: plan.monthly.replace(/[$.]/g, ""),
+        priceCurrency: "COP",
+      })),
+    },
+  ],
 };
 ---
 
 <!doctype html>
-<html lang="es">
+<html lang="es-CO">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Cripton POS: ventas, caja, inventario y reportes para una operación más ágil." />
+    <SeoHead title={seoTitle} description={seoDescription} />
     <meta name="theme-color" content="#051828" />
-    <meta name="robots" content="index, follow" />
-    <meta property="og:type" content="website" />
-    <meta property="og:locale" content="es_CO" />
-    <meta property="og:title" content="Cripton | Software para una operación más ágil" />
-    <meta property="og:description" content="Ventas ágiles, caja organizada e inventario al día desde una sola plataforma." />
-    <meta property="og:image" content="/images/og-sistema-pos.jpg" />
-    <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" type="image/svg+xml" href="/brand/v1.0/favicon.svg" />
     <link rel="icon" href="/brand/v1.0/favicon.ico" sizes="any" />
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="generator" content={Astro.generator} />
-    <script is:inline type="application/ld+json" set:html={JSON.stringify(softwareSchema)} />
-    <title>Cripton | Ventas, caja e inventario para tu negocio</title>
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(siteSchema).replace(/</g, "\\u003c")} />
   </head>
   <body>
     <a class="skip-link" href="#contenido">Saltar al contenido</a>
@@ -183,7 +203,7 @@ const softwareSchema = {
         <div class="hero-content">
           <p class="eyebrow light">Control para comercios que quieren crecer</p>
           <img class="hero-brand" src="/brand/v1.0/cripton_vertical_reverso_v1.0.svg" alt="Cripton" width="1082" height="1048" />
-          <h1>Software para una operación más ágil.</h1>
+          <h1>Software POS para comercios en Colombia.</h1>
           <p class="hero-lead">Vende con agilidad, mantén tu caja organizada y conoce tu inventario desde una sola plataforma.</p>
           <div class="hero-actions" aria-label="Acciones principales">
             <a class="button primary light-button" href="/registro?plan=professional">Empezar ahora</a>
@@ -269,7 +289,7 @@ const softwareSchema = {
       </section>
 
       <section class="contact-section section" id="contacto">
-        <div class="contact-copy"><p class="eyebrow light">Hablemos</p><h2>Cuéntanos cómo funciona tu negocio</h2><p>Completa los datos y prepararemos un mensaje de WhatsApp. No almacenamos esta información en la página.</p><dl><div><dt>Respuesta</dt><dd>Atención personalizada</dd></div><div><dt>Demostración</dt><dd>Enfocada en tu operación</dd></div><div><dt>Implementación</dt><dd>Acompañada de principio a fin</dd></div></dl></div>
+        <div class="contact-copy"><p class="eyebrow light">Hablemos</p><h2>Cuéntanos cómo funciona tu negocio</h2><p>Completa los datos y prepararemos un mensaje de WhatsApp. No almacenamos esta información en la página.</p><p>Contacto comercial: <a href={`mailto:${commercialEmail}`}>{commercialEmail}</a>.</p><dl><div><dt>Respuesta</dt><dd>Atención personalizada</dd></div><div><dt>Demostración</dt><dd>Enfocada en tu operación</dd></div><div><dt>Implementación</dt><dd>Acompañada de principio a fin</dd></div></dl></div>
         <form id="lead-form" data-whatsapp-number={whatsappNumber}>
           <label for="name">Nombre</label><input id="name" type="text" name="name" autocomplete="name" required placeholder="Tu nombre" />
           <label for="phone">Teléfono o WhatsApp</label><input id="phone" type="tel" name="phone" autocomplete="tel" required inputmode="tel" placeholder="300 000 0000" />

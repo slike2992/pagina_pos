@@ -1,2 +1,5 @@
 User-agent: *
 Allow: /
+
+# Allow crawling so search engines can read noindex on account/payment/token pages.
+Sitemap: https://cripton.com.co/sitemap.xml
