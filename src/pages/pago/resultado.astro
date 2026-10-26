@@ -68,7 +68,10 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
         passwordLink.hidden = false;
         detail.textContent = "La empresa quedó aprovisionada. Crea la contraseña de prueba para entrar al POS.";
       } else if (body.status === "completed") {
-        detail.textContent = "La contraseña del propietario ya fue configurada. Puedes entrar al POS.";
+        passwordLink.href = "/cuenta";
+        passwordLink.textContent = "Ingresar a Mi cuenta";
+        passwordLink.hidden = false;
+        detail.textContent = "Tu empresa está lista. Ingresa con el correo y la contraseña que ya utilizas.";
       }
     };
 

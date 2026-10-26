@@ -6,6 +6,7 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
   <div class="result" id="verification" data-api-url={apiUrl}>
     <p class="status" role="status" aria-live="polite">Validando el enlace…</p>
     <div class="actions" hidden><a class="button" id="checkout-link" href="#">Continuar al pago seguro</a></div>
+    <div class="actions"><button class="button secondary" type="button" id="renew-local" hidden>Renovar enlace de prueba</button></div>
   </div>
   <script>
     import { createIdempotencyKey } from "../../scripts/client-idempotency";
@@ -14,6 +15,7 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
     const status = root.querySelector<HTMLElement>(".status")!;
     const actions = root.querySelector<HTMLElement>(".actions")!;
     const link = root.querySelector<HTMLAnchorElement>("#checkout-link")!;
+    const renew = root.querySelector<HTMLButtonElement>("#renew-local")!;
     const params = new URLSearchParams(location.search);
     const token = params.get("token");
     const signupIntentId = params.get("signupIntentId");
@@ -32,6 +34,15 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
       location.replace(url.href);
       return true;
     };
+    renew.addEventListener("click", async () => {
+      if (!import.meta.env.DEV) return;
+      renew.disabled = true;
+      try {
+        if (!await renewLocalVerification()) fail("No fue posible renovar el enlace de prueba. Vuelve a iniciar el registro local.");
+      } catch {
+        fail("No fue posible renovar el enlace de prueba. Intenta nuevamente más tarde.");
+      } finally { renew.disabled = false; }
+    });
     if (!token || !signupIntentId) fail("El enlace está incompleto. Solicita uno nuevo.");
     else (async () => {
       try {
@@ -60,7 +71,8 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
         actions.hidden = false;
       } catch (error) {
         const message = typeof error === "object" && error && "error" in error ? (error as { error?: { message?: string } }).error?.message : null;
-        if (await renewLocalVerification()) return;
+        const code = typeof error === "object" && error && "error" in error ? (error as { error?: { code?: string } }).error?.code : null;
+        renew.hidden = !(import.meta.env.DEV && code === "invalid_or_expired_token");
         fail(message ?? "No pudimos validar el enlace. Puede haber vencido o ya fue utilizado.");
       }
     })();
