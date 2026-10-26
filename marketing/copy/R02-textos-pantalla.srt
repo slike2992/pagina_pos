@@ -1,0 +1,15 @@
+1
+00:00:00,000 --> 00:00:06,000
+Antes de reponer, consulta.
+
+2
+00:00:06,000 --> 00:00:12,000
+Revisa tus existencias.
+
+3
+00:00:12,000 --> 00:00:18,000
+Producto, código y stock.
+
+4
+00:00:18,000 --> 00:00:24,000
+Conoce el flujo en una demo.

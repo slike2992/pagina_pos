@@ -1,0 +1,1 @@
+Pulso Cripton demo · composición procedural original de 24 s, 96 BPM, estéreo 44,1 kHz/16 bit. Sin muestras, canciones ni voz de terceros. Código reproducible en tools/finish.py. Es una propuesta de revisión, pendiente de audición/aprobación; no un audio de identidad adoptado. Los MP4 tienen texto y esta pista, sin locución.

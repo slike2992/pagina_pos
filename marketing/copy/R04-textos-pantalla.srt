@@ -1,0 +1,15 @@
+1
+00:00:00,000 --> 00:00:06,000
+Todo empieza por el producto.
+
+2
+00:00:06,000 --> 00:00:12,000
+Nombre, referencia e imagen.
+
+3
+00:00:12,000 --> 00:00:18,000
+Reconoce tu catálogo.
+
+4
+00:00:18,000 --> 00:00:24,000
+Conoce Cripton POS.

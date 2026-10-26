@@ -1,0 +1,9 @@
+file 'R01-01-story.png'
+duration 6
+file 'R01-02-story.png'
+duration 6
+file 'R01-03-story.png'
+duration 6
+file 'R01-04-story.png'
+duration 6
+file 'R01-04-story.png'

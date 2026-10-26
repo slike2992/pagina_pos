@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-26",
+  "browser": "Codex in-app browser",
+  "desktop": {
+    "viewport": [
+      1280,
+      720
+    ],
+    "horizontalOverflow": false,
+    "visibleBrokenImages": 0,
+    "filters": {
+      "all": 73,
+      "posts": 40,
+      "stories": 12,
+      "ads": 9,
+      "landscape": 12
+    },
+    "interaction": "Native click and keyboard Tab/Enter"
+  },
+  "mobile": {
+    "viewport": [
+      393,
+      852
+    ],
+    "horizontalOverflow": false,
+    "visibleBrokenImages": 0,
+    "review": "Header, navigation wrapping and visible text; full social upload preview not exercised"
+  },
+  "video": {
+    "file": "R01.mp4",
+    "duration": 24,
+    "observedCurrentTime": 24,
+    "readyState": 4,
+    "mediaError": null,
+    "result": "Played to completion in browser"
+  },
+  "cleanup": {
+    "viewportOverride": "reset",
+    "gallery": "left open for review"
+  },
+  "limits": [
+    "One video played in browser; all six decoded with ffmpeg",
+    "No account edits or posts",
+    "No narrated voice generated",
+    "Native platform crops pending"
+  ]
+}

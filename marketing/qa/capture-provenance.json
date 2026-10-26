@@ -1,0 +1,62 @@
+[
+  {
+    "file": "captures/catalogo.jpg",
+    "region": {
+      "left": 208,
+      "top": 126,
+      "width": 1064,
+      "height": 455
+    },
+    "source": "Captura visible del navegador, bruto privado fuera del repositorio",
+    "sha256": "f4d010aaf7cfc199c29b79d6a89b889a0993dcb6ae76030c097f124e490036b1",
+    "minimumVisualDetail": 33.7909463772468
+  },
+  {
+    "file": "captures/stock.jpg",
+    "region": {
+      "left": 208,
+      "top": 168,
+      "width": 1064,
+      "height": 330
+    },
+    "source": "Captura visible del navegador, bruto privado fuera del repositorio",
+    "sha256": "be22b0b94a78093496e12a6336b1db09a938d20d1d0467768418b89ca1a5f050",
+    "minimumVisualDetail": 30.854965863254666
+  },
+  {
+    "file": "captures/kardex.jpg",
+    "region": {
+      "left": 208,
+      "top": 168,
+      "width": 1064,
+      "height": 190
+    },
+    "source": "Captura visible del navegador, bruto privado fuera del repositorio",
+    "sha256": "d9ef756c15d3d03860b4a21d68c5c393c99539c9fe51fa92f7c663cae5822154",
+    "minimumVisualDetail": 27.362814065516787
+  },
+  {
+    "file": "captures/ventas.jpg",
+    "region": {
+      "left": 208,
+      "top": 120,
+      "width": 640,
+      "height": 275
+    },
+    "source": "Captura visible del navegador, bruto privado fuera del repositorio",
+    "sha256": "c3c29d43e9e492967e86b2de801cf3cb2297bfa89fa441e95996f21be0efc5c9",
+    "minimumVisualDetail": 32.46349392008433
+  },
+  {
+    "file": "captures/caja.jpg",
+    "region": {
+      "left": 208,
+      "top": 56,
+      "width": 1064,
+      "height": 252
+    },
+    "source": "Captura visible del navegador, bruto privado fuera del repositorio",
+    "sha256": "270b1a182d9acec682ffde1c82d13c551ae6a49acf55929f9c4e8ba9999f13c1",
+    "minimumVisualDetail": 40.86956861513941
+  }
+]

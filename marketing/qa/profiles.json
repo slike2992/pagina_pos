@@ -1,0 +1,33 @@
+[
+  {
+    "name": "avatar",
+    "dimensions": [
+      1024,
+      1024
+    ],
+    "source": "Icono maskable oficial, copia sin modificación",
+    "platform_preview": "pendiente recorte real de cada cuenta"
+  },
+  {
+    "name": "facebook-cover",
+    "dimensions": [
+      1640,
+      720
+    ],
+    "platform_preview": "pendiente encuadre escritorio/móvil"
+  },
+  {
+    "name": "youtube-banner",
+    "dimensions": [
+      2560,
+      1440
+    ],
+    "safe_zone_proposal": [
+      507,
+      508,
+      1546,
+      423
+    ],
+    "platform_preview": "pendiente comprobar en el canal real"
+  }
+]

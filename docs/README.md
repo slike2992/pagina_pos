@@ -2,6 +2,8 @@
 
 ## Desarrollo vigente
 
+- [Marketing digital: kit y calendario de 30 días](../marketing/README.md): piezas editables, capturas reales, videos y revisión comercial.
+
 - [Calidad, conversión y accesibilidad](WEB_QUALITY_2026-10-26.md): validación compartida, responsive y peso antes/después.
 
 - [Plan de captación, SEO y condiciones](WEB_GROWTH_PLAN_2026-10-26.md): alcance implementado y dependencias reales.

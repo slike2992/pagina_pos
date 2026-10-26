@@ -1,0 +1,25 @@
+import fs from 'node:fs/promises';import path from 'node:path';import crypto from 'node:crypto';import {createRequire} from 'node:module';
+const root=path.resolve(process.argv[2]);const require=createRequire(path.join(root,'..','package.json'));const sharp=require('sharp');
+const data=JSON.parse(await fs.readFile(path.join(root,'campaigns/launch-30d/campaign.json'),'utf8'));const manifest=JSON.parse(await fs.readFile(path.join(root,'campaigns/launch-30d/manifest.json'),'utf8'));const issues=[];const inventory=[];
+const assert=(condition,msg)=>{if(!condition)issues.push(msg)};
+assert(data.posts.length===12,'Faltan publicaciones');assert(data.stories.length===12,'Faltan historias');assert(data.reels.length===6,'Faltan videos');assert(data.ads.length===3,'Faltan anuncios');
+const expected={feed:[1080,1350],square:[1080,1080],story:[1080,1920],landscape:[1200,628]};
+for(const item of manifest){
+ for(const key of ['source','vector','png']){try{await fs.access(path.join(root,item[key]));}catch{issues.push(`Falta ${item[key]}`);}}
+ try{const m=await sharp(path.join(root,item.png)).metadata();assert(m.width===expected[item.format][0]&&m.height===expected[item.format][1],`Dimensiones ${item.png}`);assert(m.format==='png',`Formato ${item.png}`);inventory.push({file:item.png,width:m.width,height:m.height,bytes:(await fs.stat(path.join(root,item.png))).size});}catch(e){issues.push(String(e.message));}
+}
+const bounds=JSON.parse(await fs.readFile(path.join(root,'qa/layout-bounds.json'),'utf8'));for(const b of bounds)assert(b.right<=b.canvas[0]-60&&b.baseline<b.canvas[1],`Texto fuera del lienzo: ${b.asset} ${b.text}`);
+for(const name of ['catalogo','stock','kardex','ventas','caja']){
+ const filename=path.join(root,'captures',`${name}.jpg`);const stats=await sharp(filename).stats();assert(Math.max(...stats.channels.map(c=>c.stdev))>10,`Captura vacía: ${name}`);
+}
+for(const n of ['cripton_horizontal_color_v1.0.svg','cripton_horizontal_reverso_v1.0.svg','cripton_simbolo_reverso_v1.0.svg']){
+ const a=await fs.readFile(path.join(root,'brand',n));const b=await fs.readFile(path.join(root,'..','Cripton_Kit_Marca_v1_0/01_maestros_svg',n));assert(a.equals(b),`Maestro alterado: ${n}`);
+}
+const videos=JSON.parse(await fs.readFile(path.join(root,'qa/video-exports.json'),'utf8'));assert(videos.length===6,'Faltan videos exportados');for(const v of videos)assert((await fs.stat(path.join(root,v.file))).size>20000,`Video vacío ${v.id}`);
+for(const n of ['avatar','facebook-cover','youtube-banner','destacada-pos','destacada-inventario','destacada-caja','destacada-planes','destacada-demo'])await fs.access(path.join(root,'campaigns/launch-30d/exports/profiles',n+'.png')).catch(()=>issues.push(`Falta perfil ${n}`));
+const calendar=JSON.parse(await fs.readFile(path.join(root,'strategy/calendario-30-dias.json'),'utf8'));assert(calendar.length===30&&new Set(calendar.map(x=>x.dia)).size===30,'Calendario incompleto');for(const day of calendar)await fs.access(path.join(root,day.recurso)).catch(()=>issues.push(`Falta recurso calendario ${day.id}`));
+const crawl=async dir=>{const out=[];for(const item of await fs.readdir(dir,{withFileTypes:true})){const p=path.join(dir,item.name);if(item.isDirectory())out.push(...await crawl(p));else out.push(p);}return out;};
+const files=await crawl(root);for(const file of files.filter(f=>/\.(md|json|csv|html|svg|ssml|srt|mjs|py|txt)$/.test(f))){const raw=await fs.readFile(file,'utf8');if(!file.includes(path.sep+'tools'+path.sep)){assert(!/Admin123456789|santy\.2992|jonathan murcia|192\.168\.128|client_secret\s*[:=]|Bearer\s+[A-Za-z0-9._-]{20}/i.test(raw),`Dato privado encontrado: ${path.relative(root,file)}`);}}
+const checksums=[];for(const file of files.filter(f=>!f.includes(path.sep+'qa'+path.sep)&&!f.includes('__pycache__'))){checksums.push(`${crypto.createHash('sha256').update(await fs.readFile(file)).digest('hex')}  ${path.relative(root,file).replaceAll('\\','/')}`);}
+await fs.writeFile(path.join(root,'qa/SHA256SUMS.txt'),checksums.join('\n')+'\n');
+const report={checkedAt:new Date().toISOString(),status:issues.length?'failed':'passed',counts:{posts:data.posts.length,postSlides:data.posts.reduce((s,p)=>s+p.slides.length,0),stories:data.stories.length,reels:data.reels.length,ads:data.ads.length,graphicExports:manifest.length,profilePng:8,days:calendar.length},checks:['Every linked source/vector/png exists','Expected canvas sizes','Title layout bounds','Nonblank real screenshots','Exact official logo bytes','Calendar resources exist','Six nonempty videos','Text scan for private identifiers','SHA256 inventory'],limits:['Manual privacy review of screenshot crops required','Platform upload previews not exercised','No marketing results measured','No voice synthesized','Owner approval pending'],issues};await fs.writeFile(path.join(root,'qa/export-validation.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));process.exitCode=issues.length?1:0;

@@ -1,0 +1,2 @@
+# Preserve checksum bytes; CRLF is valid for Windows-authored deliverables.
+* -text whitespace=trailing-space,space-before-tab,cr-at-eol

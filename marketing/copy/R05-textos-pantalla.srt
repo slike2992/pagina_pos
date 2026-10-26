@@ -1,0 +1,15 @@
+1
+00:00:00,000 --> 00:00:06,000
+¿Necesitas FE integrada?
+
+2
+00:00:06,000 --> 00:00:12,000
+Con FE o sin FE.
+
+3
+00:00:12,000 --> 00:00:18,000
+Revisa requisitos y habilitación.
+
+4
+00:00:18,000 --> 00:00:24,000
+Consulta el alcance vigente.

@@ -1,0 +1,33 @@
+{
+  "checkedAt": "2026-10-26T09:24:08.463Z",
+  "status": "passed",
+  "counts": {
+    "posts": 12,
+    "postSlides": 20,
+    "stories": 12,
+    "reels": 6,
+    "ads": 3,
+    "graphicExports": 97,
+    "profilePng": 8,
+    "days": 30
+  },
+  "checks": [
+    "Every linked source/vector/png exists",
+    "Expected canvas sizes",
+    "Title layout bounds",
+    "Nonblank real screenshots",
+    "Exact official logo bytes",
+    "Calendar resources exist",
+    "Six nonempty videos",
+    "Text scan for private identifiers",
+    "SHA256 inventory"
+  ],
+  "limits": [
+    "Manual privacy review of screenshot crops required",
+    "Platform upload previews not exercised",
+    "No marketing results measured",
+    "No voice synthesized",
+    "Owner approval pending"
+  ],
+  "issues": []
+}

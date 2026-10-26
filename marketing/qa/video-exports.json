@@ -1,0 +1,92 @@
+[
+  {
+    "id": "R01",
+    "file": "campaigns/launch-30d/exports/reels/R01.mp4",
+    "seconds": 24,
+    "dimensions": [
+      1080,
+      1920
+    ],
+    "fps": 30,
+    "codec": "H264/AAC",
+    "voice": false,
+    "audio": "Original instrumental proposal",
+    "bytes": 611999,
+    "visual": "Four static editorial cards; real still screenshots where indicated"
+  },
+  {
+    "id": "R02",
+    "file": "campaigns/launch-30d/exports/reels/R02.mp4",
+    "seconds": 24,
+    "dimensions": [
+      1080,
+      1920
+    ],
+    "fps": 30,
+    "codec": "H264/AAC",
+    "voice": false,
+    "audio": "Original instrumental proposal",
+    "bytes": 612033,
+    "visual": "Four static editorial cards; real still screenshots where indicated"
+  },
+  {
+    "id": "R03",
+    "file": "campaigns/launch-30d/exports/reels/R03.mp4",
+    "seconds": 24,
+    "dimensions": [
+      1080,
+      1920
+    ],
+    "fps": 30,
+    "codec": "H264/AAC",
+    "voice": false,
+    "audio": "Original instrumental proposal",
+    "bytes": 608847,
+    "visual": "Four static editorial cards; real still screenshots where indicated"
+  },
+  {
+    "id": "R04",
+    "file": "campaigns/launch-30d/exports/reels/R04.mp4",
+    "seconds": 24,
+    "dimensions": [
+      1080,
+      1920
+    ],
+    "fps": 30,
+    "codec": "H264/AAC",
+    "voice": false,
+    "audio": "Original instrumental proposal",
+    "bytes": 610860,
+    "visual": "Four static editorial cards; real still screenshots where indicated"
+  },
+  {
+    "id": "R05",
+    "file": "campaigns/launch-30d/exports/reels/R05.mp4",
+    "seconds": 24,
+    "dimensions": [
+      1080,
+      1920
+    ],
+    "fps": 30,
+    "codec": "H264/AAC",
+    "voice": false,
+    "audio": "Original instrumental proposal",
+    "bytes": 592973,
+    "visual": "Four static editorial cards; real still screenshots where indicated"
+  },
+  {
+    "id": "R06",
+    "file": "campaigns/launch-30d/exports/reels/R06.mp4",
+    "seconds": 24,
+    "dimensions": [
+      1080,
+      1920
+    ],
+    "fps": 30,
+    "codec": "H264/AAC",
+    "voice": false,
+    "audio": "Original instrumental proposal",
+    "bytes": 596348,
+    "visual": "Four static editorial cards; real still screenshots where indicated"
+  }
+]

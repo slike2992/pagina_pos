@@ -1,0 +1,15 @@
+1
+00:00:00,000 --> 00:00:06,000
+El saldo tiene una historia.
+
+2
+00:00:06,000 --> 00:00:12,000
+Consulta entradas y salidas.
+
+3
+00:00:12,000 --> 00:00:18,000
+Revisa el movimiento.
+
+4
+00:00:18,000 --> 00:00:24,000
+Mira cómo funciona.

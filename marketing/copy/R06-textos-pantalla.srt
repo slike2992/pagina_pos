@@ -1,0 +1,15 @@
+1
+00:00:00,000 --> 00:00:06,000
+Antes de elegir, pregunta esto.
+
+2
+00:00:06,000 --> 00:00:12,000
+Personas, cajas y referencias.
+
+3
+00:00:12,000 --> 00:00:18,000
+¿Necesitas FE integrada?
+
+4
+00:00:18,000 --> 00:00:24,000
+Revisemos tu operación.

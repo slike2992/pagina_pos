@@ -1,5 +1,25 @@
 # Cambios transversales de la web comercial
 
+## 2026-10-26 — Kit de marketing y coordinación de fuentes
+
+- Consumidores: marketing, diseño web y equipo comercial. Se añade marketing/
+  con campaña de treinta días, fuentes editables, PNG, MP4, textos y calendario.
+  Ver [índice del kit](../marketing/README.md) y [revisión](../marketing/qa/REPORTE_REVISION.md).
+- La galería y las piezas permanecen fuera de public/ y del build Astro; sin
+  cambios a HTTP, registro, precios, consentimiento, píxeles, permisos o SQL.
+- El comprobador marketing/tools/check-context.mjs consulta por separado las
+  ramas web y SaaS; detectó cambios durante el trabajo y se revisaron sus diffs.
+  No reemplaza hooks ni fusiona historias, y requiere red para acreditar fuentes.
+- Marca 1.1.0 con maestros exactos; cinco capturas del POS real con datos QA y
+  encuadres sin datos del operador. Videos editoriales con capturas estáticas,
+  música original propuesta y sin voz; no se presentan como un flujo grabado.
+- Validación de archivos, fuentes y navegador en el informe. Instagram, TikTok
+  y YouTube visibles públicamente; Facebook no disponible y dominio sin resolver
+  desde esta sesión. Sin publicación, programación, campañas activas o gastos.
+- Pendientes: aprobación del propietario, cuentas/destino, locución si se elige,
+  preview real de plataformas y alcance comercial productivo antes de anunciarlo.
+
+
 ## 2026-10-26 — Calidad de frontend y formularios
 
 - Consumidores: web/registro y despliegue comercial. Se conservan contratos HTTP,

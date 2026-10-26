@@ -1,0 +1,109 @@
+{
+  "campaign": "cripton-lanzamiento-30d", "version": "1.0", "date": "2026-10-26",
+  "brand_revision": "1.1.0", "audience": "Hipótesis inicial: propietarios y administradores de comercios minoristas en Colombia con inventario y caja.",
+  "positioning": "Cripton POS reúne ventas, caja e inventario para consultar la operación de tu negocio con más claridad.",
+  "cta": "Conoce cómo funciona", "handle": "@cripton.colombia",
+  "channels": {
+    "instagram": "https://www.instagram.com/cripton.colombia/",
+    "facebook": "https://www.facebook.com/cripton.colombia/",
+    "tiktok": "https://www.tiktok.com/@cripton.colombia",
+    "youtube": "https://www.youtube.com/channel/UCvhpGaRgl_HqDQg5YRywQpg"
+  },
+  "posts": [
+    {"id":"P01","theme":"Presentación","dark":true,"claim":"C01","slides":[
+      {"title":["Tu negocio,","con más claridad."],"body":"Ventas, caja e inventario en un mismo POS.","capture":"catalogo","tag":"CONOCE CRIPTON POS"}],
+      "instagram":"Tu negocio tiene muchas tareas. Empieza por verlas con más claridad.\n\nCon Cripton POS puedes consultar ventas, caja e inventario desde una misma aplicación. En esta publicación mostramos la interfaz real con datos de demostración.\n\n¿Quieres verla aplicada a tu operación? Escríbenos DEMO por mensaje.\n\n#CriptonPOS #SoftwarePOS #ComerciosColombia #Inventario",
+      "facebook":"Conoce Cripton POS: ventas, caja e inventario para comercios. Mira la interfaz real y cuéntanos qué necesitas organizar en tu negocio. Escríbenos por mensaje para coordinar una demostración. Imagen con datos de prueba.",
+      "alt":"Logo oficial Cripton y una captura del catálogo real del POS con productos de demostración."},
+    {"id":"P02","theme":"Stock","dark":false,"claim":"C02","slides":[
+      {"title":["¿Cuánto stock","te queda de verdad?"],"body":"Empieza por consultar tus existencias.","capture":"stock","tag":"INVENTARIO · 01 / 03"},
+      {"title":["Consulta antes","de reponer."],"body":"Revisa producto, código y stock por sucursal.","capture":"stock","tag":"INVENTARIO · 02 / 03"},
+      {"title":["Sigue cada","movimiento."],"body":"El kardex muestra entradas, salidas y saldo.","capture":"kardex","tag":"INVENTARIO · 03 / 03"}],
+      "instagram":"Antes de reponer, consulta.\n\nDesliza para ver cómo se presentan las existencias por sucursal y los movimientos de inventario en Cripton POS.\n\nGuarda esta publicación para tu próxima revisión de stock. Si quieres conocer el flujo completo, envíanos DEMO por mensaje.\n\nInterfaz real; datos de demostración.\n#ControlDeInventario #CriptonPOS #ComerciosColombia",
+      "facebook":"¿Cómo decides qué reponer? En Cripton POS puedes revisar existencias por sucursal y consultar el kardex. Estas tres imágenes muestran el producto con datos de prueba. Escríbenos para verlo en una demostración.",
+      "alt":"Carrusel con vistas reales de stock y kardex; muestra existencias y movimientos de productos QA."},
+    {"id":"P03","theme":"Historial de ventas","dark":true,"claim":"C03","slides":[
+      {"title":["Cada venta","tiene una historia."],"body":"Consulta documentos, importes y estado.","capture":"ventas","tag":"VENTAS CON CONTEXTO"}],
+      "instagram":"Una venta también deja información para revisar.\n\nEl historial de Cripton POS permite consultar documentos, importes y estado de las ventas. Conocer el detalle ayuda a conversar con tu equipo sobre lo que ocurrió.\n\n¿Qué revisas al terminar el día? Cuéntanos en los comentarios.\n\nDatos de demostración.\n#Ventas #CriptonPOS #GestionComercial",
+      "facebook":"Revisa las ventas con contexto: documentos, importes y estado en el historial del POS. La captura corresponde a una empresa de prueba. ¿Qué dato necesitas consultar al cerrar el día?",
+      "alt":"Captura real del historial de ventas de Cripton POS en un entorno de demostración."},
+    {"id":"P04","theme":"Caja","dark":false,"claim":"C04","slides":[
+      {"title":["Una caja clara.","Un turno en orden."],"body":"Organiza apertura, movimientos y cierre.","capture":"caja","tag":"CONTROL DE CAJA"}],
+      "instagram":"El cierre empieza desde la apertura.\n\nCripton POS incluye un módulo de caja para organizar turnos y revisar sus movimientos. En una demostración podemos recorrerlo según la operación que necesitas.\n\nEscríbenos CAJA por mensaje.\n\nInterfaz real, datos de prueba.\n#ControlDeCaja #PuntoDeVenta #CriptonPOS",
+      "facebook":"Apertura, movimientos y cierre forman parte del control de caja. Conoce el módulo de Cripton POS y revisemos juntos cómo encaja en tu operación. Escríbenos CAJA para una demostración.",
+      "alt":"Vista real del módulo de caja de Cripton POS, usada como demostración de sus controles."},
+    {"id":"P05","theme":"Catálogo","dark":true,"claim":"C05","slides":[
+      {"title":["De catálogo","a control."],"body":"Empieza por identificar tus productos.","capture":"catalogo","tag":"CATÁLOGO · 01 / 03"},
+      {"title":["Una referencia.","Una imagen."],"body":"Organiza el catálogo con nombre, código y precio.","capture":"catalogo","tag":"CATÁLOGO · 02 / 03"},
+      {"title":["Después,","revisa el stock."],"body":"Consulta las existencias desde inventarios.","capture":"stock","tag":"CATÁLOGO · 03 / 03"}],
+      "instagram":"El inventario empieza con un catálogo que puedas identificar.\n\nNombre, código, precio e imagen ayudan a reconocer tus referencias. Después puedes consultar sus existencias en el módulo de inventarios.\n\nDesliza y mira la interfaz real con productos de prueba. Solicita una demostración por mensaje.\n#CatalogoDeProductos #Inventario #CriptonPOS",
+      "facebook":"Un catálogo organizado ayuda a identificar lo que vendes. Mira cómo se presentan productos con imagen en Cripton POS y cómo se consulta su stock. Demostración con referencias QA; escríbenos para conocer el flujo.",
+      "alt":"Tres láminas sobre el catálogo con imágenes, referencias y consulta de existencias del POS real."},
+    {"id":"P06","theme":"Demostración","dark":false,"claim":"C06","slides":[
+      {"title":["Conoce el POS","antes de elegir."],"body":"Revisemos el recorrido de tu operación.","capture":"catalogo","tag":"DEMOSTRACIÓN DEL PRODUCTO"}],
+      "instagram":"Elegir un POS merece una conversación sobre tu negocio.\n\nCuéntanos qué vendes, cómo manejas el inventario y cuántas personas participan en caja. Con esa información podemos enfocar la demostración de Cripton.\n\nEnvíanos DEMO por mensaje. No compartas contraseñas ni datos de tus clientes.\n#SoftwarePOS #CriptonPOS #NegociosColombia",
+      "facebook":"Solicita una demostración de Cripton POS. Cuéntanos qué tipo de negocio tienes y qué proceso quieres revisar primero: ventas, caja o inventario. Te orientamos sobre el alcance aplicable.",
+      "alt":"Presentación de una demostración de Cripton POS con captura real del catálogo."},
+    {"id":"P07","theme":"Facturación electrónica","dark":true,"claim":"C07","slides":[
+      {"title":["¿Con o sin","facturación","electrónica?"],"body":"Son dos grupos de planes. Revisa cuál aplica.","tag":"PLANES · 01 / 03"},
+      {"title":["Sin FE integrada."],"body":"Para revisar la operación POS según el plan elegido.","tag":"PLANES · 02 / 03","list":["Ventas y caja","Productos e inventario","Reportes según el plan"]},
+      {"title":["Con FE incluida","en el plan."],"body":"La emisión requiere configuración y habilitación.","tag":"PLANES · 03 / 03","list":["Revisar requisitos del emisor","Confirmar cupos y alcance","Habilitar antes de emitir"]}],
+      "instagram":"Elige según lo que necesita tu negocio.\n\nLa oferta publicada contempla planes POS con y sin facturación electrónica integrada. En los planes FE se deben revisar los requisitos del emisor, los cupos del plan y la habilitación técnica antes de emitir.\n\nPregúntanos por el alcance vigente y solicita una demostración. Esta publicación no acredita emisión productiva ni activación automática.\n#FacturacionElectronica #CriptonPOS #POSColombia",
+      "facebook":"Cripton contempla planes con y sin facturación electrónica integrada. Revisemos qué opción aplica a tu negocio, los requisitos del emisor y la habilitación necesaria. Pide información sobre el alcance vigente antes de contratar.",
+      "alt":"Carrusel informativo que distingue planes POS sin FE y planes con FE, sujetos a requisitos y habilitación."},
+    {"id":"P08","theme":"Kardex","dark":false,"claim":"C08","slides":[
+      {"title":["Lo que entra.","Lo que sale."],"body":"Revisa el movimiento detrás del saldo.","capture":"kardex","tag":"TRAZABILIDAD DE INVENTARIO"}],
+      "instagram":"El saldo es un dato. Los movimientos explican su recorrido.\n\nEn el kardex de Cripton POS puedes revisar entradas, salidas y saldo de inventario. La imagen muestra movimientos de una prueba, no resultados de un cliente.\n\nGuárdalo y escríbenos para ver el flujo completo.\n#Kardex #ControlDeInventario #CriptonPOS",
+      "facebook":"Consulta el recorrido del inventario mediante su kardex: entradas, salidas y saldo. Esta es una captura real con datos de demostración de Cripton POS. Solicita una demostración para conocer el detalle.",
+      "alt":"Kardex real con un ajuste de entrada y una salida por venta en datos de prueba."},
+    {"id":"P09","theme":"Equipo y permisos","dark":true,"claim":"C09","slides":[
+      {"title":["Tu equipo,","con su función."],"body":"Revisa usuarios y accesos según el plan.","tag":"ORGANIZA RESPONSABILIDADES","list":["Define quién participa","Asigna accesos por función","Revisa el alcance contratado"]}],
+      "instagram":"La operación también necesita responsabilidades claras.\n\nCripton incluye gestión de usuarios y permisos con un alcance que depende del plan. Antes de elegir, revisemos cuántas personas necesitan acceso y qué hace cada una.\n\nEscríbenos EQUIPO por mensaje.\n#GestionDeUsuarios #CriptonPOS #NegociosColombia",
+      "facebook":"¿Quién vende, quién consulta y quién administra? Revisa la gestión de usuarios y permisos de Cripton POS según el plan elegido. Cuéntanos cómo está organizado tu equipo.",
+      "alt":"Pieza tipográfica de Cripton que invita a organizar funciones y revisar permisos según el plan."},
+    {"id":"P10","theme":"Elección de plan","dark":false,"claim":"C10","slides":[
+      {"title":["Empieza por","lo que necesitas."],"body":"Compara el alcance antes de elegir un plan.","tag":"GUÍA DE ELECCIÓN · 01 / 03"},
+      {"title":["Piensa en","tu operación."],"body":"Anota estos datos para revisar el alcance.","tag":"GUÍA DE ELECCIÓN · 02 / 03","list":["Personas que usarán el POS","Cajas y sucursales","Cantidad de referencias"]},
+      {"title":["Después,","revisa la FE."],"body":"Confirma si necesitas la integración electrónica.","tag":"GUÍA DE ELECCIÓN · 03 / 03","list":["Con FE o sin FE integrada","Cupos y periodicidad","Requisitos de habilitación"]}],
+      "instagram":"El plan correcto empieza por tus necesidades.\n\nGuarda estas preguntas: ¿cuántas personas usarán el POS?, ¿cuántas cajas y sucursales tienes?, ¿cuántas referencias manejas?, ¿necesitas facturación electrónica integrada?\n\nConfirma precios, periodicidad, impuestos y límites en la oferta vigente antes de pagar. Solicita una demostración por mensaje.\n#SoftwarePOS #CriptonPOS #GestionComercial",
+      "facebook":"Antes de elegir un plan, revisa usuarios, cajas, sucursales, referencias y facturación electrónica. Podemos orientar una demostración con esa información. Confirma siempre el precio y alcance vigentes antes de contratar.",
+      "alt":"Guía de tres láminas con preguntas para elegir un plan POS según usuarios, cajas, referencias y FE."},
+    {"id":"P11","theme":"Inventario conectado","dark":true,"claim":"C11","slides":[
+      {"title":["Tu inventario","también se mueve."],"body":"Consulta existencias y revisa sus movimientos.","capture":"stock","tag":"UNA OPERACIÓN QUE PUEDES REVISAR"}],
+      "instagram":"Cada jornada mueve tu inventario.\n\nConsulta las existencias y revisa el kardex para entender sus cambios. En una demostración de Cripton POS puedes conocer ambas vistas con datos de prueba.\n\n¿Qué parte de tu inventario necesitas ordenar primero?\n#Inventario #CriptonPOS #ComerciosColombia",
+      "facebook":"Las existencias cambian durante la operación. Conoce las vistas de stock y kardex de Cripton POS para revisar esos movimientos. Escríbenos y coordinamos una demostración.",
+      "alt":"Vista real de stock del POS con productos sintéticos y sus existencias."},
+    {"id":"P12","theme":"Conversación comercial","dark":false,"claim":"C12","slides":[
+      {"title":["Miremos juntos","tu operación."],"body":"Cuéntanos qué necesitas organizar primero.","tag":"SOLICITA UNA DEMOSTRACIÓN","list":["Ventas","Caja","Inventario"]}],
+      "instagram":"Ya viste una parte de Cripton POS. Ahora conversemos sobre tu negocio.\n\nDinos qué proceso quieres revisar primero: ventas, caja o inventario. Solicita una demostración por mensaje y revisemos el alcance que necesitas.\n\n#CriptonPOS #SoftwarePOS #ComerciosColombia",
+      "facebook":"¿Quieres conocer Cripton POS aplicado a tu operación? Cuéntanos qué vendes y qué necesitas organizar primero. Escríbenos por mensaje para coordinar una demostración de ventas, caja e inventario.",
+      "alt":"Cierre de campaña de Cripton POS con invitación a conversar sobre ventas, caja e inventario."}
+  ],
+  "stories": [
+    {"id":"S01","title":["¿Qué necesitas","ordenar primero?"],"body":"Ventas · Caja · Inventario","tag":"CONVERSEMOS","interaction":"Encuesta nativa: Ventas / Inventario. Pregunta adicional en siguiente respuesta: ¿y caja?","cta":"Cuéntanos por mensaje","parent":"P01"},
+    {"id":"S02","title":["Mira tu stock.","Decide qué revisar."],"body":"Así se ven las existencias en Cripton POS.","capture":"stock","tag":"DENTRO DEL POS","cta":"Solicita una demostración","parent":"P02"},
+    {"id":"S03","title":["¿Cómo revisas","las ventas del día?"],"body":"Una pregunta para conocer tu operación.","tag":"TU NEGOCIO","interaction":"Caja de preguntas nativa: ¿Qué dato revisas al cerrar?","cta":"Responde esta historia","parent":"P03"},
+    {"id":"S04","title":["La caja también","necesita orden."],"body":"Conoce los controles de apertura y cierre.","capture":"caja","tag":"CONTROL DE CAJA","cta":"Escríbenos CAJA","parent":"P04"},
+    {"id":"S05","title":["Tu catálogo,","con imagen."],"body":"Identifica las referencias de tu negocio.","capture":"catalogo","tag":"CATÁLOGO REAL · DATOS QA","cta":"Mira cómo funciona","parent":"P05"},
+    {"id":"S06","title":["Antes de elegir,","conoce el flujo."],"body":"Revisemos ventas, caja e inventario.","tag":"DEMOSTRACIÓN","cta":"Escríbenos DEMO","parent":"P06"},
+    {"id":"S07","title":["¿Necesitas FE","integrada?"],"body":"Revisa requisitos y alcance del plan.","tag":"PLANES CON Y SIN FE","interaction":"Encuesta nativa: Quiero conocer / Tengo dudas","cta":"Consulta el alcance vigente","parent":"P07"},
+    {"id":"S08","title":["Detrás del saldo","hay movimientos."],"body":"Entradas, salidas y saldo en el kardex.","capture":"kardex","tag":"INVENTARIO","cta":"Pide una demostración","parent":"P08"},
+    {"id":"S09","title":["¿Quién hace qué","en tu negocio?"],"body":"Revisa usuarios y accesos por función.","tag":"TU EQUIPO","cta":"Escríbenos EQUIPO","parent":"P09"},
+    {"id":"S10","title":["El plan empieza","por tus necesidades."],"body":"Personas · Cajas · Referencias · FE","tag":"ANTES DE ELEGIR","cta":"Revisemos tu operación","parent":"P10"},
+    {"id":"S11","title":["Una pregunta","sobre inventario."],"body":"¿Qué necesitas consultar más seguido?","tag":"TE LEEMOS","interaction":"Caja de preguntas nativa: ¿Stock, movimientos o productos?","cta":"Responde esta historia","parent":"P11"},
+    {"id":"S12","title":["Conoce Cripton","por dentro."],"body":"Solicita una demostración del POS.","capture":"catalogo","tag":"SIGUIENTE PASO","cta":"Escríbenos DEMO","parent":"P12"}
+  ],
+  "reels": [
+    {"id":"R01","title":"Conoce Cripton POS","parent":"P01","capture":"catalogo","hooks":["¿Cómo revisas tu negocio?","Empieza por ver la operación."],"script":"¿Cómo revisas tu negocio? Conoce Cripton POS: ventas, caja e inventario en una misma aplicación. Aquí ves la interfaz real con datos de demostración. Cuéntanos qué necesitas organizar primero y solicita una demostración.","cards":[["¿Cómo revisas","tu negocio?"],["Ventas, caja","e inventario."],["Mira el POS","por dentro."],["Solicita una","demostración."]]},
+    {"id":"R02","title":"Consulta tu stock","parent":"P02","capture":"stock","hooks":["Antes de reponer, consulta.","¿Cuánto stock te queda?"],"script":"Antes de reponer, consulta. En Cripton POS puedes revisar las existencias por sucursal y reconocer cada producto por su referencia. Esta vista usa datos de prueba. Si quieres conocer el recorrido completo, solicita una demostración.","cards":[["Antes de reponer,","consulta."],["Revisa tus","existencias."],["Producto, código","y stock."],["Conoce el flujo","en una demo."]]},
+    {"id":"R03","title":"Del saldo al movimiento","parent":"P08","capture":"kardex","hooks":["El saldo tiene una historia.","¿Qué cambió en el inventario?"],"script":"El saldo tiene una historia. El kardex de Cripton POS muestra entradas, salidas y el saldo de inventario. Mira el recorrido de una entrada y una venta en datos de demostración. Conoce el flujo en una demostración del producto.","cards":[["El saldo tiene","una historia."],["Consulta entradas","y salidas."],["Revisa el","movimiento."],["Mira cómo","funciona."]]},
+    {"id":"R04","title":"Organiza tu catálogo","parent":"P05","capture":"catalogo","hooks":["Todo empieza por el producto.","¿Cómo reconoces tus referencias?"],"script":"Todo empieza por identificar el producto. Nombre, referencia, precio e imagen te ayudan a organizar el catálogo en Cripton POS. La pantalla es real y los productos son de prueba. Cuéntanos cómo manejas tu catálogo y solicita una demostración.","cards":[["Todo empieza","por el producto."],["Nombre, referencia","e imagen."],["Reconoce","tu catálogo."],["Conoce","Cripton POS."]]},
+    {"id":"R05","title":"Con o sin FE integrada","parent":"P07","hooks":["¿Necesitas FE integrada?","Antes del plan, revisa el alcance."],"script":"¿Necesitas facturación electrónica integrada? La oferta de Cripton contempla planes con y sin FE. En los planes con FE debes revisar requisitos del emisor, cupos y habilitación antes de emitir. Consulta el alcance vigente y solicita una demostración.","cards":[["¿Necesitas FE","integrada?"],["Con FE","o sin FE."],["Revisa requisitos","y habilitación."],["Consulta el","alcance vigente."]]},
+    {"id":"R06","title":"Cómo elegir tu POS","parent":"P10","hooks":["Antes de elegir, pregunta esto.","Tu operación define lo que necesitas."],"script":"Antes de elegir tu POS, anota cuatro cosas: cuántas personas lo usarán, cuántas cajas y sucursales tienes, cuántas referencias manejas y si necesitas FE integrada. Con esa información podemos enfocar una demostración de Cripton. Escríbenos y revisemos tu operación.","cards":[["Antes de elegir,","pregunta esto."],["Personas, cajas","y referencias."],["¿Necesitas FE","integrada?"],["Revisemos","tu operación."]]}
+  ],
+  "ads": [
+    {"id":"A01","parent":"P02","title":["Consulta el stock","antes de reponer."],"body":"Conoce inventarios en Cripton POS.","capture":"stock","tag":"CONCEPTO · INVENTARIO","primary":"¿Necesitas consultar las existencias de tu negocio? Conoce el inventario de Cripton POS y solicita una demostración.","headline":"Conoce el inventario de Cripton","objective":"Conversación para demostración","hypothesis":"Mostrar la consulta real de stock genera más conversaciones calificadas que una pieza sólo de marca."},
+    {"id":"A02","parent":"P04","title":["Revisa tu caja.","Entiende el turno."],"body":"Conoce el módulo de caja de Cripton POS.","capture":"caja","tag":"CONCEPTO · CAJA","primary":"Conoce los controles de caja de Cripton POS. Cuéntanos cómo manejas tus turnos y solicita una demostración.","headline":"Conoce el módulo de caja","objective":"Conversación para demostración","hypothesis":"La necesidad de revisar la caja despierta conversaciones con propietarios y administradores."},
+    {"id":"A03","parent":"P06","title":["Tu próximo POS,","primero en demo."],"body":"Mira ventas, caja e inventario en Cripton.","capture":"catalogo","tag":"CONCEPTO · DEMOSTRACIÓN","primary":"¿Estás evaluando un POS? Mira Cripton por dentro y revisemos ventas, caja e inventario según tu negocio.","headline":"Solicita una demostración","objective":"Conversación para demostración","hypothesis":"Una invitación concreta a ver el producto funciona mejor que pedir compra inmediata durante el piloto."}
+  ]
+}
