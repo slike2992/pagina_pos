@@ -43,8 +43,25 @@ muestra el canal de correo sin URL personal en atributos; editar lo invalida.
 Menú: apertura/cierre repetidos, Escape con foco al summary, enlace de navegación
 y tamaño 320x480. Tarjeta: borde hover de 2 px sin cambiar tamaño del contenedor.
 
-La comprobación de los seis accesos al registro en el origen habitual se registra
-al integrar; 4324 no se añade a CORS para facilitar una prueba.
+Integración en el origen habitual 4321: otros 48 casos públicos sin fallos tras
+completar la carga. Dos lecturas iniciales encontraron el hero aún procesándose
+en dev; se repitió con el evento load, sin imágenes rotas. No se amplió CORS.
+
+Se pulsaron los seis CTA de planes: código y precio correctos, catálogo legal
+2026-09-01 y botón habilitado tras cargarlo. Registro vacío, correo incorrecto,
+longitud insuficiente y espacios muestran errores; corregir los elimina. Prueba
+en 393, 768 y 1024 px sin desbordamiento y con foco en el primer inválido. Las
+condiciones permanecieron sin aceptar y no se creó ninguna cuenta.
+
+Build integrado: 40 archivos sin errores/advertencias/hints, 29 pruebas y
+presupuestos aprobados. Los cambios locales previos en Brand y pago/demo se
+conservaron por hash y no se incorporaron al commit ni se certifica su función.
+La portada integrada y su marca sí se comprobaron visualmente.
+
+Evidencia: [pesos](evidence/web-quality-assets-2026-10-26.json),
+[build aislado](evidence/web-quality-browser-2026-10-26.json),
+[web integrada](evidence/web-quality-primary-2026-10-26.json) y
+[planes/registro](evidence/web-quality-signup-2026-10-26.json).
 
 ## Peso del build: antes y después
 

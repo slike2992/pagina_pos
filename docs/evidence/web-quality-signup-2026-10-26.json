@@ -1,0 +1,88 @@
+{
+  "environment": "primary dev origin 4321 with current API",
+  "plans": [
+    {
+      "label": "Básico · $49.900/mes",
+      "legalReady": true,
+      "noValidate": true,
+      "plan": "basic",
+      "status": "Condiciones vigentes: 2026-09-01.",
+      "submitReady": true,
+      "url": "/registro?plan=basic"
+    },
+    {
+      "label": "Profesional · $79.900/mes",
+      "legalReady": true,
+      "noValidate": true,
+      "plan": "professional",
+      "status": "Condiciones vigentes: 2026-09-01.",
+      "submitReady": true,
+      "url": "/registro?plan=professional"
+    },
+    {
+      "label": "Empresarial · $129.900/mes",
+      "legalReady": true,
+      "noValidate": true,
+      "plan": "enterprise",
+      "status": "Condiciones vigentes: 2026-09-01.",
+      "submitReady": true,
+      "url": "/registro?plan=enterprise"
+    },
+    {
+      "label": "Básico FE · $69.900/mes",
+      "legalReady": true,
+      "noValidate": true,
+      "plan": "basic-fe",
+      "status": "Condiciones vigentes: 2026-09-01.",
+      "submitReady": true,
+      "url": "/registro?plan=basic-fe"
+    },
+    {
+      "label": "Profesional FE · $99.900/mes",
+      "legalReady": true,
+      "noValidate": true,
+      "plan": "professional-fe",
+      "status": "Condiciones vigentes: 2026-09-01.",
+      "submitReady": true,
+      "url": "/registro?plan=professional-fe"
+    },
+    {
+      "label": "Empresarial FE · $159.900/mes",
+      "legalReady": true,
+      "noValidate": true,
+      "plan": "enterprise-fe",
+      "status": "Condiciones vigentes: 2026-09-01.",
+      "submitReady": true,
+      "url": "/registro?plan=enterprise-fe"
+    }
+  ],
+  "responsive": [
+    {
+      "errorCount": 4,
+      "focus": "contactName",
+      "legalChecked": false,
+      "overflow": false,
+      "width": 393
+    },
+    {
+      "errorCount": 4,
+      "focus": "contactName",
+      "legalChecked": false,
+      "overflow": false,
+      "width": 768
+    },
+    {
+      "errorCount": 4,
+      "focus": "contactName",
+      "legalChecked": false,
+      "overflow": false,
+      "width": 1024
+    }
+  ],
+  "registration": [
+    "empty and whitespace rejected",
+    "minimum length and invalid email errors",
+    "correction clears field errors",
+    "terms remained unchecked, no account created"
+  ]
+}

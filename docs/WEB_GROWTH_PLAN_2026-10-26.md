@@ -68,3 +68,9 @@ absoluta. El diseño conserva el estándar de marca aprobado.
 - [Google: consentimiento](https://developers.google.com/tag-platform/security/guides/consent), [eventos y privacidad](https://developers.google.com/analytics/devguides/collection/ga4/user-id).
 - [Core Web Vitals](https://web.dev/articles/vitals), [Astro rutas](https://docs.astro.build/en/guides/routing/) y [estilos](https://docs.astro.build/en/guides/styling/).
 - Fuentes colombianas y análisis detallado en [revisión jurídica](LEGAL_REVIEW_2026-10-26.md); investigación adicional en [SEO](SEO_RESEARCH_2026-10-26.md).
+
+## Bloque de calidad completado
+
+Auditoría y mejoras de conversión para minoristas, formularios accesibles,
+imagen AVIF y presupuestos reproducibles: [evidencia y límites](WEB_QUALITY_2026-10-26.md).
+Validado en build y origen de desarrollo; los pasos externos anteriores siguen pendientes.
