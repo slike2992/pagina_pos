@@ -35,3 +35,7 @@ Las fuentes publicadas revisadas son web 645be14 y SaaS e088a55; el control de c
 ## Alta de Facebook — 2026-10-26
 
 Página Cripton.colombia creada y configurada con logo oficial, portada y ventas@cripton.com.co. Enlace verificado en sesión administrativa: https://www.facebook.com/profile.php?id=61596143211291 . El usuario cripton.colombia no está disponible según la plataforma; no se asignó alternativa. Se corrigió oclusión del titular por el avatar y se revisaron ambos previews y la página final. Registro y capturas: facebook-setup.json y Facebook-*.jpg. No se enviaron invitaciones ni se activaron anuncios o publicaciones de campaña. No se verificó acceso sin sesión.
+
+## Configuración de Instagram — 2026-10-26
+
+Cuenta existente @cripton.colombia configurada con nombre Cripton POS, avatar oficial y biografía de 105 caracteres. Estado final profesional de negocio con categoría Empresa de software visible. ventas@cripton.com.co persistió tras navegar de nuevo a ajustes; Mostrar información de contacto activo. La UI limita el botón de contacto y la edición de enlaces a la app móvil: no se ensayó esa app. Registro y capturas: instagram-setup.json e Instagram-*.jpg. Sin publicaciones ni anuncios. Pendientes: vínculo autorizado con Facebook, WhatsApp por definir y enlace cuando se valide el sitio público.

@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-26",
+  "url": "https://www.instagram.com/cripton.colombia/",
+  "username": "cripton.colombia",
+  "displayName": "Cripton POS",
+  "accountTypeObserved": "Profesional de negocio",
+  "category": "Empresa de software",
+  "categoryVisible": true,
+  "bio": "Software POS para comercios en Colombia.\nVentas, caja e inventario.\nEscríbenos DEMO para conocer Cripton.",
+  "businessContact": "ventas@cripton.com.co",
+  "contactVisibleSetting": true,
+  "avatar": "campaigns/launch-30d/exports/profiles/avatar.png",
+  "checks": [
+    "Perfil guardado observado tras enviar biografía",
+    "Avatar oficial visible en recorte circular",
+    "Nombre Cripton POS guardado en Meta y verificado de nuevo en perfil",
+    "Categoría Empresa de software visible",
+    "Correo persistente al volver a abrir ajustes profesionales",
+    "Mostrar información de contacto activo"
+  ],
+  "limits": [
+    "Instagram indica que botones de contacto solo se ven en la app móvil; no se ensayó mailto desde esa app",
+    "Edición de enlaces web solo disponible en app móvil según UI",
+    "Sin prueba de acceso desconectado en este bloque"
+  ],
+  "pending": [
+    "Vincular Facebook con Instagram si se autoriza la conexión y sus permisos",
+    "WhatsApp comercial aún no suministrado",
+    "Añadir enlace web cuando DNS/HTTPS público se valide; edición requiere app móvil",
+    "Crear destacadas al aprobar historias publicables"
+  ],
+  "scope": "Configuración del perfil existente. Sin publicaciones, mensajes, campañas, anuncios ni gasto. No se modificaron credenciales.",
+  "evidence": [
+    "Instagram-Cripton-Configurado.jpg",
+    "Instagram-Contacto-Comercial.jpg"
+  ]
+}

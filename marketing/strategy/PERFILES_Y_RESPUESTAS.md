@@ -1,13 +1,13 @@
 # Perfiles y respuesta comercial
 
-Los enlaces y handles fueron aportados por el propietario el 26 de octubre. El acceso administrativo y la identidad pública de cada perfil no se han acreditado; no se modificaron biografías ni imágenes remotas.
+Los enlaces y handles fueron aportados por el propietario el 26 de octubre. Estado actualizado: Facebook creado e Instagram configurado con sesión del propietario. Véanse `../qa/facebook-setup.json` y `../qa/instagram-setup.json`. TikTok y YouTube mantienen solo la revisión pública inicial. No se han publicado campañas.
 
 ## Textos propuestos
 
 **Instagram (bio):**
 Software POS para comercios en Colombia.
 Ventas, caja e inventario.
-Conoce el producto: escríbenos DEMO.
+Escríbenos DEMO para conocer Cripton.
 
 **TikTok (bio breve):**
 Cripton POS: ventas, caja e inventario para tu negocio.

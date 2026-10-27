@@ -4,8 +4,9 @@
     "url": "https://www.instagram.com/cripton.colombia/",
     "provenance": "Aportado por el propietario, 2026-10-26",
     "verified_public_access": true,
-    "public_observation": "Perfil público visible, nombre cripton",
-    "publishing_access": "No acreditado en este bloque"
+    "public_observation": "Perfil Cripton POS, categoría Empresa de software, logo oficial y biografía verificados en navegador tras configuración",
+    "publishing_access": "Sesión del propietario verificada para configurar el perfil; sin publicaciones ni anuncios de campaña",
+    "configuration_record": "qa/instagram-setup.json"
   },
   {
     "channel": "facebook",
