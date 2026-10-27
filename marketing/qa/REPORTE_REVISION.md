@@ -31,3 +31,7 @@ Exportación: 97 PNG de piezas y tarjetas, ocho PNG de perfiles, veinte láminas
 Se revisaron hojas de contacto de publicaciones e historias, una pieza de inventario a tamaño completo y el banner YouTube. Los seis MP4 se decodificaron sin errores. En navegador, R01 se reprodujo hasta el segundo 24 sin error; los filtros devolvieron 40 publicaciones/formato, 12 historias, 9 anuncios/formato y 12 horizontales. Clic y teclado Tab/Enter funcionaron. Galería en 1280 px y 393×852 sin desbordamiento horizontal ni imágenes visibles rotas. Se restauró el viewport. No se acreditan navegadores móviles nativos ni carga en redes.
 
 Las fuentes publicadas revisadas son web 645be14 y SaaS e088a55; el control de contexto terminó sin diferencias en esa revisión. Se conservaron los cambios locales ajenos informados. Los scripts de exportación y la galería no forman parte del build público de Astro.
+
+## Alta de Facebook — 2026-10-26
+
+Página Cripton.colombia creada y configurada con logo oficial, portada y ventas@cripton.com.co. Enlace verificado en sesión administrativa: https://www.facebook.com/profile.php?id=61596143211291 . El usuario cripton.colombia no está disponible según la plataforma; no se asignó alternativa. Se corrigió oclusión del titular por el avatar y se revisaron ambos previews y la página final. Registro y capturas: facebook-setup.json y Facebook-*.jpg. No se enviaron invitaciones ni se activaron anuncios o publicaciones de campaña. No se verificó acceso sin sesión.

@@ -1,6 +1,6 @@
 # Marketing digital de Cripton POS
 
-Campaña inicial de 30 días, preparada el 26 de octubre de 2026. Repositorio: `pagina_pos`; rama `codex/marketing-launch`; base inicial `ce85b72`; fuente web actualizada y revisada `645be14`. Objetivo: generar conversaciones y demostraciones calificadas con comercios de Colombia mostrando el producto real y una identidad consistente. No se ha publicado ni programado contenido, ni contratado anuncios.
+Campaña inicial de 30 días, preparada el 26 de octubre de 2026. Repositorio: `pagina_pos`; rama `codex/marketing-launch`; base inicial `ce85b72`; fuente web actualizada y revisada `645be14`. Objetivo: generar conversaciones y demostraciones calificadas con comercios de Colombia mostrando el producto real y una identidad consistente. No se ha publicado ni programado contenido de campaña, ni contratado anuncios. La página de Facebook fue creada y personalizada con autorización; véase `qa/facebook-setup.json`.
 
 Abre **[index.html](index.html)** para revisar las piezas, descargar PNG, acceder a los SVG y reproducir los seis videos. La galería es local y no debe copiarse a `public/` ni desplegarse con la web: contiene materiales de revisión y fuentes.
 

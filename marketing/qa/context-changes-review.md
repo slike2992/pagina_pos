@@ -1,1 +1,5 @@
 Se detectaron cambios publicados durante la producción. Web: ce85b72 → 2b9da56 → 645be14, revisión de formularios accesibles, imágenes y evidencia de frontend; catálogo y capacidades se conservan. Se leyó el diff de portada, cabecera/pie, package y el registro transversal; se actualizó esta rama por fast-forward conservando marketing. SaaS: eb9a136 → e088a55, instalador y baseline de esquema aislado; se revisaron commits, plan y registro transversal. No se anuncian como despliegue o alta productiva acreditada. Baseline actualizado después de esta revisión, sin integrar historias entre repositorios ni incorporar modificaciones locales ajenas.
+
+## Revisión para alta de Facebook — 2026-10-26
+
+Revisados ae3790a, 361b60e, 9ff767b y d0ccec2 desde e088a55: instalación, staging, almacenamiento privado, ciclo de procesos y evidencia local. No cambian precios ni funciones comerciales del kit. Ubuntu, Azure, DNS/HTTPS, webhook Wompi y QR Bre-B continúan pendientes; no se anuncian como disponibles. Base de contexto actualizada a d0ccec2 sin integrar código SaaS.

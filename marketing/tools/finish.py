@@ -17,7 +17,14 @@ def banner(name,w,h,logo_rect,title_rect,sub_rect,handle_rect,title,size):
         tx=T if outlined else U
         return f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}"><title>Cripton POS · {name}</title>'+b.rect(0,0,w,h,b.NAVY)+f'<path d="M{int(w*.8)} 0H{w}V{h}H{int(w*.63)}Z" fill="{b.TEAL}" opacity=".4"/>'+b.logo(*logo_rect,True)+tx(title,*title_rect,size)+tx('Ventas, caja e inventario',*sub_rect,int(size*.5),b.CYAN,500)+tx('@cripton.colombia',*handle_rect,int(size*.4),b.WHITE,500)+'</svg>'
     (source/(name+'.svg')).write_text(draw(False),encoding='utf-8');(profiles/(name+'.svg')).write_text(draw(True),encoding='utf-8')
-banner('facebook-cover',1640,720,(160,116,450),(160,400),(160,472),(1000,646),'Tu negocio, con más claridad.',59)
+# Left safe column stays clear of Facebook's centered avatar in desktop/mobile previews.
+def facebook_cover():
+    def draw(outlined):
+        tx=lambda s,x,y,size,color=b.WHITE,weight=700:b.text(s,x,y,size,color,weight,outlined)
+        return '<svg xmlns="http://www.w3.org/2000/svg" width="1640" height="720" viewBox="0 0 1640 720"><title>Cripton POS · facebook-cover</title>'+b.rect(0,0,1640,720,b.NAVY)+'<path d="M1312 0H1640V720H1033Z" fill="'+b.TEAL+'" opacity=".4"/>'+b.logo(100,80,390,True)+tx('Tu negocio,',100,270,46)+tx('con más claridad.',100,330,46)+tx('Ventas, caja',100,440,28,b.CYAN,500)+tx('e inventario',100,481,28,b.CYAN,500)+tx('@cripton.colombia',1110,116,24,b.WHITE,500)+'</svg>'
+    (source/'facebook-cover.svg').write_text(draw(False),encoding='utf-8')
+    (profiles/'facebook-cover.svg').write_text(draw(True),encoding='utf-8')
+facebook_cover()
 # Keep meaningful YouTube content inside the centered 1546×423 editorial safe region.
 banner('youtube-banner',2560,1440,(580,525,400),(580,744),(580,820),(1570,822),'Tu negocio, con más claridad.',58)
 shutil.copyfile(ROOT.parent/'Cripton_Kit_Marca_v1_0/04_iconos/cripton_maskable_v1.0.svg',source/'avatar.svg')

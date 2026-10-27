@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-26",
+  "pageName": "Cripton.colombia",
+  "pageId": "61596143211291",
+  "url": "https://www.facebook.com/profile.php?id=61596143211291",
+  "category": "Empresa de software",
+  "email": "ventas@cripton.com.co",
+  "bio": "Software POS para comercios en Colombia. Ventas, caja e inventario. Conoce Cripton y solicita una demostración.",
+  "status": "Creada; asistente cinco pasos finalizado; logo y portada guardados",
+  "approval": "Propietario autorizó crear la página y aceptar las políticas en este chat",
+  "username": {
+    "requested": "cripton.colombia",
+    "result": "Este nombre de usuario no está disponible.",
+    "saved": false
+  },
+  "validation": [
+    "Avatar oficial visible en recorte circular",
+    "Portada ajustada tras detectar oclusión del avatar en móvil",
+    "Revisión de vistas previas ordenador y móvil",
+    "Página final accesible con sesión administrativa",
+    "Correo comercial visible en detalles"
+  ],
+  "pending": [
+    "Elegir nombre de usuario alternativo si se requiere enlace corto",
+    "WhatsApp comercial aún no informado",
+    "Sitio web pendiente DNS/HTTPS público antes de enlazar",
+    "Vinculación Instagram no realizada",
+    "Acceso sin sesión no ensayado"
+  ],
+  "scope": "Sin anuncios, gasto ni publicaciones de campaña; Facebook puede generar entradas automáticas por actualización de fotos. No se enviaron invitaciones.",
+  "evidence": [
+    "Facebook-Cripton-Pagina-Creada.jpg",
+    "Facebook-Portada-Movil.jpg",
+    "Facebook-Usuario-No-Disponible.jpg"
+  ]
+}
