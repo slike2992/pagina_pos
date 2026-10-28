@@ -18,7 +18,8 @@
     "Portada ajustada tras detectar oclusión del avatar en móvil",
     "Revisión de vistas previas ordenador y móvil",
     "Página final accesible con sesión administrativa",
-    "Correo comercial visible en detalles"
+    "Correo comercial visible en detalles",
+    "Avatar oficial a color sobre blanco guardado y verificado completo en el círculo del perfil"
   ],
   "pending": [
     "Elegir nombre de usuario alternativo si se requiere enlace corto",
@@ -31,6 +32,9 @@
   "evidence": [
     "Facebook-Cripton-Pagina-Creada.jpg",
     "Facebook-Portada-Movil.jpg",
-    "Facebook-Usuario-No-Disponible.jpg"
-  ]
+    "Facebook-Usuario-No-Disponible.jpg",
+    "Facebook-Avatar-Fondo-Blanco.jpg"
+  ],
+  "avatar": "campaigns/launch-30d/exports/profiles/avatar-fondo-blanco.png",
+  "avatarUpdatedAt": "2026-10-27"
 }

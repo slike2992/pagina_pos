@@ -44,4 +44,4 @@ El kit sigue listo para revisión, con publicación pendiente. El primer bloque 
 
 ## Avatar sobre blanco
 
-Instagram usa desde el 27 de octubre el símbolo oficial a color sobre fondo blanco. Fuente editable y PNG: `campaigns/launch-30d/{sources,exports}/profiles/avatar-fondo-blanco.*`. Exportar con `node marketing/tools/avatar-white.mjs` desde la raíz del repositorio. El exportador verifica trazados idénticos entre variantes oficiales y conserva la colocación del avatar maskable. El recurso oscuro se conserva para otros contextos; no se modificaron maestros de marca. Evidencia: `qa/Instagram-Avatar-Fondo-Blanco.jpg`.
+Instagram y Facebook usan desde el 27 de octubre el símbolo oficial a color sobre fondo blanco. Fuente editable y PNG: `campaigns/launch-30d/{sources,exports}/profiles/avatar-fondo-blanco.*`. Exportar con `node marketing/tools/avatar-white.mjs` desde la raíz del repositorio. El exportador verifica trazados idénticos entre variantes oficiales y conserva la colocación del avatar maskable. El recurso oscuro se conserva para otros contextos; no se modificaron maestros de marca. Evidencia: `qa/Instagram-Avatar-Fondo-Blanco.jpg`.
