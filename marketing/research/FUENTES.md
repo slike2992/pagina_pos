@@ -15,3 +15,5 @@ Consulta: 26 de octubre de 2026. Esta lista acredita lectura de documentación, 
 La música, voces y formatos finales requieren comprobación del archivo y destino exactos. Ninguna consulta de especificaciones garantiza distribución, monetización ni rendimiento.
 
 - [YouTube, branding de canal](https://support.google.com/youtube/answer/10456525?hl=en): banner recomendado 2560×1440; tamaño de archivo hasta 6 MB. La zona central usada se obtuvo escalando su área segura indicada a resolución mínima; verificar el recorte final en el canal.
+
+- X, personalización del perfil: https://help.x.com/en/managing-your-account/how-to-customize-your-profile . Consultado 2026-10-27: recomienda portada 1500 × 500 y avatar 400 × 400. Recorte comprobado en el editor y perfil real.

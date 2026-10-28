@@ -21,6 +21,9 @@ def build_banners():
         # Content in the upper band avoids the large centered mobile profile avatar.
         # Name-only is permitted here: official raptor avatar and page name provide context.
         return start(1640,720,'Cripton · software para negocios · portada Facebook',b.NAVY)+'<path d="M1270 0H1640V720H1040Z" fill="'+b.TEAL+'"/>'+word(72,58,780)+tx('Software',962,142,78,b.WHITE,700,outlined)+tx('para negocios',962,236,78,b.WHITE,700,outlined)+'<path d="M1290 510H1470L1432 534H1252Z" fill="'+b.CYAN+'"/></svg>'
+    def x_header(outlined):
+        # X avatar overlaps the lower left. Essential brand content stays above it.
+        return start(1500,500,'Cripton · portada X',b.NAVY)+'<path d="M1180 0H1500V500H1020Z" fill="'+b.TEAL+'"/>'+word(60,80,700)+tx('Software',850,170,76,b.WHITE,700,outlined)+tx('para negocios',850,262,76,b.WHITE,700,outlined)+'<path d="M1170 380H1340L1302 404H1132Z" fill="'+b.CYAN+'"/></svg>'
     def youtube(outlined):
         # At 2560x1440 the conservative central safe area is 1544x422.
         return start(2560,1440,'Cripton · soluciones de software · banner YouTube',b.NAVY)+'<path d="M2140 0H2560V1440H1840Z" fill="'+b.TEAL+'"/>'+b.logo(560,526,1440,True)+'</svg>'
@@ -28,7 +31,7 @@ def build_banners():
         if mobile:
             return start(780,960,'Cripton · banner web móvil',b.NAVY)+'<path d="M660 0H780V960H490Z" fill="'+b.TEAL+'"/>'+word(64,70,510)+tx('Software para',64,365,78,b.WHITE,700,outlined)+tx('tu negocio.',64,459,78,b.WHITE,700,outlined)+tx('Conoce Cripton POS',64,605,40,b.CYAN,700,outlined)+tx('Ventas, caja e inventario.',64,673,34,b.WHITE,400,outlined)+b.rect(64,753,620,100,b.CYAN,12)+tx('Solicita una demostración',94,817,36,b.NAVY,700,outlined)+'</svg>'
         return start(1920,760,'Cripton · banner web escritorio',b.NAVY)+'<path d="M1510 0H1920V760H1230Z" fill="'+b.TEAL+'"/>'+b.logo(100,58,540,True)+tx('Software para',100,341,94,b.WHITE,700,outlined)+tx('tu negocio.',100,453,94,b.WHITE,700,outlined)+tx('Conoce Cripton POS',1110,276,48,b.CYAN,700,outlined)+tx('Ventas, caja e inventario.',1110,350,36,b.WHITE,400,outlined)+b.rect(1110,430,650,100,b.CYAN,12)+tx('Solicita una demostración',1140,495,38,b.NAVY,700,outlined)+'</svg>'
-    defs=[('facebook-cover-v2',1640,720,facebook,'profiles'),('youtube-banner-v2',2560,1440,youtube,'profiles'),('web-banner-desktop',1920,760,lambda o:web(o),'banners'),('web-banner-mobile',780,960,lambda o:web(o,True),'banners')]
+    defs=[('x-header-v1',1500,500,x_header,'profiles'),('facebook-cover-v2',1640,720,facebook,'profiles'),('youtube-banner-v2',2560,1440,youtube,'profiles'),('web-banner-desktop',1920,760,lambda o:web(o),'banners'),('web-banner-mobile',780,960,lambda o:web(o,True),'banners')]
     manifest=[]
     for name,w,h,fn,folder in defs:
         source=ROOT/f'campaigns/launch-30d/sources/{folder}/{name}.svg';vector=ROOT/f'campaigns/launch-30d/exports/{folder}/{name}.svg'

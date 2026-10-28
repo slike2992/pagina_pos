@@ -3,6 +3,32 @@
   "date": "2026-10-27",
   "items": [
     {
+      "id": "x-header-v1",
+      "canvas": [
+        1500,
+        500
+      ],
+      "source": "campaigns/launch-30d/sources/profiles/x-header-v1.svg",
+      "vector": "campaigns/launch-30d/exports/profiles/x-header-v1.svg",
+      "png": "campaigns/launch-30d/exports/profiles/x-header-v1.png",
+      "text": [
+        {
+          "text": "Software",
+          "x": 850,
+          "baseline": 170,
+          "size": 76,
+          "right": 1189.40234375
+        },
+        {
+          "text": "para negocios",
+          "x": 850,
+          "baseline": 262,
+          "size": 76,
+          "right": 1376.8046875
+        }
+      ]
+    },
+    {
       "id": "facebook-cover-v2",
       "canvas": [
         1640,

@@ -60,5 +60,21 @@
       422
     ],
     "platform_preview": "Simulación local; pendiente carga en canal real"
+  },
+  {
+    "name": "x-header-v1",
+    "dimensions": [
+      1500,
+      500
+    ],
+    "platform_preview": "Guardado y verificado tras recargar X, 2026-10-27; ver x-setup.json"
+  },
+  {
+    "name": "x-avatar-v1",
+    "dimensions": [
+      400,
+      400
+    ],
+    "platform_preview": "Raptor oficial sobre blanco; recorte circular revisado en X"
   }
 ]

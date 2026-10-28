@@ -59,3 +59,7 @@ Facebook @cripton.col e Instagram @cripton.colombia quedaron vinculados con auto
 Revisión visible: [banners.html](banners.html). Manual, tamaños, recortes, pruebas y límites en [qa/BANNERS_2026-10-27.md](qa/BANNERS_2026-10-27.md). Se preservan las portadas anteriores como históricas; usar los archivos de perfiles con sufijo `-v2`. Los banners web viven en `campaigns/launch-30d/{sources,exports}/banners/`.
 
 Regeneración acotada: `python marketing/tools/banner_system.py`, `node marketing/tools/render-banners.mjs` y `node marketing/tools/check-banners.mjs`. El generador completo llama al mismo compositor; no crea otro diseño de portada. PNG en sRGB y SVG editables/trazados.
+
+## Perfil X — 2026-10-27
+
+Cuenta [@criptoncolombia](https://x.com/criptoncolombia), nombre visible **Cripton**, avatar oficial sobre blanco, portada específica y biografía aprobada. Registro y límites en `qa/x-setup.json`; evidencia `qa/X-Cripton-Configurado.png`. Archivos versionados `x-header-v1` (SVG editable/trazado y PNG 1500 × 500) y `x-avatar-v1.png` (400 × 400). La regeneración reutiliza el mismo compositor de banners y el SVG del avatar blanco existente. No hay nombre personal en los campos visibles del perfil verificados.

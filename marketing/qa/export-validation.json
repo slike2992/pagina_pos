@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-28T01:35:13.086Z",
+  "checkedAt": "2026-10-28T01:51:02.594Z",
   "status": "passed",
   "counts": {
     "posts": 12,
@@ -8,8 +8,8 @@
     "reels": 6,
     "ads": 3,
     "graphicExports": 97,
-    "profilePng": 11,
-    "banners": 4,
+    "profilePng": 13,
+    "banners": 5,
     "days": 30
   },
   "checks": [

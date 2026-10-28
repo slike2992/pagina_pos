@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-27",
+  "url": "https://x.com/criptoncolombia",
+  "username": "criptoncolombia",
+  "displayName": "Cripton",
+  "bio": "Software para negocios en Colombia. Conoce Cripton POS: ventas, caja e inventario. Contacto: ventas@cripton.com.co.",
+  "bioApproval": "Aprobación explícita del propietario recibida antes de escribir y guardar",
+  "avatar": "campaigns/launch-30d/exports/profiles/x-avatar-v1.png",
+  "header": "campaigns/launch-30d/exports/profiles/x-header-v1.png",
+  "dimensions": {
+    "avatar": [
+      400,
+      400
+    ],
+    "header": [
+      1500,
+      500
+    ]
+  },
+  "checks": [
+    "Guardado de ambas imágenes con recorte revisado en editor de X",
+    "Nombre personal sustituido por Cripton",
+    "Tras recargar: título, encabezado, nombre de perfil y menú de cuenta muestran Cripton",
+    "Usuario corporativo existente @criptoncolombia conservado",
+    "Biografía aprobada persistente tras recarga",
+    "Maestros sin redibujar; avatar oficial a color sobre blanco; exportaciones sRGB"
+  ],
+  "evidence": [
+    "X-Cripton-Configurado.png"
+  ],
+  "limits": [
+    "Revisión con sesión del propietario en navegador; no aplicación nativa ni prueba desconectada",
+    "No se modificaron credenciales, datos privados de cuenta ni permisos",
+    "No se publicaron posts, mensajes o anuncios ni se contrató verificación"
+  ],
+  "source": "https://help.x.com/en/managing-your-account/how-to-customize-your-profile"
+}
