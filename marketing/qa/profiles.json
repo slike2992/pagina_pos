@@ -14,7 +14,7 @@
       1640,
       720
     ],
-    "platform_preview": "Columna lateral revisada en vistas previas ordenador/móvil y página real de Facebook; titular sin oclusión por avatar"
+    "platform_preview": "Histórico sustituido por facebook-cover-v2 el 2026-10-27; ver BANNERS_2026-10-27.md"
   },
   {
     "name": "youtube-banner",
@@ -28,7 +28,7 @@
       1546,
       423
     ],
-    "platform_preview": "pendiente comprobar en el canal real"
+    "platform_preview": "Histórico sustituido en el kit por youtube-banner-v2; carga real pendiente"
   },
   {
     "name": "avatar-fondo-blanco",
@@ -38,5 +38,27 @@
     ],
     "source": "Símbolo color oficial, trazados idénticos, colocación del maskable, fondo blanco",
     "platform_preview": "Cargado y verificado en Instagram y Facebook, 2026-10-27"
+  },
+  {
+    "name": "facebook-cover-v2",
+    "dimensions": [
+      1640,
+      720
+    ],
+    "platform_preview": "Guardado en Facebook, foto 122093996001538107. Vista real estrecha y escritorio, con limitaciones administrativas documentadas."
+  },
+  {
+    "name": "youtube-banner-v2",
+    "dimensions": [
+      2560,
+      1440
+    ],
+    "safe_zone_proposal": [
+      508,
+      509,
+      1544,
+      422
+    ],
+    "platform_preview": "Simulación local; pendiente carga en canal real"
   }
 ]

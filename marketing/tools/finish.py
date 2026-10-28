@@ -12,29 +12,16 @@ source=b.SOURCES/'profiles';source.mkdir(parents=True,exist_ok=True)
 shutil.copyfile(ROOT.parent/'Cripton_Kit_Marca_v1_0/04_iconos/cripton_maskable_1024.png',profiles/'avatar.png')
 T=lambda s,x,y,size,color=b.WHITE,weight=700:b.text(s,x,y,size,color,weight,True)
 U=lambda s,x,y,size,color=b.WHITE,weight=700:b.text(s,x,y,size,color,weight,False)
-def banner(name,w,h,logo_rect,title_rect,sub_rect,handle_rect,title,size):
-    def draw(outlined):
-        tx=T if outlined else U
-        return f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}"><title>Cripton POS · {name}</title>'+b.rect(0,0,w,h,b.NAVY)+f'<path d="M{int(w*.8)} 0H{w}V{h}H{int(w*.63)}Z" fill="{b.TEAL}" opacity=".4"/>'+b.logo(*logo_rect,True)+tx(title,*title_rect,size)+tx('Ventas, caja e inventario',*sub_rect,int(size*.5),b.CYAN,500)+tx('@cripton.colombia',*handle_rect,int(size*.4),b.WHITE,500)+'</svg>'
-    (source/(name+'.svg')).write_text(draw(False),encoding='utf-8');(profiles/(name+'.svg')).write_text(draw(True),encoding='utf-8')
-# Left safe column stays clear of Facebook's centered avatar in desktop/mobile previews.
-def facebook_cover():
-    def draw(outlined):
-        tx=lambda s,x,y,size,color=b.WHITE,weight=700:b.text(s,x,y,size,color,weight,outlined)
-        return '<svg xmlns="http://www.w3.org/2000/svg" width="1640" height="720" viewBox="0 0 1640 720"><title>Cripton POS · facebook-cover</title>'+b.rect(0,0,1640,720,b.NAVY)+'<path d="M1312 0H1640V720H1033Z" fill="'+b.TEAL+'" opacity=".4"/>'+b.logo(100,80,390,True)+tx('Tu negocio,',100,270,46)+tx('con más claridad.',100,330,46)+tx('Ventas, caja',100,440,28,b.CYAN,500)+tx('e inventario',100,481,28,b.CYAN,500)+tx('@cripton.col',1110,116,24,b.WHITE,500)+'</svg>'
-    (source/'facebook-cover.svg').write_text(draw(False),encoding='utf-8')
-    (profiles/'facebook-cover.svg').write_text(draw(True),encoding='utf-8')
-facebook_cover()
-# Keep meaningful YouTube content inside the centered 1546×423 editorial safe region.
-banner('youtube-banner',2560,1440,(580,525,400),(580,744),(580,820),(1570,822),'Tu negocio, con más claridad.',58)
+# Shared banner source: do not overwrite it with old campaign layouts.
+from banner_system import build_banners
+build_banners()
 shutil.copyfile(ROOT.parent/'Cripton_Kit_Marca_v1_0/04_iconos/cripton_maskable_v1.0.svg',source/'avatar.svg')
 for label in ['POS','Inventario','Caja','Planes','Demo']:
     for outlined,target in [(False,source),(True,profiles)]:
         tx=T if outlined else U
         art='<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><title>Cripton · '+label+'</title>'+b.rect(0,0,512,512,b.NAVY)+b.embed(ROOT/'brand/cripton_simbolo_reverso_v1.0.svg',144,64,224,211)+tx(label,256-b.measure(label,42,700)/2,362,42,b.WHITE)+'</svg>'
         (target/f'destacada-{label.lower()}.svg').write_text(art,encoding='utf-8')
-profile_report=[{'name':'avatar','dimensions':[1024,1024],'source':'Icono maskable oficial, copia sin modificación','platform_preview':'pendiente recorte real de cada cuenta'},{'name':'facebook-cover','dimensions':[1640,720],'platform_preview':'pendiente encuadre escritorio/móvil'},{'name':'youtube-banner','dimensions':[2560,1440],'safe_zone_proposal':[507,508,1546,423],'platform_preview':'pendiente comprobar en el canal real'}]
-(ROOT/'qa/profiles.json').write_text(json.dumps(profile_report,ensure_ascii=False,indent=2),encoding='utf-8')
+# Verified platform status lives in qa/profiles.json; export does not reset it.
 
 # Original score: chord pad + four-note arpeggio + soft kick/hat; deterministic, no samples.
 sr=44100;duration=24;audio=np.zeros((sr*duration,2),dtype=np.float64);beat=60/96

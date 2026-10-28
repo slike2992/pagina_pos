@@ -1,0 +1,70 @@
+[
+  {
+    "images": [
+      {
+        "height": 249,
+        "naturalHeight": 1440,
+        "naturalWidth": 2560,
+        "width": 442.671875
+      },
+      {
+        "height": 249,
+        "naturalHeight": 1440,
+        "naturalWidth": 2560,
+        "width": 442.671875
+      }
+    ],
+    "width": 320
+  },
+  {
+    "images": [
+      {
+        "height": 317.078125,
+        "naturalHeight": 1440,
+        "naturalWidth": 2560,
+        "width": 563.71875
+      },
+      {
+        "height": 317.078125,
+        "naturalHeight": 1440,
+        "naturalWidth": 2560,
+        "width": 563.71875
+      }
+    ],
+    "width": 393
+  },
+  {
+    "images": [
+      {
+        "height": 395.4375,
+        "naturalHeight": 1440,
+        "naturalWidth": 2560,
+        "width": 703
+      },
+      {
+        "height": 399.140625,
+        "naturalHeight": 1440,
+        "naturalWidth": 2560,
+        "width": 709.609375
+      }
+    ],
+    "width": 768
+  },
+  {
+    "images": [
+      {
+        "height": 646.875,
+        "naturalHeight": 1440,
+        "naturalWidth": 2560,
+        "width": 1150
+      },
+      {
+        "height": 399.140625,
+        "naturalHeight": 1440,
+        "naturalWidth": 2560,
+        "width": 709.609375
+      }
+    ],
+    "width": 1440
+  }
+]

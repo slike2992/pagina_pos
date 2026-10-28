@@ -1,0 +1,53 @@
+{
+  "date": "2026-10-27",
+  "status": "passed",
+  "banners": 4,
+  "viewports": [
+    320,
+    360,
+    393,
+    430,
+    768,
+    1024,
+    1440
+  ],
+  "youtubeVisibleLogoAt320": 282.3435222924565,
+  "contrast": [
+    {
+      "colors": [
+        "#FFFFFF",
+        "#051828"
+      ],
+      "ratio": 17.983350341218014
+    },
+    {
+      "colors": [
+        "#FFFFFF",
+        "#056877"
+      ],
+      "ratio": 6.45565746256288
+    },
+    {
+      "colors": [
+        "#31CCD4",
+        "#051828"
+      ],
+      "ratio": 9.178730319857737
+    }
+  ],
+  "checks": [
+    "Maestros vectoriales sin modificar",
+    "PNG sRGB, dimensiones y peso",
+    "Texto dentro del lienzo",
+    "Zona segura YouTube y mínimo de marca",
+    "Medidas DOM de siete tamaños",
+    "Recursos HTML existentes",
+    "Proporción renderizada de imágenes YouTube"
+  ],
+  "limitations": [
+    "No sustituye ensayo en aplicaciones nativas de redes",
+    "YouTube pendiente vista de carga en cuenta real",
+    "Banner web es un recurso de marketing listo para integrar, no una modificación de la web pública"
+  ],
+  "issues": []
+}

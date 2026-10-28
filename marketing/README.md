@@ -1,6 +1,6 @@
 # Marketing digital de Cripton POS
 
-Campaña inicial de 30 días, preparada el 26 de octubre de 2026. Repositorio: `pagina_pos`; rama `codex/marketing-launch`; base inicial `ce85b72`; fuente web actualizada y revisada `645be14`. Objetivo: generar conversaciones y demostraciones calificadas con comercios de Colombia mostrando el producto real y una identidad consistente. No se ha publicado ni programado contenido de campaña, ni contratado anuncios. La página de Facebook fue creada y personalizada con autorización; Instagram ya muestra el perfil Cripton POS con logo y contacto comercial. Registros: `qa/facebook-setup.json` y `qa/instagram-setup.json`.
+Campaña inicial de 30 días, preparada el 26 de octubre de 2026. Repositorio: `pagina_pos`; rama `codex/marketing-launch`; base inicial `ce85b72`; fuente web actualizada y revisada `645be14`. Objetivo: generar conversaciones y demostraciones calificadas con comercios de Colombia mostrando el producto real y una identidad consistente. No se ha publicado ni programado contenido de campaña, ni contratado anuncios. La página de Facebook fue creada y personalizada con autorización; Instagram ya muestra el perfil Cripton con logo y contacto comercial. Registros: `qa/facebook-setup.json` y `qa/instagram-setup.json`.
 
 Abre **[index.html](index.html)** para revisar las piezas, descargar PNG, acceder a los SVG y reproducir los seis videos. La galería es local y no debe copiarse a `public/` ni desplegarse con la web: contiene materiales de revisión y fuentes.
 
@@ -31,6 +31,8 @@ node marketing/tools/check-context.mjs
 python marketing/tools/build.py
 node marketing/tools/render.mjs marketing
 python marketing/tools/finish.py
+node marketing/tools/render-banners.mjs
+node marketing/tools/check-banners.mjs
 node marketing/tools/validate.mjs marketing
 ```
 
@@ -48,6 +50,12 @@ Instagram y Facebook usan desde el 27 de octubre el símbolo oficial a color sob
 
 ## Identidad corporativa vigente — 2026-10-27
 
-La marca es **Cripton** y **Cripton POS** es un producto. Nombres visibles de Facebook e Instagram verificados como Cripton. Facebook: https://www.facebook.com/cripton.col (usuario elegido por el propietario). Instagram: https://www.instagram.com/cripton.colombia/ . La portada específica de Facebook usa @cripton.col; piezas de Instagram mantienen @cripton.colombia. No prometer aparición uniforme en resultados de búsqueda. Véanse los registros de configuración en qa/.
+La marca es **Cripton** y **Cripton POS** es un producto. Nombres visibles de Facebook e Instagram verificados como Cripton. Facebook: https://www.facebook.com/cripton.col (usuario elegido por el propietario). Instagram: https://www.instagram.com/cripton.colombia/ . La cuenta Facebook usa @cripton.col; piezas de Instagram mantienen @cripton.colombia. La portada corporativa v2 no repite usuarios pequeños. No prometer aparición uniforme en resultados de búsqueda. Véanse los registros de configuración en qa/.
 
 Facebook @cripton.col e Instagram @cripton.colombia quedaron vinculados con autorización específica del propietario. Confirmación y alcance: `qa/meta-linked-accounts.json`. El acceso a mensajes de Instagram desde la bandeja conectada está activo según roles; no se leyeron ni enviaron mensajes.
+
+## Banners corporativos v2 — 2026-10-27
+
+Revisión visible: [banners.html](banners.html). Manual, tamaños, recortes, pruebas y límites en [qa/BANNERS_2026-10-27.md](qa/BANNERS_2026-10-27.md). Se preservan las portadas anteriores como históricas; usar los archivos de perfiles con sufijo `-v2`. Los banners web viven en `campaigns/launch-30d/{sources,exports}/banners/`.
+
+Regeneración acotada: `python marketing/tools/banner_system.py`, `node marketing/tools/render-banners.mjs` y `node marketing/tools/check-banners.mjs`. El generador completo llama al mismo compositor; no crea otro diseño de portada. PNG en sRGB y SVG editables/trazados.

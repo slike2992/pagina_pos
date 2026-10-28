@@ -1,0 +1,156 @@
+{
+  "brandRevision": "1.1.0",
+  "date": "2026-10-27",
+  "items": [
+    {
+      "id": "facebook-cover-v2",
+      "canvas": [
+        1640,
+        720
+      ],
+      "source": "campaigns/launch-30d/sources/profiles/facebook-cover-v2.svg",
+      "vector": "campaigns/launch-30d/exports/profiles/facebook-cover-v2.svg",
+      "png": "campaigns/launch-30d/exports/profiles/facebook-cover-v2.png",
+      "text": [
+        {
+          "text": "Software",
+          "x": 962,
+          "baseline": 142,
+          "size": 78,
+          "right": 1310.333984375
+        },
+        {
+          "text": "para negocios",
+          "x": 962,
+          "baseline": 236,
+          "size": 78,
+          "right": 1502.66796875
+        }
+      ]
+    },
+    {
+      "id": "youtube-banner-v2",
+      "canvas": [
+        2560,
+        1440
+      ],
+      "source": "campaigns/launch-30d/sources/profiles/youtube-banner-v2.svg",
+      "vector": "campaigns/launch-30d/exports/profiles/youtube-banner-v2.svg",
+      "png": "campaigns/launch-30d/exports/profiles/youtube-banner-v2.png",
+      "text": []
+    },
+    {
+      "id": "web-banner-desktop",
+      "canvas": [
+        1920,
+        760
+      ],
+      "source": "campaigns/launch-30d/sources/banners/web-banner-desktop.svg",
+      "vector": "campaigns/launch-30d/exports/banners/web-banner-desktop.svg",
+      "png": "campaigns/launch-30d/exports/banners/web-banner-desktop.png",
+      "text": [
+        {
+          "text": "Software para",
+          "x": 100,
+          "baseline": 341,
+          "size": 94,
+          "right": 748.728515625
+        },
+        {
+          "text": "tu negocio.",
+          "x": 100,
+          "baseline": 453,
+          "size": 94,
+          "right": 616.5869140625
+        },
+        {
+          "text": "Conoce Cripton POS",
+          "x": 1110,
+          "baseline": 276,
+          "size": 48,
+          "right": 1588.5703125
+        },
+        {
+          "text": "Ventas, caja e inventario.",
+          "x": 1110,
+          "baseline": 350,
+          "size": 36,
+          "right": 1538.23828125
+        },
+        {
+          "text": "Solicita una demostración",
+          "x": 1140,
+          "baseline": 495,
+          "size": 38,
+          "right": 1621.716796875
+        }
+      ]
+    },
+    {
+      "id": "web-banner-mobile",
+      "canvas": [
+        780,
+        960
+      ],
+      "source": "campaigns/launch-30d/sources/banners/web-banner-mobile.svg",
+      "vector": "campaigns/launch-30d/exports/banners/web-banner-mobile.svg",
+      "png": "campaigns/launch-30d/exports/banners/web-banner-mobile.png",
+      "text": [
+        {
+          "text": "Software para",
+          "x": 64,
+          "baseline": 365,
+          "size": 78,
+          "right": 602.306640625
+        },
+        {
+          "text": "tu negocio.",
+          "x": 64,
+          "baseline": 459,
+          "size": 78,
+          "right": 492.6572265625
+        },
+        {
+          "text": "Conoce Cripton POS",
+          "x": 64,
+          "baseline": 605,
+          "size": 40,
+          "right": 462.80859375
+        },
+        {
+          "text": "Ventas, caja e inventario.",
+          "x": 64,
+          "baseline": 673,
+          "size": 34,
+          "right": 468.447265625
+        },
+        {
+          "text": "Solicita una demostración",
+          "x": 94,
+          "baseline": 817,
+          "size": 36,
+          "right": 550.36328125
+        }
+      ]
+    }
+  ],
+  "youtubeSafeArea": [
+    508,
+    509,
+    1544,
+    422
+  ],
+  "youtubeLogoBox": [
+    560,
+    526,
+    1440,
+    388.4444895615735
+  ],
+  "facebookStrategy": "Firma de nombre oficial en banda superior, sin texto bajo el avatar; descriptor corporativo, detalle POS en biografía. Verificación de Facebook real separada de simulaciones.",
+  "masters": "Cripton_Kit_Marca_v1_0/01_maestros_svg",
+  "limits": [
+    "No sustituye ensayo en aplicaciones nativas de redes",
+    "YouTube pendiente vista de carga en cuenta real",
+    "Banner web es un recurso de marketing listo para integrar, no una modificación de la web pública"
+  ]
+}
