@@ -29,5 +29,14 @@
       423
     ],
     "platform_preview": "pendiente comprobar en el canal real"
+  },
+  {
+    "name": "avatar-fondo-blanco",
+    "dimensions": [
+      1024,
+      1024
+    ],
+    "source": "Símbolo color oficial, trazados idénticos, colocación del maskable, fondo blanco",
+    "platform_preview": "Cargado y verificado en el perfil de Instagram, 2026-10-27"
   }
 ]

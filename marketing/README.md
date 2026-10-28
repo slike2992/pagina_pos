@@ -41,3 +41,7 @@ node marketing/tools/validate.mjs marketing
 Para editar SVG en un programa de diseño, usa Inter suministrada en brand/fonts y conserva su licencia; el logo sigue siendo un vector oficial que no se reescribe. Los SVG trazados y PNG no dependen de una fuente instalada. Para abrir la galería en local: python -m http.server 4335 --bind 127.0.0.1 --directory marketing, desde la raíz del repositorio, y abre http://127.0.0.1:4335/. Ese servidor sólo atiende este computador.
 
 El kit sigue listo para revisión, con publicación pendiente. El primer bloque recomendado es aprobar y preparar P01, S01, R01, P02 y S02; confirmar antes el destino y los mensajes de las cuentas.
+
+## Avatar sobre blanco
+
+Instagram usa desde el 27 de octubre el símbolo oficial a color sobre fondo blanco. Fuente editable y PNG: `campaigns/launch-30d/{sources,exports}/profiles/avatar-fondo-blanco.*`. Exportar con `node marketing/tools/avatar-white.mjs` desde la raíz del repositorio. El exportador verifica trazados idénticos entre variantes oficiales y conserva la colocación del avatar maskable. El recurso oscuro se conserva para otros contextos; no se modificaron maestros de marca. Evidencia: `qa/Instagram-Avatar-Fondo-Blanco.jpg`.

@@ -9,14 +9,15 @@
   "bio": "Software POS para comercios en Colombia.\nVentas, caja e inventario.\nEscríbenos DEMO para conocer Cripton.",
   "businessContact": "ventas@cripton.com.co",
   "contactVisibleSetting": true,
-  "avatar": "campaigns/launch-30d/exports/profiles/avatar.png",
+  "avatar": "campaigns/launch-30d/exports/profiles/avatar-fondo-blanco.png",
   "checks": [
     "Perfil guardado observado tras enviar biografía",
     "Avatar oficial visible en recorte circular",
     "Nombre Cripton POS guardado en Meta y verificado de nuevo en perfil",
     "Categoría Empresa de software visible",
     "Correo persistente al volver a abrir ajustes profesionales",
-    "Mostrar información de contacto activo"
+    "Mostrar información de contacto activo",
+    "Foto sobre blanco confirmada en Instagram con mensaje Se agregó la foto del perfil y recorte circular completo"
   ],
   "limits": [
     "Instagram indica que botones de contacto solo se ven en la app móvil; no se ensayó mailto desde esa app",
@@ -32,6 +33,9 @@
   "scope": "Configuración del perfil existente. Sin publicaciones, mensajes, campañas, anuncios ni gasto. No se modificaron credenciales.",
   "evidence": [
     "Instagram-Cripton-Configurado.jpg",
-    "Instagram-Contacto-Comercial.jpg"
-  ]
+    "Instagram-Contacto-Comercial.jpg",
+    "Instagram-Avatar-Fondo-Blanco.jpg"
+  ],
+  "avatarUpdatedAt": "2026-10-27",
+  "avatarVariant": "Símbolo oficial a color sobre blanco; geometría idéntica y colocación del maskable oficial"
 }

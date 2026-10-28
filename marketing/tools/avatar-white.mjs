@@ -1,0 +1,23 @@
+/** Export the official color symbol over white, retaining the supplied avatar placement. */
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {createRequire} from 'node:module';
+import {fileURLToPath} from 'node:url';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const require=createRequire(path.join(root,'..','package.json'));const sharp=require('sharp');
+const kit=path.join(root,'..','Cripton_Kit_Marca_v1_0');
+const color=await fs.readFile(path.join(kit,'01_maestros_svg/cripton_simbolo_color_v1.0.svg'),'utf8');
+const mask=await fs.readFile(path.join(kit,'04_iconos/cripton_maskable_v1.0.svg'),'utf8');
+const group=color.match(/<g\b[\s\S]*<\/g>/)?.[0];
+const placement=mask.match(/<g\b[^>]*transform="([^"]+)"/)?.[1];
+if(!group||!placement)throw new Error('Official symbol or avatar placement missing');
+const paths=s=>[...s.matchAll(/<path\b[^>]*\sd="([^"]+)"/g)].map(x=>x[1]);
+if(JSON.stringify(paths(color))!==JSON.stringify(paths(mask)))throw new Error('Official variants have different geometry; review required');
+const positioned=group.replace(/transform="[^"]+"/,`transform="${placement}"`);
+const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><title>Cripton · avatar oficial a color sobre blanco</title><rect width="1024" height="1024" fill="#FFFFFF"/>${positioned}</svg>`;
+const source=path.join(root,'campaigns/launch-30d/sources/profiles/avatar-fondo-blanco.svg');
+const output=path.join(root,'campaigns/launch-30d/exports/profiles/avatar-fondo-blanco.png');
+await fs.writeFile(source,svg);await sharp(Buffer.from(svg)).png().toFile(output);
+const m=await sharp(output).metadata();const c=await sharp(output).extract({left:0,top:0,width:1,height:1}).raw().toBuffer();
+if(m.width!==1024||m.height!==1024||c[0]!==255||c[1]!==255||c[2]!==255)throw new Error('Invalid white avatar export');
+console.log(JSON.stringify({output,width:m.width,height:m.height,geometry:'Exact official paths; supplied maskable placement',background:'#FFFFFF'}));
