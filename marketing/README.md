@@ -49,3 +49,5 @@ Instagram y Facebook usan desde el 27 de octubre el símbolo oficial a color sob
 ## Identidad corporativa vigente — 2026-10-27
 
 La marca es **Cripton** y **Cripton POS** es un producto. Nombres visibles de Facebook e Instagram verificados como Cripton. Facebook: https://www.facebook.com/cripton.col (usuario elegido por el propietario). Instagram: https://www.instagram.com/cripton.colombia/ . La portada específica de Facebook usa @cripton.col; piezas de Instagram mantienen @cripton.colombia. No prometer aparición uniforme en resultados de búsqueda. Véanse los registros de configuración en qa/.
+
+Facebook @cripton.col e Instagram @cripton.colombia quedaron vinculados con autorización específica del propietario. Confirmación y alcance: `qa/meta-linked-accounts.json`. El acceso a mensajes de Instagram desde la bandeja conectada está activo según roles; no se leyeron ni enviaron mensajes.

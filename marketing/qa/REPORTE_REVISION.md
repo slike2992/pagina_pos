@@ -43,3 +43,5 @@ Cuenta existente @cripton.colombia configurada con nombre Cripton POS, avatar of
 ## Identidad corporativa y enlace — 2026-10-27
 
 Facebook: usuario @cripton.col elegido por el propietario y verificado en ajustes y página correcta. El nombre visible Cripton ya apareció después de la solicitud del propietario. Instagram: nombre Cripton guardado y verificado, manteniendo @cripton.colombia. Ambas biografías distinguen marca y producto POS. Portada Facebook corregida a @cripton.col. Cuentas aún no vinculadas; el enlace requiere autorizar el acceso compartido mostrado por Meta. No se alteraron usuarios de otras redes ni se publicaron campañas.
+
+Vinculación completada tras autorización específica del propietario y su interacción para abrir la ventana de autenticación. Meta confirmó Facebook Cripton conectado con Instagram @cripton.colombia; se verificó persistencia en ajustes. Ver `meta-linked-accounts.json` y capturas. Esta evidencia sustituye el pendiente de vinculación de entradas anteriores.

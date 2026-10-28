@@ -29,7 +29,6 @@
   "pending": [
     "WhatsApp comercial aún no informado",
     "Sitio web pendiente DNS/HTTPS público antes de enlazar",
-    "Vinculación Instagram no realizada",
     "Acceso sin sesión no ensayado"
   ],
   "scope": "Sin anuncios, gasto ni publicaciones de campaña; Facebook puede generar entradas automáticas por actualización de fotos. No se enviaron invitaciones.",
@@ -39,9 +38,12 @@
     "Facebook-Usuario-No-Disponible.jpg",
     "Facebook-Avatar-Fondo-Blanco.jpg",
     "Facebook-CriptonCol-Guardado.jpg",
-    "Facebook-Cripton-Corporativo.jpg"
+    "Facebook-Cripton-Corporativo.jpg",
+    "Cripton-Facebook-Instagram-Conectados.jpg",
+    "Cripton-Vinculo-Configuracion.jpg"
   ],
   "avatar": "campaigns/launch-30d/exports/profiles/avatar-fondo-blanco.png",
   "avatarUpdatedAt": "2026-10-27",
-  "identityUpdatedAt": "2026-10-27"
+  "identityUpdatedAt": "2026-10-27",
+  "linkedAccountStatus": "Facebook @cripton.col conectado con Instagram @cripton.colombia, verificado 2026-10-27"
 }

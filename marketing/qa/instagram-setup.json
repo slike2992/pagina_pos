@@ -26,7 +26,6 @@
     "Sin prueba de acceso desconectado en este bloque"
   ],
   "pending": [
-    "Vincular Facebook con Instagram si se autoriza la conexión y sus permisos",
     "WhatsApp comercial aún no suministrado",
     "Añadir enlace web cuando DNS/HTTPS público se valide; edición requiere app móvil",
     "Crear destacadas al aprobar historias publicables"
@@ -36,9 +35,12 @@
     "Instagram-Cripton-Configurado.jpg",
     "Instagram-Contacto-Comercial.jpg",
     "Instagram-Avatar-Fondo-Blanco.jpg",
-    "Instagram-Cripton-Corporativo.jpg"
+    "Instagram-Cripton-Corporativo.jpg",
+    "Cripton-Facebook-Instagram-Conectados.jpg",
+    "Cripton-Vinculo-Configuracion.jpg"
   ],
   "avatarUpdatedAt": "2026-10-27",
   "avatarVariant": "Símbolo oficial a color sobre blanco; geometría idéntica y colocación del maskable oficial",
-  "identityUpdatedAt": "2026-10-27"
+  "identityUpdatedAt": "2026-10-27",
+  "linkedAccountStatus": "Facebook @cripton.col conectado con Instagram @cripton.colombia, verificado 2026-10-27"
 }

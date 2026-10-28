@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-27",
+  "facebook": {
+    "pageId": "61596143211291",
+    "name": "Cripton",
+    "username": "cripton.col"
+  },
+  "instagram": {
+    "name": "Cripton",
+    "username": "cripton.colombia"
+  },
+  "status": "Conectadas; confirmación Cuenta de Instagram conectada y página de ajustes Connected Instagram verificadas",
+  "approval": "Propietario autorizó vincular estas cuentas y el alcance de contenido/anuncios, estadísticas, mensajes/comentarios y configuración según permisos existentes",
+  "instagramInboxAccess": true,
+  "limits": [
+    "No se abrieron ni enviaron mensajes",
+    "No se activaron anuncios ni publicaciones automáticas",
+    "No se certifica aparición uniforme en buscadores"
+  ],
+  "evidence": [
+    "Cripton-Facebook-Instagram-Conectados.jpg",
+    "Cripton-Vinculo-Configuracion.jpg",
+    "Facebook-Cripton-Portada-Final.jpg"
+  ]
+}
