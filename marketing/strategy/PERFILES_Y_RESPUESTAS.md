@@ -5,9 +5,9 @@ Los enlaces y handles fueron aportados por el propietario el 26 de octubre. Esta
 ## Textos propuestos
 
 **Instagram (bio):**
-Software POS para comercios en Colombia.
-Ventas, caja e inventario.
-Escríbenos DEMO para conocer Cripton.
+Software para negocios en Colombia.
+Cripton POS: ventas, caja e inventario.
+Escríbenos DEMO.
 
 **TikTok (bio breve):**
 Cripton POS: ventas, caja e inventario para tu negocio.
@@ -18,7 +18,7 @@ Cripton POS para comercios en Colombia. Conoce ventas, caja e inventario en una 
 **YouTube (descripción):**
 Conoce Cripton POS por dentro. Compartimos recorridos de ventas, caja e inventario para comercios de Colombia, además de criterios para evaluar un POS. Las pantallas de demostración usan datos de prueba. El alcance depende del plan, la configuración y las condiciones vigentes. Para información comercial, escribe a ventas@cripton.com.co. El enlace al sitio y su capacidad de recibir consultas deben comprobarse antes de publicar la bio definitiva.
 
-**Nombre visible sugerido:** Cripton POS. **Avatar:** raptor oficial sobre petróleo oscuro, incluido en el kit. **Destacadas de Instagram propuestas:** POS, Inventario, Caja, Planes y Demo. Son categorías a crear sólo si se decide usar historias destacadas.
+**Nombre corporativo vigente:** Cripton. **Producto:** Cripton POS. **Facebook:** @cripton.col. **Instagram/TikTok/YouTube:** @cripton.colombia según inventario. No afirmar que todos los usuarios son idénticos. **Avatar:** raptor oficial sobre petróleo oscuro, incluido en el kit. **Destacadas de Instagram propuestas:** POS, Inventario, Caja, Planes y Demo. Son categorías a crear sólo si se decide usar historias destacadas.
 
 **Publicaciones fijadas propuestas:** P01 (qué es), P02 (producto real) y P12 (cómo conocerlo). No inventar verificación, premios, NIT, testimonios o cantidad de clientes.
 

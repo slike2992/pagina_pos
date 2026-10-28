@@ -4,19 +4,20 @@
     "url": "https://www.instagram.com/cripton.colombia/",
     "provenance": "Aportado por el propietario, 2026-10-26",
     "verified_public_access": true,
-    "public_observation": "Perfil Cripton POS, categoría Empresa de software, logo oficial y biografía verificados en navegador tras configuración",
+    "public_observation": "Nombre corporativo Cripton, usuario @cripton.colombia, categoría Empresa de software, avatar blanco y biografía que distingue Cripton POS, verificados en navegador",
     "publishing_access": "Sesión del propietario verificada para configurar el perfil; sin publicaciones ni anuncios de campaña",
     "configuration_record": "qa/instagram-setup.json"
   },
   {
     "channel": "facebook",
-    "url": "https://www.facebook.com/profile.php?id=61596143211291",
+    "url": "https://www.facebook.com/cripton.col",
     "provenance": "Página creada con autorización del propietario, 2026-10-26",
     "verified_public_access": false,
-    "public_observation": "Página visible en sesión administrativa tras creación. No ensayado acceso sin sesión. Nombre visible Cripton.colombia; Facebook rechaza cripton.colombia como usuario no disponible.",
+    "public_observation": "Nombre corporativo Cripton y enlace corto abren la página ID 61596143211291 en sesión administrativa; otras cuentas y búsquedas no certificadas",
     "publishing_access": "Sesión administrativa verificada en navegador para configurar página; campañas no publicadas",
-    "requested_username": "cripton.colombia",
-    "username_status": "No disponible según Facebook; no se eligió alternativa"
+    "requested_username": "cripton.col",
+    "username_status": "Asignado por el propietario y verificado en ajustes y enlace real, 2026-10-27",
+    "username": "cripton.col"
   },
   {
     "channel": "tiktok",

@@ -1,17 +1,19 @@
 {
   "date": "2026-10-26",
-  "pageName": "Cripton.colombia",
+  "pageName": "Cripton",
   "pageId": "61596143211291",
-  "url": "https://www.facebook.com/profile.php?id=61596143211291",
+  "url": "https://www.facebook.com/cripton.col",
   "category": "Empresa de software",
   "email": "ventas@cripton.com.co",
-  "bio": "Software POS para comercios en Colombia. Ventas, caja e inventario. Conoce Cripton y solicita una demostración.",
+  "bio": "Software para negocios en Colombia. Conoce Cripton POS: ventas, caja e inventario. Escríbenos para una demostración.",
   "status": "Creada; asistente cinco pasos finalizado; logo y portada guardados",
   "approval": "Propietario autorizó crear la página y aceptar las políticas en este chat",
   "username": {
-    "requested": "cripton.colombia",
-    "result": "Este nombre de usuario no está disponible.",
-    "saved": false
+    "saved": true,
+    "value": "cripton.col",
+    "assignedBy": "Propietario",
+    "verifiedAt": "2026-10-27",
+    "previousAttempt": "cripton.colombia no disponible en comprobación anterior; sustituido por elección del propietario"
   },
   "validation": [
     "Avatar oficial visible en recorte circular",
@@ -19,10 +21,12 @@
     "Revisión de vistas previas ordenador y móvil",
     "Página final accesible con sesión administrativa",
     "Correo comercial visible en detalles",
-    "Avatar oficial a color sobre blanco guardado y verificado completo en el círculo del perfil"
+    "Avatar oficial a color sobre blanco guardado y verificado completo en el círculo del perfil",
+    "Nombre Cripton visible tras solicitud enviada por propietario y enlace facebook.com/cripton.col corresponde al ID original",
+    "Biografía corporativa guardada; se omitió su publicación adicional en feed",
+    "Portada actualizada al usuario @cripton.col conservando la composición aprobada"
   ],
   "pending": [
-    "Elegir nombre de usuario alternativo si se requiere enlace corto",
     "WhatsApp comercial aún no informado",
     "Sitio web pendiente DNS/HTTPS público antes de enlazar",
     "Vinculación Instagram no realizada",
@@ -33,8 +37,11 @@
     "Facebook-Cripton-Pagina-Creada.jpg",
     "Facebook-Portada-Movil.jpg",
     "Facebook-Usuario-No-Disponible.jpg",
-    "Facebook-Avatar-Fondo-Blanco.jpg"
+    "Facebook-Avatar-Fondo-Blanco.jpg",
+    "Facebook-CriptonCol-Guardado.jpg",
+    "Facebook-Cripton-Corporativo.jpg"
   ],
   "avatar": "campaigns/launch-30d/exports/profiles/avatar-fondo-blanco.png",
-  "avatarUpdatedAt": "2026-10-27"
+  "avatarUpdatedAt": "2026-10-27",
+  "identityUpdatedAt": "2026-10-27"
 }

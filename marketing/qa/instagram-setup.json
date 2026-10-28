@@ -2,11 +2,11 @@
   "date": "2026-10-26",
   "url": "https://www.instagram.com/cripton.colombia/",
   "username": "cripton.colombia",
-  "displayName": "Cripton POS",
+  "displayName": "Cripton",
   "accountTypeObserved": "Profesional de negocio",
   "category": "Empresa de software",
   "categoryVisible": true,
-  "bio": "Software POS para comercios en Colombia.\nVentas, caja e inventario.\nEscríbenos DEMO para conocer Cripton.",
+  "bio": "Software para negocios en Colombia.\nCripton POS: ventas, caja e inventario.\nEscríbenos DEMO.",
   "businessContact": "ventas@cripton.com.co",
   "contactVisibleSetting": true,
   "avatar": "campaigns/launch-30d/exports/profiles/avatar-fondo-blanco.png",
@@ -17,7 +17,8 @@
     "Categoría Empresa de software visible",
     "Correo persistente al volver a abrir ajustes profesionales",
     "Mostrar información de contacto activo",
-    "Foto sobre blanco confirmada en Instagram con mensaje Se agregó la foto del perfil y recorte circular completo"
+    "Foto sobre blanco confirmada en Instagram con mensaje Se agregó la foto del perfil y recorte circular completo",
+    "Nombre Cripton y biografía corporativa verificados en el perfil real; el usuario @cripton.colombia se conserva"
   ],
   "limits": [
     "Instagram indica que botones de contacto solo se ven en la app móvil; no se ensayó mailto desde esa app",
@@ -34,8 +35,10 @@
   "evidence": [
     "Instagram-Cripton-Configurado.jpg",
     "Instagram-Contacto-Comercial.jpg",
-    "Instagram-Avatar-Fondo-Blanco.jpg"
+    "Instagram-Avatar-Fondo-Blanco.jpg",
+    "Instagram-Cripton-Corporativo.jpg"
   ],
   "avatarUpdatedAt": "2026-10-27",
-  "avatarVariant": "Símbolo oficial a color sobre blanco; geometría idéntica y colocación del maskable oficial"
+  "avatarVariant": "Símbolo oficial a color sobre blanco; geometría idéntica y colocación del maskable oficial",
+  "identityUpdatedAt": "2026-10-27"
 }

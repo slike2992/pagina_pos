@@ -45,3 +45,7 @@ El kit sigue listo para revisión, con publicación pendiente. El primer bloque 
 ## Avatar sobre blanco
 
 Instagram y Facebook usan desde el 27 de octubre el símbolo oficial a color sobre fondo blanco. Fuente editable y PNG: `campaigns/launch-30d/{sources,exports}/profiles/avatar-fondo-blanco.*`. Exportar con `node marketing/tools/avatar-white.mjs` desde la raíz del repositorio. El exportador verifica trazados idénticos entre variantes oficiales y conserva la colocación del avatar maskable. El recurso oscuro se conserva para otros contextos; no se modificaron maestros de marca. Evidencia: `qa/Instagram-Avatar-Fondo-Blanco.jpg`.
+
+## Identidad corporativa vigente — 2026-10-27
+
+La marca es **Cripton** y **Cripton POS** es un producto. Nombres visibles de Facebook e Instagram verificados como Cripton. Facebook: https://www.facebook.com/cripton.col (usuario elegido por el propietario). Instagram: https://www.instagram.com/cripton.colombia/ . La portada específica de Facebook usa @cripton.col; piezas de Instagram mantienen @cripton.colombia. No prometer aparición uniforme en resultados de búsqueda. Véanse los registros de configuración en qa/.

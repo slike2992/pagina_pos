@@ -21,7 +21,7 @@ def banner(name,w,h,logo_rect,title_rect,sub_rect,handle_rect,title,size):
 def facebook_cover():
     def draw(outlined):
         tx=lambda s,x,y,size,color=b.WHITE,weight=700:b.text(s,x,y,size,color,weight,outlined)
-        return '<svg xmlns="http://www.w3.org/2000/svg" width="1640" height="720" viewBox="0 0 1640 720"><title>Cripton POS · facebook-cover</title>'+b.rect(0,0,1640,720,b.NAVY)+'<path d="M1312 0H1640V720H1033Z" fill="'+b.TEAL+'" opacity=".4"/>'+b.logo(100,80,390,True)+tx('Tu negocio,',100,270,46)+tx('con más claridad.',100,330,46)+tx('Ventas, caja',100,440,28,b.CYAN,500)+tx('e inventario',100,481,28,b.CYAN,500)+tx('@cripton.colombia',1110,116,24,b.WHITE,500)+'</svg>'
+        return '<svg xmlns="http://www.w3.org/2000/svg" width="1640" height="720" viewBox="0 0 1640 720"><title>Cripton POS · facebook-cover</title>'+b.rect(0,0,1640,720,b.NAVY)+'<path d="M1312 0H1640V720H1033Z" fill="'+b.TEAL+'" opacity=".4"/>'+b.logo(100,80,390,True)+tx('Tu negocio,',100,270,46)+tx('con más claridad.',100,330,46)+tx('Ventas, caja',100,440,28,b.CYAN,500)+tx('e inventario',100,481,28,b.CYAN,500)+tx('@cripton.col',1110,116,24,b.WHITE,500)+'</svg>'
     (source/'facebook-cover.svg').write_text(draw(False),encoding='utf-8')
     (profiles/'facebook-cover.svg').write_text(draw(True),encoding='utf-8')
 facebook_cover()
