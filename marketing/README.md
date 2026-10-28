@@ -63,3 +63,7 @@ Regeneración acotada: `python marketing/tools/banner_system.py`, `node marketin
 ## Perfil X — 2026-10-27
 
 Cuenta [@criptoncolombia](https://x.com/criptoncolombia), nombre visible **Cripton**, avatar oficial sobre blanco, portada específica y biografía aprobada. Registro y límites en `qa/x-setup.json`; evidencia `qa/X-Cripton-Configurado.png`. Archivos versionados `x-header-v1` (SVG editable/trazado y PNG 1500 × 500) y `x-avatar-v1.png` (400 × 400). La regeneración reutiliza el mismo compositor de banners y el SVG del avatar blanco existente. No hay nombre personal en los campos visibles del perfil verificados.
+
+## Perfil TikTok — 2026-10-27
+
+Cuenta [@cripton.colombia](https://www.tiktok.com/@cripton.colombia), nombre visible **Cripton**, raptor oficial a color sobre blanco y descripción aprobada de 77/80 caracteres. Guardado y persistencia comprobados tras recargar. Se reutilizó `avatar-fondo-blanco.png`; sin crear otra variante de identidad. Evidencia y límites: `qa/tiktok-setup.json`, `qa/TikTok-Cripton-Configurado.png`. La edición observada no incluye portada equivalente a Facebook o X. No se publicaron videos ni promociones.

@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-27",
+  "url": "https://www.tiktok.com/@cripton.colombia",
+  "username": "cripton.colombia",
+  "displayName": "Cripton",
+  "bio": "Software para negocios. Cripton POS: ventas, caja e inventario. Pide tu demo.",
+  "bioLength": 77,
+  "bioLimitObserved": 80,
+  "bioApproval": "Aprobación explícita del propietario antes de guardar",
+  "avatar": "campaigns/launch-30d/exports/profiles/avatar-fondo-blanco.png",
+  "checks": [
+    "Sesión del propietario confirmada en el perfil correcto",
+    "Raptor oficial a color sobre blanco reutilizado sin redibujar",
+    "Recorte circular completo inspeccionado en editor de TikTok",
+    "Nombre visible cambiado a Cripton; usuario y enlace conservados",
+    "Aviso de TikTok: el apodo solo se cambia una vez cada 7 días; confirmación dentro de la solicitud de cambio",
+    "Mensaje El perfil se ha actualizado observado",
+    "Tras recargar: título Cripton (@cripton.colombia), nombre, descripción y avatar persistentes",
+    "Tres imágenes del perfil cargadas con dimensiones naturales 200 × 200 tras la conversión de TikTok"
+  ],
+  "evidence": [
+    "TikTok-Cripton-Configurado.png"
+  ],
+  "limits": [
+    "Comprobación en navegador con sesión del propietario, no app nativa ni sesión desconectada",
+    "No se publicó contenido, enviaron mensajes, cambiaron credenciales o permisos ni se activaron promociones",
+    "La interfaz de edición observada permite foto, nombre, usuario y descripción; no mostró portada equivalente a Facebook o X"
+  ]
+}

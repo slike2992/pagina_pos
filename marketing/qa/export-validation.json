@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-28T01:51:02.594Z",
+  "checkedAt": "2026-10-28T02:10:49.742Z",
   "status": "passed",
   "counts": {
     "posts": 12,
@@ -25,7 +25,7 @@
   ],
   "limits": [
     "Manual privacy review of screenshot crops required",
-    "Facebook and Instagram avatar reviewed on real profiles; Facebook cover previews exercised; other platforms pending",
+    "Facebook, Instagram, X and TikTok profiles reviewed with owner sessions; native apps and YouTube configuration pending",
     "No marketing results measured",
     "No voice synthesized",
     "Owner approval pending"
