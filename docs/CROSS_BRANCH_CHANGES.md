@@ -11,9 +11,10 @@
   vigente y bloquear pendientes/ambiguos y cualquier aprobación histórica.
   El endpoint, posesión del enlace y vencimientos se mantienen. Publicar y
   validar API antes de este estático; no se acredita aún el ensayo externo.
-- Sin estilos, dependencias ni migraciones nuevas. Validación y aceptación
-  real pendientes de integración; el registro QA preparado espera su
-  confirmación de términos en navegador.
+- Sin estilos, dependencias ni migraciones nuevas. Ubuntu: Astro check/build
+  y 151/151 pruebas aprobados. Web bcdb16b publicada y activada después del
+  runtime compatible ed0e7d1fb96a. El registro QA aún espera aceptación puntual
+  de términos: no se acredita rechazo Wompi ni reintento externo por estos tests.
 
 ## 2026-11-10 — Actualización manual también para cuentas vigentes
 
