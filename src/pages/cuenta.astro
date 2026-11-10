@@ -46,6 +46,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         <div class="acceptances">
           <label><input type="checkbox" data-acceptance="terms" /> Acepto el <a data-field="wompi-terms" target="_blank" rel="noopener noreferrer">reglamento de usuarios de Wompi</a>.</label>
           <label><input type="checkbox" data-acceptance="personal-data" /> Autorizo el <a data-field="wompi-personal-data" target="_blank" rel="noopener noreferrer">tratamiento de datos personales</a>.</label>
+          <label><input type="checkbox" data-acceptance="recurring" /> <span data-field="recurring-consent">Autorizo el uso de esta tarjeta para renovar automáticamente mi plan.</span></label>
         </div>
         <button class="button secondary" data-action="add-payment-source" type="button" disabled>Agregar tarjeta</button>
         <p class="status payment-source-status" role="status" aria-live="polite"></p>
@@ -84,6 +85,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
 
   <script>
     import { createIdempotencyKey } from "../scripts/client-idempotency";
+    import { prepareWompiSession } from "../lib/wompi-client";
 
     type Tenant = { tenantId: string; tenantKey: string; name: string; status: string; role: string };
     type LoginResult = { accessToken: string; expiresAt: string; principal: { displayName: string }; tenant: Tenant };
@@ -94,7 +96,6 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     type TokenizedSource = { token: string; type: "CARD" | "NEQUI" };
     type WidgetCheckoutInstance = { open(callback: (result: { payment_source?: TokenizedSource }) => void): void };
     type WidgetCheckoutConstructor = new (config: { publicKey: string; widgetOperation: "tokenize"; bootstrapTransport: "postmessage" }) => WidgetCheckoutInstance;
-    type WompiFraudLibrary = { initialize(callback: (data: { sessionId?: string }, error: unknown) => void): void };
 
     const root = document.querySelector<HTMLElement>("#account")!;
     const loginForm = root.querySelector<HTMLFormElement>("#login-form")!;
@@ -118,6 +119,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     const paymentSourceStatus = root.querySelector<HTMLElement>(".payment-source-status")!;
     const termsAcceptance = root.querySelector<HTMLInputElement>("[data-acceptance='terms']")!;
     const personalDataAcceptance = root.querySelector<HTMLInputElement>("[data-acceptance='personal-data']")!;
+    const recurringAcceptance = root.querySelector<HTMLInputElement>("[data-acceptance='recurring']")!;
     const apiUrl = root.dataset.apiUrl?.replace(/\/$/, "") ?? "";
     const posUrl = root.dataset.posUrl?.replace(/\/$/, "") ?? "";
     let accessToken = "";
@@ -126,7 +128,8 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     let changeIdempotencyKey = "";
     let checkoutIdempotencyKey = "";
     let paymentSourceConfig: PaymentSourceConfig | null = null;
-    let wompiSessionId = "";
+    let paymentSourceBusy = false;
+    let paymentSourceAttempt = "";
 
     const field = (name: string) => root.querySelector<HTMLElement>(`[data-field='${name}']`)!;
     const messageFrom = (body: unknown, fallback: string) => typeof body === "object" && body && "error" in body
@@ -149,6 +152,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       field("price").textContent = `${new Intl.NumberFormat("es-CO", { style: "currency", currency: subscription.price.currency, maximumFractionDigits: 0 }).format(subscription.price.amountMinor / 100)} / ${subscription.price.billingInterval === "annual" ? "año" : "mes"}`;
       field("subscription-status").textContent = statusLabels[subscription.status] ?? subscription.status;
       field("period-end").textContent = formatDate(subscription.currentPeriodEnd);
+      field("recurring-consent").textContent = `Autorizo la renovación automática de ${subscription.plan.name} por ${new Intl.NumberFormat("es-CO", { style: "currency", currency: subscription.price.currency, maximumFractionDigits: 0 }).format(subscription.price.amountMinor / 100)} ${subscription.price.currency} ${subscription.price.billingInterval === "annual" ? "al año" : "al mes"}, desde mi próximo periodo. Puedo cancelar la renovación desde Mi cuenta.`;
       field("cancel-date").textContent = formatDate(subscription.currentPeriodEnd);
       const scheduled = subscription.cancelAtPeriodEnd || subscription.status === "cancel_at_period_end";
       const canManage = ["owner", "admin", "billing"].includes(login.tenant.role);
@@ -164,47 +168,26 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       panel.hidden = false;
     };
 
-    const externalScripts = new Set([
-      "https://checkout.wompi.co/widget.js",
-      "https://cdn.wompi.co/libs/js/v1.js"
-    ]);
-    const loadExternalScript = (source: string, attributes: Record<string, string> = {}) => {
-      if (!externalScripts.has(source)) return Promise.reject(new Error("Script de pagos no autorizado."));
-      const current = document.querySelector<HTMLScriptElement>(`script[src='${source}']`);
-      if (current?.dataset.loaded === "true") return Promise.resolve();
-      return new Promise<void>((resolve, reject) => {
-        const script = current ?? document.createElement("script");
-        Object.entries(attributes).forEach(([name, value]) => script.setAttribute(name, value));
-        script.addEventListener("load", () => { script.dataset.loaded = "true"; resolve(); }, { once: true });
-        script.addEventListener("error", () => reject(new Error("No fue posible cargar Wompi.")), { once: true });
-        if (!current) { script.src = source; document.head.append(script); }
-      });
-    };
-    const initializeWompiSession = () => new Promise<string>((resolve, reject) => {
-      const fraud = (window as typeof window & { $wompi?: WompiFraudLibrary }).$wompi;
-      if (!fraud) { reject(new Error("Wompi JS no quedó disponible.")); return; }
-      fraud.initialize((data, error) => {
-        if (error || typeof data?.sessionId !== "string" || data.sessionId.length < 10) {
-          reject(new Error("Wompi no pudo iniciar la sesión segura."));
-          return;
-        }
-        resolve(data.sessionId);
-      });
-    });
     const safeContractUrl = (value: string) => {
       const url = new URL(value);
       if (url.protocol !== "https:") throw new Error("Wompi devolvió un contrato inseguro.");
       return url.href;
     };
     const preparePaymentSource = async () => {
+      const preparingAccessToken = accessToken;
       paymentSourceButton.disabled = true;
+      termsAcceptance.disabled = true;
+      personalDataAcceptance.disabled = true;
+      recurringAcceptance.disabled = true;
+      paymentSourceConfig = null;
       paymentSourceStatus.textContent = "Preparando el registro seguro…";
       paymentSourceStatus.dataset.state = "";
       try {
         const currentResponse = await fetch(`${apiUrl}/v1/me/billing/payment-sources`, {
-          headers: { authorization: `Bearer ${accessToken}` }
+          headers: { authorization: `Bearer ${preparingAccessToken}` }
         });
         const currentBody = await currentResponse.json();
+        if (accessToken !== preparingAccessToken) return;
         if (!currentResponse.ok) throw currentBody;
         const current = currentBody.paymentSource as PaymentSource | null;
         field("payment-source-current").textContent = current?.displayHint
@@ -215,17 +198,21 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         const body = await response.json();
         if (!response.ok) throw body;
         const config = body as PaymentSourceConfig;
+        if (accessToken !== preparingAccessToken) return;
         field("wompi-terms").setAttribute("href", safeContractUrl(config.acceptance.permalink));
         field("wompi-personal-data").setAttribute("href", safeContractUrl(config.personalDataAuthorization.permalink));
-        await loadExternalScript(config.widgetScriptUrl);
-        await loadExternalScript(config.fraudScriptUrl, { "data-public-key": config.publicKey });
-        wompiSessionId = await initializeWompiSession();
         paymentSourceConfig = config;
+        termsAcceptance.disabled = false;
+        personalDataAcceptance.disabled = false;
+        recurringAcceptance.disabled = false;
         paymentSourceStatus.textContent = "";
         paymentSourceButton.disabled = false;
       } catch (error) {
+        if (accessToken !== preparingAccessToken) return;
         paymentSourceStatus.textContent = messageFrom(error, error instanceof Error ? error.message : "No fue posible preparar el registro seguro.");
         paymentSourceStatus.dataset.state = "error";
+        paymentSourceButton.textContent = "Reintentar registro seguro";
+        paymentSourceButton.disabled = false;
       }
     };
 
@@ -267,52 +254,65 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     });
 
     const planNames: Record<string, string> = { basic: "Básico", professional: "Profesional", enterprise: "Empresarial" };
-    paymentSourceButton.addEventListener("click", () => {
-      if (!termsAcceptance.checked || !personalDataAcceptance.checked) {
-        paymentSourceStatus.textContent = "Debes aceptar ambos documentos para continuar.";
+    paymentSourceButton.addEventListener("click", async () => {
+      if (paymentSourceBusy || !accessToken) return;
+      if (!paymentSourceConfig) { await preparePaymentSource(); return; }
+      if (!termsAcceptance.checked || !personalDataAcceptance.checked || !recurringAcceptance.checked) {
+        paymentSourceStatus.textContent = "Acepta los documentos de Wompi y autoriza la renovación automática para continuar.";
         paymentSourceStatus.dataset.state = "error";
         return;
       }
-      const WidgetCheckout = (window as typeof window & { WidgetCheckout?: WidgetCheckoutConstructor }).WidgetCheckout;
-      if (!WidgetCheckout || !paymentSourceConfig || !wompiSessionId) {
-        paymentSourceStatus.textContent = "El registro seguro aún no está disponible.";
-        paymentSourceStatus.dataset.state = "error";
-        return;
-      }
+      const registrationAccessToken = accessToken;
+      const config = paymentSourceConfig;
+      const attempt = createIdempotencyKey();
+      paymentSourceAttempt = attempt;
+      paymentSourceBusy = true;
       paymentSourceButton.disabled = true;
-      paymentSourceStatus.textContent = "Abriendo Wompi…";
+      paymentSourceStatus.textContent = "Preparando la ventana segura de Wompi…";
       paymentSourceStatus.dataset.state = "";
+      try {
+      const sessionId = await prepareWompiSession(config);
+      if (accessToken !== registrationAccessToken || paymentSourceAttempt !== attempt) return;
+      const WidgetCheckout = (window as typeof window & { WidgetCheckout?: WidgetCheckoutConstructor }).WidgetCheckout;
+      if (!WidgetCheckout) throw new Error("La ventana segura de Wompi no quedó disponible. Vuelve a intentarlo.");
       const checkout = new WidgetCheckout({
-        publicKey: paymentSourceConfig.publicKey,
+        publicKey: config.publicKey,
         widgetOperation: "tokenize",
         bootstrapTransport: "postmessage"
       });
+      let submitted = false;
       checkout.open(async (result) => {
-        const source = result.payment_source;
+        if (submitted || paymentSourceAttempt !== attempt || accessToken !== registrationAccessToken) return;
+        const source = result?.payment_source;
         if (!source || typeof source.token !== "string" || !["CARD", "NEQUI"].includes(source.type)) {
           paymentSourceStatus.textContent = "Wompi no devolvió un medio de pago válido.";
           paymentSourceStatus.dataset.state = "error";
           paymentSourceButton.disabled = false;
           return;
         }
+        submitted = true;
+        paymentSourceBusy = true;
+        paymentSourceButton.disabled = true;
         paymentSourceStatus.textContent = "Registrando el medio de pago…";
         try {
           const response = await fetch(`${apiUrl}/v1/me/billing/payment-sources`, {
             method: "POST",
             headers: {
-              authorization: `Bearer ${accessToken}`,
+              authorization: `Bearer ${registrationAccessToken}`,
               "content-type": "application/json",
-              "idempotency-key": createIdempotencyKey()
+              "idempotency-key": attempt
             },
             body: JSON.stringify({
               type: source.type,
+              recurringConsent: true,
               paymentMethodToken: source.token,
-              sessionId: wompiSessionId,
-              acceptanceToken: paymentSourceConfig!.acceptance.token,
-              personalDataAuthToken: paymentSourceConfig!.personalDataAuthorization.token
+              sessionId,
+              acceptanceToken: config.acceptance.token,
+              personalDataAuthToken: config.personalDataAuthorization.token
             })
           });
           const body = await response.json();
+          if (accessToken !== registrationAccessToken || paymentSourceAttempt !== attempt) return;
           if (!response.ok) throw body;
           paymentSourceStatus.textContent = body.displayHint
             ? `${body.displayHint} quedó disponible para la renovación.`
@@ -322,15 +322,34 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
           paymentSourceStatus.dataset.state = "success";
           termsAcceptance.checked = false;
           personalDataAcceptance.checked = false;
+          recurringAcceptance.checked = false;
+          paymentSourceButton.disabled = false;
         } catch (error) {
+          if (accessToken !== registrationAccessToken || paymentSourceAttempt !== attempt) return;
           paymentSourceStatus.textContent = messageFrom(error, "No fue posible confirmar el medio de pago.");
           paymentSourceStatus.dataset.state = "error";
           const code = typeof error === "object" && error && "error" in error
             ? (error as { error?: { code?: string } }).error?.code
             : undefined;
           paymentSourceButton.disabled = code !== "payment_source_provider_rejected";
+        } finally {
+          if (paymentSourceAttempt === attempt) paymentSourceBusy = false;
         }
       });
+      // The provider closes its overlay without a cancellation callback.
+      // A later opening supersedes this attempt; only one callback can submit.
+      if (!submitted) {
+        paymentSourceBusy = false;
+        paymentSourceButton.disabled = false;
+        paymentSourceStatus.textContent = "Completa el registro en Wompi. Si cierras la ventana, puedes volver a abrirla.";
+      }
+      } catch (error) {
+        if (accessToken !== registrationAccessToken || paymentSourceAttempt !== attempt) return;
+        paymentSourceStatus.textContent = error instanceof Error ? error.message : "No fue posible abrir Wompi. Vuelve a intentarlo.";
+        paymentSourceStatus.dataset.state = "error";
+        paymentSourceBusy = false;
+        paymentSourceButton.disabled = false;
+      }
     });
     const continueToUpgradeCheckout = async (change: PlanChange) => {
       if (!checkoutIdempotencyKey) checkoutIdempotencyKey = createIdempotencyKey();
@@ -494,9 +513,11 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       changeIdempotencyKey = "";
       checkoutIdempotencyKey = "";
       paymentSourceConfig = null;
-      wompiSessionId = "";
+      paymentSourceBusy = false;
+      paymentSourceAttempt = "";
       termsAcceptance.checked = false;
       personalDataAcceptance.checked = false;
+      recurringAcceptance.checked = false;
       paymentSourceStatus.textContent = "";
       paymentSourceStatus.dataset.state = "";
       paymentSourceButton.disabled = true;
