@@ -89,7 +89,9 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
         heading.textContent = labels[result.status] ?? "No fue posible confirmar el pago";
         status.textContent = "Tu empresa no fue activada.";
         status.dataset.state = "error";
-        detail.textContent = result.status === "declined" ? "Puedes volver al checkout e intentar con otro medio de pago." : "Contacta a soporte indicando la referencia mostrada.";
+        detail.textContent = result.status === "declined"
+          ? "Para intentar con otro medio de pago, abre nuevamente el enlace de verificación de este registro desde tu correo. Sólo podrás retomar el mismo checkout si sigue vigente y no hay otro pago pendiente. Consultar de nuevo únicamente actualiza el estado; no realiza un cobro."
+          : "Contacta a soporte indicando la referencia mostrada.";
         retry.hidden = result.status !== "declined";
       }
     };

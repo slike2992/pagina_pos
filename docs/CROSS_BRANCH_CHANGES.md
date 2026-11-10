@@ -1,5 +1,20 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-10 — Recuperación de checkout tras rechazo definitivo
+
+- El retorno distingue «Consultar de nuevo» (sólo lectura) de intentar otro
+  pago: indica abrir el enlace original de verificación del correo. No guarda
+  tokens ni checkout con datos personales en el almacenamiento de retorno,
+  ni crea una orden desde esa pantalla.
+- Requiere la corrección coordinada de resume-checkout en pos_saas: permitir
+  abandono sin pagos o sólo rechazos definitivos, conservar el mismo checkout
+  vigente y bloquear pendientes/ambiguos y cualquier aprobación histórica.
+  El endpoint, posesión del enlace y vencimientos se mantienen. Publicar y
+  validar API antes de este estático; no se acredita aún el ensayo externo.
+- Sin estilos, dependencias ni migraciones nuevas. Validación y aceptación
+  real pendientes de integración; el registro QA preparado espera su
+  confirmación de términos en navegador.
+
 ## 2026-11-10 — Actualización manual también para cuentas vigentes
 
 - Mi cuenta mueve el botón nativo «Actualizar suscripción» a sus acciones
