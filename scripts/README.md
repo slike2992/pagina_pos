@@ -8,6 +8,11 @@
   proveedores externos para probar permiso, rechazo y revocación.
 - `form-feedback.test.mjs`: helper y controlador real de registro compilados
   con transporte local simulado; nunca registra cuentas reales.
+- `payment-result.test.mjs`: retorno de pago con identificador en URL; staging
+  no consulta rutas de desarrollo ni expone enlaces de clave en la respuesta.
+- `signup-resume.test.mjs`: reapertura de un enlace consumido que aún tiene un
+  checkout pendiente, errores no recuperables e integridad del retorno Wompi.
+  Ejecuta el controlador real con DOM/transporte simulados; no acredita pago real.
 - `audit-performance.mjs`: pesos de HTML, CSS, JavaScript y variantes hero AVIF.
   Valida selección responsiva y fallback; aplica presupuestos sin nuevas dependencias.
   Mide bytes de build/gzip teórico, no transferencias de red ni Web Vitals.

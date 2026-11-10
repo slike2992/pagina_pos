@@ -11,7 +11,7 @@
     "check": "astro check",
     "preview": "astro preview",
     "astro": "astro",
-    "test:web": "node --test scripts/seo.test.mjs scripts/consent.test.mjs scripts/form-feedback.test.mjs",
+    "test:web": "node --test scripts/seo.test.mjs scripts/consent.test.mjs scripts/form-feedback.test.mjs scripts/payment-result.test.mjs scripts/signup-resume.test.mjs",
     "qa:web": "astro check && astro build && npm run test:web",
     "build:public": "node scripts/build-public.mjs",
     "audit:performance": "node scripts/audit-performance.mjs"

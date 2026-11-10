@@ -89,7 +89,15 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
         const body = await response.json();
         if (!response.ok) throw body;
         render(body);
-        if (body.status === "fulfilled") await loadDevelopmentPasswordSetup();
+        if (body.status === "fulfilled") {
+          if (import.meta.env.DEV) await loadDevelopmentPasswordSetup();
+          else {
+            passwordLink.href = "/cuenta";
+            passwordLink.textContent = "Ingresar a Mi cuenta";
+            passwordLink.hidden = false;
+            detail.textContent = "Tu empresa está lista. Si es tu primera cuenta, recibirás por correo el enlace para crear tu contraseña. Si ya tienes una, puedes ingresar con ella.";
+          }
+        }
         attempts += 1;
         if (!terminalStates.has(body.status) && attempts < 10) timer = window.setTimeout(queryStatus, 3000);
         else if (!terminalStates.has(body.status)) retry.hidden = false;

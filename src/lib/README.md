@@ -14,3 +14,9 @@ corregir en input/change retira el error sin mover foco. Reset limpia feedback.
 Sólo se validan campos habilitados con willValidate. No reemplaza el servidor.
 
 Ver `scripts/form-feedback.test.mjs` y el informe de calidad en docs.
+
+`checkout-return.ts` valida el destino Wompi y su retorno al mismo origen antes
+de añadir `checkoutSessionId` a una URL histórica que aún no lo incluya. No
+modifica monto, referencia, firma, vencimiento ni el registro del servidor.
+Rechaza destinos externos, identificadores duplicados o contradictorios. Los
+checkouts nuevos ya incluyen el identificador desde la API.

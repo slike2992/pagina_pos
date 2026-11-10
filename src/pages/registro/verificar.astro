@@ -10,6 +10,7 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
   </div>
   <script>
     import { createIdempotencyKey } from "../../scripts/client-idempotency";
+    import { withCheckoutReturn } from "../../lib/checkout-return";
 
     const root = document.querySelector<HTMLElement>("#verification")!;
     const status = root.querySelector<HTMLElement>(".status")!;
@@ -20,6 +21,15 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
     const token = params.get("token");
     const signupIntentId = params.get("signupIntentId");
     const apiUrl = root.dataset.apiUrl?.replace(/\/$/, "") ?? "";
+    type CheckoutView = { checkoutSessionId: string; checkoutUrl: string; provider: "wompi" | "local_demo" };
+    const resumeCheckout = async (): Promise<CheckoutView> => {
+      const response = await fetch(`${apiUrl}/v1/signup-intents/${encodeURIComponent(signupIntentId!)}/resume-checkout`, {
+        method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ token })
+      });
+      const body = await response.json();
+      if (!response.ok) throw body;
+      return { ...body, provider: "wompi" };
+    };
     const fail = (message: string) => { status.textContent = message; status.dataset.state = "error"; };
     const renewLocalVerification = async () => {
       if (!signupIntentId) return false;
@@ -46,22 +56,35 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
     if (!token || !signupIntentId) fail("El enlace está incompleto. Solicita uno nuevo.");
     else (async () => {
       try {
-        const verifiedKey = `verified-signup:${signupIntentId}`;
-        if (!sessionStorage.getItem(verifiedKey)) {
-          const verification = await fetch(`${apiUrl}/v1/signup-intents/${encodeURIComponent(signupIntentId)}/verify-email`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ token }) });
-          const verified = await verification.json();
-          if (!verification.ok) throw verified;
-          sessionStorage.setItem(verifiedKey, "true");
+        let resumed: CheckoutView | null = null;
+        // Local storage is never proof that a token/order is still eligible.
+        // Only verification in this execution may authorize checkout creation.
+        const verification = await fetch(`${apiUrl}/v1/signup-intents/${encodeURIComponent(signupIntentId)}/verify-email`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ token }) });
+        const verified = await verification.json();
+        if (!verification.ok) {
+          if (verified?.error?.code !== "invalid_or_expired_token") throw verified;
+          resumed = await resumeCheckout();
         }
         status.textContent = "Correo confirmado. Estamos preparando tu orden…";
         const keyName = `checkout-key:${signupIntentId}`;
-        if (!sessionStorage.getItem(keyName)) sessionStorage.setItem(keyName, createIdempotencyKey());
-        const checkout = await fetch(`${apiUrl}/v1/checkout-sessions`, { method: "POST", headers: { "content-type": "application/json", "idempotency-key": sessionStorage.getItem(keyName)! }, body: JSON.stringify({ signupIntentId }) });
-        const checkoutBody = await checkout.json();
-        if (!checkout.ok) throw checkoutBody;
-        sessionStorage.setItem("checkout-session-id", checkoutBody.checkoutSessionId);
-        sessionStorage.setItem("checkout-provider", checkoutBody.provider);
-        link.href = checkoutBody.checkoutUrl;
+        let checkoutBody = resumed;
+        if (!checkoutBody) {
+          let key = createIdempotencyKey();
+          try { key = sessionStorage.getItem(keyName) || key; sessionStorage.setItem(keyName, key); } catch { /* Storage is optional. */ }
+          const checkout = await fetch(`${apiUrl}/v1/checkout-sessions`, { method: "POST", headers: { "content-type": "application/json", "idempotency-key": key }, body: JSON.stringify({ signupIntentId }) });
+          const body = await checkout.json();
+          if (!checkout.ok) {
+            if (checkout.status !== 409) throw body;
+            checkoutBody = await resumeCheckout();
+          } else checkoutBody = body as CheckoutView;
+        }
+        try {
+          sessionStorage.setItem("checkout-session-id", checkoutBody.checkoutSessionId);
+          sessionStorage.setItem("checkout-provider", checkoutBody.provider);
+        } catch { /* The return URL carries the checkout id across tabs. */ }
+        link.href = checkoutBody.provider === "wompi"
+          ? withCheckoutReturn(checkoutBody.checkoutUrl, checkoutBody.checkoutSessionId, location.origin)
+          : checkoutBody.checkoutUrl;
         const localDemo = checkoutBody.provider === "local_demo";
         link.textContent = localDemo ? "Continuar al pago de prueba" : "Continuar al pago seguro";
         status.textContent = localDemo

@@ -5,6 +5,15 @@ POS, API, worker y Cripton Control pertenecen al repositorio `pos_saas`.
 La web genera HTML estático y consume la API SaaS en los flujos interactivos.
 No almacena una base SQL propia ni confirma pagos en el navegador.
 
+El retorno de Wompi identifica la compra mediante `checkoutSessionId` en la URL,
+independientemente del ID de transacción del proveedor y de la pestaña de origen.
+Una verificación consumida sólo puede reanudar su checkout original pendiente
+mediante `POST /v1/signup-intents/:id/resume-checkout`, disponible en la API SaaS
+del bloque de recuperación de staging 2026-11-09. El servidor comprueba posesión,
+vigencia y estado; no renueva tokens ni pagos. Una compra pagada o vencida no se
+reanuda. En staging/producción la clave inicial llega por correo, nunca por las
+rutas de desarrollo. Publicar primero la API y el allowlist del proxy, luego web.
+
 ## Desarrollo
 
 Requiere Node >=22.12; esta revisión utiliza Node 24.19. No usar el Node 18
