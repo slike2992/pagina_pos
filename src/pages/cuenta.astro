@@ -181,8 +181,9 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       const start = Date.parse(currentSubscription?.currentPeriodStart ?? "");
       const end = Date.parse(currentSubscription?.currentPeriodEnd ?? "");
       if (!Number.isFinite(start) || !Number.isFinite(end) || start >= end) return "invalid";
-      const now = Date.now();
-      return end <= now ? "expired" : start > now ? "future" : "current";
+      // Early renewal can already have advanced start. The API permits renewal
+      // management while this valid interval still has an unexpired end.
+      return end <= Date.now() ? "expired" : "current";
     };
     // SSO authorizes active/restricted tenants with an active membership. An
     // expired date alone must not override the server's grace/restriction policy.
@@ -216,7 +217,6 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         const period = periodState();
         if (period === "expired") messages.push(`La suscripción presenta atraso: el período cubierto terminó el ${formatDate(currentSubscription.currentPeriodEnd)}. Revisa los períodos pendientes de recuperación.`);
         else if (period === "invalid") messages.push("No pudimos confirmar un período vigente. Cancelar o reactivar la renovación no está disponible; actualiza Mi cuenta.");
-        else if (period === "future") messages.push("El período informado todavía no comenzó. Cancelar o reactivar la renovación no está disponible; actualiza Mi cuenta.");
         if (!canOpenPos()) messages.push(accountLogin.tenant.status === "suspended"
           ? "El acceso al POS está suspendido para esta empresa."
           : "El acceso al POS no está disponible para esta empresa o identidad. Revisa su estado en Mi cuenta.");

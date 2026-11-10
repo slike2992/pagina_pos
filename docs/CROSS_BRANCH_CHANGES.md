@@ -2,6 +2,11 @@
 
 ## 2026-11-10 — Recuperación con sesión vencida
 
+- Seguimiento: una renovación anticipada ya pagada puede adelantar el inicio
+  del período. Cancelar/reactivar exige intervalo válido y fin vigente, sin
+  bloquear por inicio futuro: coincide con subscriptions.ts y conserva roles,
+  estados y guardas del servidor. Caso nuevo cubre +2h, fin +mes y expiración.
+
 - Un 401 de la sesión actual al releer suscripción, tenant, oferta o preparar
   checkout utiliza el mismo reset de Cerrar sesión. Limpia resumen, acciones,
   enlaces de pago y consentimientos, y presenta el login con un mensaje claro.

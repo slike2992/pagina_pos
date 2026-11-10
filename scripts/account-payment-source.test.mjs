@@ -934,10 +934,10 @@ test('expired recovery hides renewal toggles and explains debt without sending c
   }
 });
 
-test('missing, invalid, reversed and future periods disable renewal toggles without breaking rendering', async () => {
+test('missing, invalid, reversed and empty intervals disable renewal toggles without breaking rendering', async () => {
   for (const period of [{ currentPeriodStart: null }, { currentPeriodEnd: null }, { currentPeriodEnd: 'not-a-date' },
     { currentPeriodStart: 'not-a-date' }, { currentPeriodStart: '2031-01-01T00:00:00.000Z' },
-    { currentPeriodStart: '2028-01-01T00:00:00.000Z' }]) {
+    { currentPeriodStart: '2030-02-01T00:00:00.000Z' }]) {
     for (const cancelAtPeriodEnd of [false, true]) {
       const h = await account({ subscription: { ...period, cancelAtPeriodEnd } }); await h.login();
       assert.equal(h.get('.account-panel').hidden, false);
@@ -964,7 +964,7 @@ test('current-period owner/admin/billing retain cancellation and reactivation wh
   }
 });
 
-test('renewal validity is inclusive at period start and expires before an already open modal can submit', async () => {
+test('renewal controls expire before an already open modal can submit', async () => {
   const end = '2026-11-10T00:01:00.000Z';
   const h = await account({ subscription: { currentPeriodStart: '2026-11-10T00:00:00.000Z', currentPeriodEnd: end } });
   await h.login(); assert.equal(accountAction(h, 'cancel').hidden, false);
@@ -972,6 +972,32 @@ test('renewal validity is inclusive at period start and expires before an alread
   h.setNow(Date.parse(end)); await h.get('#confirm-cancel').dispatch('click');
   assert.equal(renewalCalls(h).length, 0); assert.equal(h.get('#cancel-dialog').hidden, true);
   assert.equal(accountAction(h, 'cancel').hidden, true); assert.match(h.get("[data-field='access-guidance']").textContent, /atraso/);
+});
+
+test('early paid renewal with start in two hours permits cancel/reactivate by flag until the end expires', async () => {
+  const period = { currentPeriodStart: '2026-11-10T02:00:00.000Z', currentPeriodEnd: '2026-12-10T02:00:00.000Z' };
+  for (const role of ['owner', 'admin', 'billing']) {
+    for (const cancelAtPeriodEnd of [false, true]) {
+      const h = await account({ role, subscription: { ...period, cancelAtPeriodEnd } }); await h.login();
+      assert.equal(accountAction(h, 'cancel').hidden, cancelAtPeriodEnd);
+      assert.equal(accountAction(h, 'reactivate').hidden, !cancelAtPeriodEnd);
+      assert.equal(accountAction(h, cancelAtPeriodEnd ? 'reactivate' : 'cancel').disabled, false);
+      assert.doesNotMatch(h.get("[data-field='access-guidance']").textContent, /no comenzó|no está disponible|atraso/);
+      if (cancelAtPeriodEnd) await accountAction(h, 'reactivate').dispatch('click');
+      else { await accountAction(h, 'cancel').dispatch('click'); await h.get('#confirm-cancel').dispatch('click'); }
+      assert.equal(renewalCalls(h).length, 1);
+      assert.ok(renewalCalls(h)[0].url.endsWith(cancelAtPeriodEnd ? '/reactivate' : '/cancel'));
+      assert.equal(renewalCalls(h)[0].headers.authorization, 'Bearer synthetic-auth-1');
+      assert.equal(accountAction(h, 'cancel').hidden, !cancelAtPeriodEnd);
+      assert.equal(accountAction(h, 'reactivate').hidden, cancelAtPeriodEnd);
+      assert.equal(accountAction(h, 'open-pos').getAttribute('aria-disabled'), null);
+      h.setNow(Date.parse(period.currentPeriodEnd));
+      await accountAction(h, 'cancel').dispatch('click'); await h.get('#confirm-cancel').dispatch('click');
+      await accountAction(h, 'reactivate').dispatch('click');
+      assert.equal(renewalCalls(h).length, 1);
+      assert.equal(accountAction(h, 'cancel').hidden, true); assert.equal(accountAction(h, 'reactivate').hidden, true);
+    }
+  }
 });
 
 test('a stale SSO response cannot navigate or re-enable POS after another login is suspended', async () => {
