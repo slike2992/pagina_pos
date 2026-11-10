@@ -1,5 +1,17 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-10 — Recuperación con sesión vencida
+
+- Un 401 de la sesión actual al releer suscripción, tenant, oferta o preparar
+  checkout utiliza el mismo reset de Cerrar sesión. Limpia resumen, acciones,
+  enlaces de pago y consentimientos, y presenta el login con un mensaje claro.
+- Una respuesta tardía de una sesión anterior no cierra el acceso posterior.
+  Errores 403 o temporales conservan la sesión y muestran el error existente.
+- Sólo cambia Mi cuenta y sus pruebas; no altera rutas, tokens, almacenamiento,
+  términos, precios, migraciones ni permisos. Casos nuevos verifican cada etapa,
+  cadenas detenidas, ausencia de acciones con contexto vencido y login posterior.
+  La construcción y aceptación desplegada se documentan en el repositorio SaaS.
+
 ## 2026-11-09 — Acciones de cuenta coherentes con estado y período
 
 - Mi cuenta deshabilita «Abrir POS» para tenants fuera de active/restricted y

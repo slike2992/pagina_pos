@@ -61,7 +61,7 @@ function browser() {
       getAttribute(name) { return attributes.get(name) ?? null; },
       removeAttribute(name) { attributes.delete(name); if (name === 'href') delete this.href; },
       remove() { this.removed = true; },
-      focus() {}, showModal() { this.hidden = false; }, close() { this.hidden = true; },
+      focus() { this.focused = true; }, showModal() { this.hidden = false; }, close() { this.hidden = true; },
       replaceChildren(...children) { this.children = children; },
       querySelector(selector) {
         assert.ok(elements.has(selector), `unmodelled DOM selector: ${selector}`);
@@ -198,7 +198,7 @@ async function account(options = {}) {
       return reply({ accessToken: `synthetic-auth-${loginCount}`, principal: { displayName: 'QA' },
         tenant: { ...tenant } });
     }
-    if (path === '/v1/me/subscription') return reply(subscription);
+    if (path === '/v1/me/subscription') return options.readSubscription ? options.readSubscription(call, subscription) : reply(subscription);
     if (path === '/v1/me/tenants') return options.tenants ? options.tenants(call)
       : reply({ activeTenantId: tenant.tenantId, tenants: [{ ...tenant }] });
     if (path === '/v1/auth/pos-sso') return options.sso ? options.sso(call)
@@ -1024,4 +1024,109 @@ test('a foreign tenant in a recovery refresh cannot re-enable suspended access',
   assert.equal(accountAction(h, 'open-pos').getAttribute('aria-disabled'), 'true');
   assert.equal(h.get("[data-field='tenant-status']").textContent, 'Suspendido');
   assert.equal(h.get('.recovery-status').dataset.state, 'error');
+});
+
+const unauthorized = () => ({ ok: false, status: 401, json() { assert.fail('a 401 body must not be read before resetting auth'); } });
+const tenantResponse = () => reply({ activeTenantId: 'synthetic-tenant-1',
+  tenants: [{ tenantId: 'synthetic-tenant-1', name: 'QA', role: 'owner', status: 'suspended' }] });
+
+test('a current-session 401 at either refresh step or offer resets the whole account and stops the request chain', async () => {
+  for (const phase of ['subscription', 'tenants', 'offer']) {
+    let expired = false;
+    const h = await recoveryAccount({ tenantStatus: 'suspended',
+      readSubscription: (_call, view) => expired && phase === 'subscription' ? unauthorized() : reply(view),
+      tenants: () => expired && phase === 'tenants' ? unauthorized() : tenantResponse(),
+      recovery: () => expired && phase === 'offer' ? unauthorized() : reply(recoveryOfferFixture()),
+    });
+    await h.login(); await recoveryClick(h); h.consent();
+    assert.equal(recoveryControl(h, 'pay-recovery').hidden, false);
+    const before = h.calls.length; expired = true; await recoveryClick(h, 'refresh-recovery');
+    const paths = ['/v1/me/subscription', '/v1/me/tenants', '/v1/me/subscription/recovery'];
+    assert.deepEqual(h.calls.slice(before).map(call => new URL(call.url).pathname), paths.slice(0, paths.indexOf(
+      phase === 'subscription' ? paths[0] : phase === 'tenants' ? paths[1] : paths[2]) + 1));
+    assert.equal(h.get('.account-panel').hidden, true); assert.equal(h.get('#login-form').hidden, false);
+    assert.match(h.get('.status').textContent, /sesión.*expiró.*iniciar sesión/);
+    assert.equal(h.get('.status').dataset.state, 'error'); assert.equal(h.get('#email').focused, true);
+    assert.equal(h.get("button[type='submit']").disabled, false);
+    assert.equal(h.get('[data-recovery-summary]').hidden, true);
+    assert.equal(h.get("[data-field='recovery-amount']").textContent, '');
+    assert.equal(h.get("[data-field='recovery-period']").textContent, '');
+    assert.equal(h.get('.recovery-status').textContent, ''); assert.equal(h.get('.account-status').textContent, '');
+    assert.equal(recoveryControl(h, 'pay-recovery').hidden, true); assert.equal(recoveryControl(h, 'pay-recovery').href, undefined);
+    assert.equal(recoveryControl(h, 'recovery-result').hidden, true);
+    assert.equal(recoveryControl(h, 'prepare-recovery').disabled, true);
+    assert.equal(accountAction(h, 'open-pos').getAttribute('aria-disabled'), 'true');
+    assert.equal(accountAction(h, 'cancel').hidden, true); assert.equal(accountAction(h, 'reactivate').hidden, true);
+    assert.equal(h.button.disabled, true); assert.equal(h.terms.checked, false); assert.equal(h.data.checked, false); assert.equal(h.recurring.checked, false);
+    const after = h.calls.length;
+    await h.click(); await recoveryClick(h); await accountAction(h, 'open-pos').dispatch('click');
+    assert.equal(h.calls.length, after, 'the reset must remove the old authentication context');
+    assert.ok([...h.storage].every(([key, value]) => key.startsWith('cripton:recovery:') && value === 'true'));
+    expired = false; await h.login();
+    assert.equal(h.get('.account-panel').hidden, false); assert.equal(h.get('#login-form').hidden, true);
+    await h.logout(); assert.equal(h.get('.status').textContent, ''); assert.equal(h.get('.status').dataset.state, '');
+  }
+});
+
+test('a late 401 from either refresh step cannot close or alter a later login', async () => {
+  for (const phase of ['subscription', 'tenants']) {
+    const response = deferred(); let hold = false;
+    const h = await recoveryAccount({
+      readSubscription: (_call, view) => hold && phase === 'subscription' ? response.promise : reply(view),
+      tenants: () => hold && phase === 'tenants' ? response.promise : tenantResponse(),
+    });
+    await h.login(); hold = true; await recoveryClick(h, 'refresh-recovery');
+    await h.logout(); hold = false; await h.login();
+    const status = h.get('.recovery-status').textContent;
+    response.resolve(unauthorized()); await flush();
+    assert.equal(h.get('.account-panel').hidden, false); assert.equal(h.get('#login-form').hidden, true);
+    assert.equal(h.get('.recovery-status').textContent, status);
+    assert.doesNotMatch(h.get('.status').textContent, /expiró/);
+    assert.equal(recoveryControl(h, 'prepare-recovery').disabled, false);
+    await recoveryClick(h);
+    assert.equal(recoveryPosts(h).at(-1).headers.authorization, 'Bearer synthetic-auth-2');
+  }
+});
+
+test('a late initial offer 401 cannot reset a newer authenticated account', async () => {
+  const response = deferred(); let first = true;
+  const h = await recoveryAccount({ recovery: () => {
+    if (first) { first = false; return response.promise; }
+    return reply(recoveryOfferFixture());
+  } });
+  await h.login(); await h.logout(); await h.login();
+  response.resolve(unauthorized()); await flush();
+  assert.equal(h.get('.account-panel').hidden, false); assert.equal(recoveryControl(h, 'prepare-recovery').disabled, false);
+  assert.doesNotMatch(h.get('.status').textContent, /expiró/);
+});
+
+test('403 and temporary recovery failures do not sign out the current session', async () => {
+  for (const status of [403, 503]) {
+    for (const phase of ['subscription', 'tenants']) {
+      let fail = false;
+      const failure = () => reply({ error: { message: 'Synthetic non-auth failure' } }, status);
+      const h = await recoveryAccount({
+        readSubscription: (_call, view) => fail && phase === 'subscription' ? failure() : reply(view),
+        tenants: () => fail && phase === 'tenants' ? failure() : tenantResponse(),
+      });
+      await h.login(); fail = true; await recoveryClick(h, 'refresh-recovery');
+      assert.equal(h.get('.account-panel').hidden, false); assert.equal(h.get('#login-form').hidden, true);
+      assert.equal(h.get('.recovery-status').dataset.state, 'error');
+      assert.match(h.get('.recovery-status').textContent, /Synthetic non-auth failure/);
+      assert.doesNotMatch(h.get('.status').textContent, /expiró/);
+    }
+  }
+});
+
+test('recovery checkout 401 uses the same canonical reset and cannot sign out a subsequent login', async () => {
+  for (const stale of [false, true]) {
+    const response = deferred(); const h = await recoveryAccount({ checkout: () => response.promise });
+    await h.login(); const pending = recoveryClick(h); await flush();
+    if (stale) { await h.logout(); await h.login(); }
+    response.resolve(unauthorized()); await pending;
+    assert.equal(h.get('.account-panel').hidden, !stale); assert.equal(h.get('#login-form').hidden, stale);
+    if (!stale) assert.match(h.get('.status').textContent, /expiró/);
+    else assert.doesNotMatch(h.get('.status').textContent, /expiró/);
+    assert.equal(recoveryControl(h, 'pay-recovery').hidden, true); assert.equal(recoveryPosts(h).length, 1);
+  }
 });

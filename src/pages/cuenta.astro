@@ -259,6 +259,11 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       recoveryResult.hidden = true;
       recoveryResult.removeAttribute("href");
     };
+    const stopOnUnauthorized = (response: Response, isCurrent: () => boolean) => {
+      if (response.status !== 401) return false;
+      if (isCurrent()) resetAccount("La sesión no es válida o expiró. Vuelve a iniciar sesión.");
+      return true;
+    };
     const loadRecoveryOffer = async (refreshSubscription = false) => {
       if (recoveryBusy || !accessToken || !currentSubscription || !accountLogin) return;
       const token = accessToken;
@@ -276,10 +281,12 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       try {
         if (refreshSubscription) {
           const response = await fetch(`${apiUrl}/v1/me/subscription`, { headers: { authorization: `Bearer ${token}` } });
+          if (stopOnUnauthorized(response, isCurrent)) return;
           const body = await response.json();
           if (!isCurrent()) return;
           if (!response.ok) throw body;
           const tenantsResponse = await fetch(`${apiUrl}/v1/me/tenants`, { headers: { authorization: `Bearer ${token}` } });
+          if (stopOnUnauthorized(tenantsResponse, isCurrent)) return;
           const tenantsBody = await tenantsResponse.json();
           if (!isCurrent()) return;
           if (!tenantsResponse.ok) throw tenantsBody;
@@ -294,6 +301,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         }
         if (recoverySection.hidden) return;
         const response = await fetch(`${apiUrl}/v1/me/subscription/recovery`, { headers: { authorization: `Bearer ${token}` } });
+        if (stopOnUnauthorized(response, isCurrent)) return;
         const body = await response.json();
         if (!isCurrent()) return;
         if (!response.ok) throw body;
@@ -352,6 +360,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
           method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json", "idempotency-key": key },
           body: JSON.stringify(input)
         });
+        if (stopOnUnauthorized(response, isCurrent)) return;
         const body = await response.json();
         if (!isCurrent()) return;
         if (!response.ok) throw body;
@@ -747,7 +756,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         if (isCurrent()) { if (!navigating) posBusy = false; renderAccountActions(); }
       }
     });
-    panel.querySelector<HTMLButtonElement>("[data-action='logout']")!.addEventListener("click", () => {
+    const resetAccount = (message = "") => {
       accessToken = "";
       accountLogin = null;
       recoveryGeneration++;
@@ -757,6 +766,11 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       recoverySnapshot = "";
       recoverySummary.hidden = true;
       recoverySection.hidden = true;
+      recoveryPrepare.disabled = true;
+      recoveryRefresh.disabled = false;
+      field("recovery-amount").textContent = "";
+      field("recovery-period").textContent = "";
+      field("recovery-guidance").textContent = "";
       recoveryStatus.textContent = "";
       recoveryStatus.dataset.state = "";
       clearRecoveryLinks();
@@ -785,10 +799,13 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       accountStatus.dataset.state = "";
       panel.hidden = true;
       tenantField.hidden = true;
-      loginStatus.textContent = "";
+      loginStatus.textContent = message;
+      loginStatus.dataset.state = message ? "error" : "";
       loginForm.hidden = false;
+      loginForm.querySelector<HTMLButtonElement>("button[type='submit']")!.disabled = false;
       loginForm.querySelector<HTMLInputElement>("#email")!.focus();
-    });
+    };
+    panel.querySelector<HTMLButtonElement>("[data-action='logout']")!.addEventListener("click", () => resetAccount());
   </script>
 </FlowLayout>
 
