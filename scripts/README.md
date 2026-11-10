@@ -10,6 +10,8 @@
   con transporte local simulado; nunca registra cuentas reales.
 - `payment-result.test.mjs`: retorno de pago con identificador en URL; staging
   no consulta rutas de desarrollo ni expone enlaces de clave en la respuesta.
+  Comprueba también reintentos limitados de red/429/5xx, errores definitivos,
+  concurrencia y salida de página, con temporizadores controlados.
 - `signup-resume.test.mjs`: reapertura de un enlace consumido que aún tiene un
   checkout pendiente, errores no recuperables e integridad del retorno Wompi.
   Ejecuta el controlador real con DOM/transporte simulados; no acredita pago real.

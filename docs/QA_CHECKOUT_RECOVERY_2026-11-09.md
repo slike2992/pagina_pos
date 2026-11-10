@@ -24,3 +24,14 @@ Orden de publicación: API SaaS y allowlist POST/OPTIONS primero, web después.
 No habilitar /v1/development ni /v1/platform en el proxy público.
 El informe de extremo a extremo se conserva en el repositorio pos_saas:
 docs/QA_AZURE_SIGNUP_WOMPI_2026-11-09.md.
+
+Segunda aceptación real: reabrir el correo en otra pestaña recuperó el mismo
+enlace y SQL confirmó una orden/un checkout sin renovar vencimiento. Después
+Wompi aprobó otro pago Sandbox autorizado y volvió con ambos identificadores.
+Una consulta transitoria falló y el botón manual recuperó fulfilled; se añaden
+reintentos automáticos sobre esa misma compra para red,429 y5xx, hasta10intentos
+cada3segundos. Errores4xx definitivos no se repiten automáticamente. Agotar el
+presupuesto mantiene consulta manual; no activa empresas ni expone clave sin
+confirmación del servidor. Se evita concurrencia y se cancelan consultas futuras
+al salir de la página. Pruebas con reloj controlado no equivalen a provocar
+una interrupción real de red del navegador.
