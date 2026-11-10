@@ -20,3 +20,10 @@ de añadir `checkoutSessionId` a una URL histórica que aún no lo incluya. No
 modifica monto, referencia, firma, vencimiento ni el registro del servidor.
 Rechaza destinos externos, identificadores duplicados o contradictorios. Los
 checkouts nuevos ya incluyen el identificador desde la API.
+
+`subscription-recovery.ts` valida la oferta, checkout y estado públicos de
+recuperación contra el período revisado. Formatea centavos y fechas UTC sin
+calcular períodos. Reutiliza la validación del retorno Wompi y guarda sólo una
+marca opcional por UUID para impedir mensajes genéricos si faltan metadatos;
+el servidor sigue acreditando pago, cobertura y acceso. Ver
+[contrato y límites](../../docs/SUBSCRIPTION_RECOVERY.md).

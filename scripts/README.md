@@ -12,10 +12,12 @@
   no consulta rutas de desarrollo ni expone enlaces de clave en la respuesta.
   Comprueba también reintentos limitados de red/429/5xx, errores definitivos,
   concurrencia y salida de página, con temporizadores controlados.
+  Recovery conserva esas esperas y distingue período aplicado de suscripción al
+  día; cubre metadatos obligatorios, cobertura posterior y storage opcional.
 - `signup-resume.test.mjs`: reapertura de un enlace consumido que aún tiene un
   checkout pendiente, errores no recuperables e integridad del retorno Wompi.
   Ejecuta el controlador real con DOM/transporte simulados; no acredita pago real.
-- `account-payment-source.test.mjs`: 40 pruebas del helper Wompi y el controlador
+- `account-payment-source.test.mjs`: conserva las 40 pruebas del helper Wompi y el controlador
   completo de `cuenta.astro`, transpilados a JavaScript y ejecutados en VM con
   DOM, HTTP y reloj simulados. Cubre allowlist de scripts/atributos/claves,
   deduplicación, fallos, timeout y reintentos sin retirar scripts ajenos;
@@ -26,6 +28,10 @@
   No carga JavaScript del proveedor ni envía solicitudes de red. No acredita
   tokenización, cobro, consentimiento persistido ni interacción real del overlay.
   Ejecución aislada: `node --test scripts/account-payment-source.test.mjs`.
+  Añade gestión de tarjeta vencida y pruebas de contrato/UI de recovery: oferta
+  del servidor, centavos/UTC, bloqueos, checkout validado, claves estables,
+  períodos sucesivos y respuestas de autenticación obsoletas. Detalles en
+  [recuperación](../docs/SUBSCRIPTION_RECOVERY.md).
 - `audit-performance.mjs`: pesos de HTML, CSS, JavaScript y variantes hero AVIF.
   Valida selección responsiva y fallback; aplica presupuestos sin nuevas dependencias.
   Mide bytes de build/gzip teórico, no transferencias de red ni Web Vitals.

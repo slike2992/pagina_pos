@@ -16,14 +16,14 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
 
     <section class="account-panel" hidden>
       <div class="account-heading">
-        <div><p class="label">Empresa activa</p><h2 data-field="tenant-name"></h2><p data-field="principal-name"></p></div>
+        <div><p class="label">Empresa</p><h2 data-field="tenant-name"></h2><p data-field="principal-name"></p></div>
         <span class="state" data-field="tenant-status"></span>
       </div>
       <dl class="subscription-data">
         <div><dt>Plan</dt><dd data-field="plan"></dd></div>
         <div><dt>Valor</dt><dd data-field="price"></dd></div>
         <div><dt>Estado</dt><dd data-field="subscription-status"></dd></div>
-        <div><dt>Próximo periodo</dt><dd data-field="period-end"></dd></div>
+        <div><dt>Vencimiento actual</dt><dd data-field="period-end"></dd></div>
       </dl>
       <section class="plan-management" data-section="plan-management" hidden>
         <div>
@@ -35,6 +35,22 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
           </select>
         </div>
         <button class="button secondary" data-action="change-plan" type="button">Revisar cambio</button>
+      </section>
+      <section class="recovery-management" data-section="recovery" hidden aria-labelledby="recovery-heading">
+        <h3 id="recovery-heading">Recuperar períodos pendientes</h3>
+        <p>La continuidad se cuenta desde el vencimiento anterior, no desde la fecha del nuevo pago. Cada checkout recupera un solo período.</p>
+        <dl class="subscription-data" data-recovery-summary hidden>
+          <div><dt>Importe de este período</dt><dd data-field="recovery-amount"></dd></div>
+          <div><dt>Período exacto</dt><dd data-field="recovery-period"></dd></div>
+        </dl>
+        <p data-field="recovery-guidance"></p>
+        <p class="status recovery-status" role="status" aria-live="polite"></p>
+        <div class="actions">
+          <button class="button" data-action="prepare-recovery" type="button" disabled>Preparar este pago</button>
+          <a class="button" data-action="pay-recovery" hidden>Pagar este período en Wompi</a>
+          <a class="button secondary" data-action="recovery-result" hidden>Consultar este pago</a>
+          <button class="button secondary" data-action="refresh-recovery" type="button">Actualizar mi suscripción</button>
+        </div>
       </section>
       <section class="payment-source-management" data-section="payment-source" hidden>
         <div>
@@ -86,10 +102,11 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
   <script>
     import { createIdempotencyKey } from "../scripts/client-idempotency";
     import { prepareWompiSession } from "../lib/wompi-client";
+    import { readRecoveryOffer, readRecoveryCheckout, recoveryAmount, recoveryPeriodText, rememberRecoveryCheckout, type RecoveryOffer, type RecoveryCheckout } from "../lib/subscription-recovery";
 
     type Tenant = { tenantId: string; tenantKey: string; name: string; status: string; role: string };
     type LoginResult = { accessToken: string; expiresAt: string; principal: { displayName: string }; tenant: Tenant };
-    type Subscription = { status: string; plan: { code: string; name: string }; price: { amountMinor: number; currency: string; billingInterval: string }; currentPeriodEnd: string | null; cancelAtPeriodEnd: boolean };
+    type Subscription = { subscriptionId: string; status: string; plan: { code: string; name: string }; price: { amountMinor: number; currency: string; billingInterval: string }; currentPeriodEnd: string | null; cancelAtPeriodEnd: boolean };
     type PlanChange = { subscriptionChangeId: string; changeType: "upgrade" | "downgrade"; status: string; toPlan: { name: string }; quote: { amountMinor: number; currency: string }; effectiveAt: string; nextAction: "checkout" | "wait_for_period_end" };
     type PaymentSourceConfig = { publicKey: string; widgetScriptUrl: string; fraudScriptUrl: string; acceptance: { token: string; permalink: string }; personalDataAuthorization: { token: string; permalink: string } };
     type PaymentSource = { type: "card" | "nequi"; displayHint: string | null; recurringConsentAt: string };
@@ -120,6 +137,13 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     const termsAcceptance = root.querySelector<HTMLInputElement>("[data-acceptance='terms']")!;
     const personalDataAcceptance = root.querySelector<HTMLInputElement>("[data-acceptance='personal-data']")!;
     const recurringAcceptance = root.querySelector<HTMLInputElement>("[data-acceptance='recurring']")!;
+    const recoverySection = root.querySelector<HTMLElement>("[data-section='recovery']")!;
+    const recoverySummary = root.querySelector<HTMLElement>("[data-recovery-summary]")!;
+    const recoveryStatus = root.querySelector<HTMLElement>(".recovery-status")!;
+    const recoveryPrepare = root.querySelector<HTMLButtonElement>("[data-action='prepare-recovery']")!;
+    const recoveryPay = root.querySelector<HTMLAnchorElement>("[data-action='pay-recovery']")!;
+    const recoveryResult = root.querySelector<HTMLAnchorElement>("[data-action='recovery-result']")!;
+    const recoveryRefresh = root.querySelector<HTMLButtonElement>("[data-action='refresh-recovery']")!;
     const apiUrl = root.dataset.apiUrl?.replace(/\/$/, "") ?? "";
     const posUrl = root.dataset.posUrl?.replace(/\/$/, "") ?? "";
     let accessToken = "";
@@ -130,6 +154,13 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     let paymentSourceConfig: PaymentSourceConfig | null = null;
     let paymentSourceBusy = false;
     let paymentSourceAttempt = "";
+    let accountLogin: LoginResult | null = null;
+    let recoveryOffer: RecoveryOffer | null = null;
+    let recoveryCheckout: RecoveryCheckout | null = null;
+    let recoveryKey = "";
+    let recoverySnapshot = "";
+    let recoveryBusy = false;
+    let recoveryGeneration = 0;
 
     const field = (name: string) => root.querySelector<HTMLElement>(`[data-field='${name}']`)!;
     const messageFrom = (body: unknown, fallback: string) => typeof body === "object" && body && "error" in body
@@ -159,7 +190,9 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       cancelButton.hidden = scheduled || !canManage;
       reactivateButton.hidden = !scheduled || !canManage;
       planSection.hidden = scheduled || !canManage || subscription.status !== "active";
-      paymentSourceSection.hidden = scheduled || !canManage || subscription.status !== "active";
+      paymentSourceSection.hidden = scheduled || !canManage || !["active", "past_due", "grace", "restricted", "suspended"].includes(subscription.status);
+      recoverySection.hidden = !canManage || !["active", "past_due", "grace", "restricted", "suspended"].includes(subscription.status)
+        || (subscription.status === "active" && (!subscription.currentPeriodEnd || Date.parse(subscription.currentPeriodEnd) > Date.now()));
       planSelect.value = subscription.plan.code;
       accountStatus.textContent = scheduled ? `La renovación está cancelada desde el ${formatDate(subscription.currentPeriodEnd)}.` : "";
       accountStatus.dataset.state = scheduled ? "success" : "";
@@ -167,6 +200,130 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       loginForm.hidden = true;
       panel.hidden = false;
     };
+
+    const clearRecoveryLinks = () => {
+      recoveryCheckout = null;
+      recoveryPay.hidden = true;
+      recoveryPay.removeAttribute("href");
+      recoveryResult.hidden = true;
+      recoveryResult.removeAttribute("href");
+    };
+    const loadRecoveryOffer = async (refreshSubscription = false) => {
+      if (recoveryBusy || !accessToken || !currentSubscription || !accountLogin) return;
+      const token = accessToken;
+      const generation = ++recoveryGeneration;
+      const isCurrent = () => token === accessToken && generation === recoveryGeneration;
+      recoveryBusy = true;
+      recoveryPrepare.disabled = true;
+      recoveryRefresh.disabled = true;
+      recoveryOffer = null;
+      clearRecoveryLinks();
+      recoverySummary.hidden = true;
+      field("recovery-guidance").textContent = "";
+      recoveryStatus.textContent = "Consultando el período pendiente…";
+      recoveryStatus.dataset.state = "";
+      try {
+        if (refreshSubscription) {
+          const response = await fetch(`${apiUrl}/v1/me/subscription`, { headers: { authorization: `Bearer ${token}` } });
+          const body = await response.json();
+          if (!isCurrent()) return;
+          if (!response.ok) throw body;
+          renderAccount(accountLogin!, body as Subscription);
+        }
+        if (recoverySection.hidden) return;
+        const response = await fetch(`${apiUrl}/v1/me/subscription/recovery`, { headers: { authorization: `Bearer ${token}` } });
+        const body = await response.json();
+        if (!isCurrent()) return;
+        if (!response.ok) throw body;
+        const offer = readRecoveryOffer(body, currentSubscription!.subscriptionId);
+        recoveryOffer = offer;
+        if (offer.status === "blocked") {
+          const reasons: Record<string, string> = {
+            not_due: "La suscripción no tiene un período vencido que recuperar.",
+            cancellation: "La renovación está cancelada. Este flujo no revoca la cancelación.",
+            payment_pending: "Hay un pago pendiente de confirmación. Consúltalo antes de iniciar otro período.",
+            requires_review: "Este cobro requiere revisión. Contacta a soporte antes de volver a pagar.",
+            plan_change_pending: "Hay un cambio de plan pendiente. Resuélvelo antes de recuperar otro período."
+          };
+          recoveryStatus.textContent = reasons[offer.blockReason ?? ""] ?? "No hay un período disponible para recuperar.";
+          if (typeof offer.checkoutSessionId === "string" && /^[0-9a-f-]{36}$/i.test(offer.checkoutSessionId)) {
+            recoveryResult.href = `/pago/resultado?checkoutSessionId=${encodeURIComponent(offer.checkoutSessionId)}`;
+            recoveryResult.hidden = false;
+          }
+          return;
+        }
+        const snapshot = `${offer.subscriptionId.toLowerCase()}:${offer.periodStart}`;
+        if (snapshot !== recoverySnapshot) { recoveryKey = ""; recoverySnapshot = snapshot; }
+        field("recovery-amount").textContent = recoveryAmount(offer.amountMinor, offer.currency);
+        field("recovery-period").textContent = recoveryPeriodText(offer);
+        field("recovery-guidance").textContent = offer.needsFurtherRecovery
+          ? "Este período todavía termina en el pasado. Al aplicarse el pago, la suscripción seguirá vencida. Podrás revisar y pagar los períodos siguientes uno a uno."
+          : "El retorno de Wompi no habilita acceso. Espera la aplicación del período y revisa el estado confirmado en Mi cuenta.";
+        recoverySummary.hidden = false;
+        recoveryPrepare.disabled = false;
+        recoveryPrepare.textContent = offer.status === "pending_payment" ? "Continuar con este período pendiente" : "Preparar este pago";
+        recoveryStatus.textContent = "Revisa el importe y las fechas antes de preparar el checkout.";
+      } catch (error) {
+        if (!isCurrent()) return;
+        recoveryStatus.textContent = messageFrom(error, error instanceof Error ? error.message : "No pudimos consultar la recuperación. Actualiza Mi cuenta.");
+        recoveryStatus.dataset.state = "error";
+      } finally {
+        if (isCurrent()) { recoveryBusy = false; recoveryRefresh.disabled = false; }
+      }
+    };
+    recoveryPrepare.addEventListener("click", async () => {
+      if (recoveryBusy || recoveryCheckout || !accessToken || recoverySection.hidden || !recoveryOffer || recoveryOffer.status === "blocked") return;
+      const token = accessToken;
+      const generation = recoveryGeneration;
+      const offer = recoveryOffer;
+      const isCurrent = () => token === accessToken && generation === recoveryGeneration;
+      if (!recoveryKey) recoveryKey = createIdempotencyKey();
+      const key = recoveryKey;
+      recoveryBusy = true;
+      recoveryPrepare.disabled = true;
+      recoveryRefresh.disabled = true;
+      recoveryStatus.textContent = "Preparando el checkout de este período…";
+      recoveryStatus.dataset.state = "";
+      try {
+        const input = { type: "recovery", subscriptionId: offer.subscriptionId, expectedPeriodStart: offer.periodStart };
+        const response = await fetch(`${apiUrl}/v1/me/billing/checkout-sessions`, {
+          method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json", "idempotency-key": key },
+          body: JSON.stringify(input)
+        });
+        const body = await response.json();
+        if (!isCurrent()) return;
+        if (!response.ok) throw body;
+        const checkout = readRecoveryCheckout(body, input, location.origin);
+        if (checkout.amountInCents !== offer.amountMinor || checkout.currency !== offer.currency || checkout.recovery.periodEnd !== offer.periodEnd) {
+          throw new Error("La oferta cambió. Actualiza Mi cuenta y revisa el importe y período antes de pagar.");
+        }
+        if (Date.parse(checkout.expirationTime) <= Date.now()) throw new Error("El checkout venció. Actualiza Mi cuenta antes de continuar.");
+        recoveryCheckout = checkout;
+        rememberRecoveryCheckout(checkout.checkoutSessionId, () => sessionStorage);
+        recoveryPay.href = checkout.checkoutUrl;
+        recoveryPay.hidden = false;
+        recoveryResult.href = `/pago/resultado?checkoutSessionId=${encodeURIComponent(checkout.checkoutSessionId)}`;
+        recoveryResult.hidden = false;
+        recoveryStatus.textContent = `Checkout preparado. Referencia ${checkout.reference}. El pago se confirmará en el servidor.`;
+      } catch (error) {
+        if (!isCurrent()) return;
+        clearRecoveryLinks();
+        recoveryStatus.textContent = messageFrom(error, error instanceof Error ? error.message : "No pudimos preparar el checkout. Puedes reintentar el mismo período o actualizar Mi cuenta.");
+        recoveryStatus.dataset.state = "error";
+        recoveryPrepare.disabled = false;
+      } finally {
+        if (isCurrent()) { recoveryBusy = false; recoveryRefresh.disabled = false; }
+      }
+    });
+    recoveryPay.addEventListener("click", event => {
+      if (!accessToken || !recoveryCheckout || Date.parse(recoveryCheckout.expirationTime) <= Date.now()) {
+        event.preventDefault();
+        clearRecoveryLinks();
+        recoveryStatus.textContent = "Actualiza Mi cuenta antes de continuar con este pago.";
+        recoveryStatus.dataset.state = "error";
+      }
+    });
+    recoveryRefresh.addEventListener("click", () => { void loadRecoveryOffer(true); });
 
     const safeContractUrl = (value: string) => {
       const url = new URL(value);
@@ -237,12 +394,14 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         }
         if (!response.ok) throw body;
         const login = body as LoginResult;
+        accountLogin = login;
         accessToken = login.accessToken;
         const subscriptionResponse = await fetch(`${apiUrl}/v1/me/subscription`, { headers: { authorization: `Bearer ${accessToken}` } });
         const subscription = await subscriptionResponse.json();
         if (!subscriptionResponse.ok) throw subscription;
         renderAccount(login, subscription as Subscription);
         if (!paymentSourceSection.hidden) void preparePaymentSource();
+        if (!recoverySection.hidden) void loadRecoveryOffer();
         loginForm.reset();
       } catch (error) {
         accessToken = "";
@@ -507,6 +666,17 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     });
     panel.querySelector<HTMLButtonElement>("[data-action='logout']")!.addEventListener("click", () => {
       accessToken = "";
+      accountLogin = null;
+      recoveryGeneration++;
+      recoveryBusy = false;
+      recoveryOffer = null;
+      recoveryKey = "";
+      recoverySnapshot = "";
+      recoverySummary.hidden = true;
+      recoverySection.hidden = true;
+      recoveryStatus.textContent = "";
+      recoveryStatus.dataset.state = "";
+      clearRecoveryLinks();
       posLink.removeAttribute("aria-disabled");
       currentSubscription = null;
       pendingChange = null;
@@ -541,6 +711,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
   .login-form{display:grid;gap:12px}
   .password-recovery-link{justify-self:start;color:var(--green);font-size:.9rem;font-weight:750;text-decoration-thickness:1px;text-underline-offset:3px}
   .account-panel{display:grid;gap:22px}
+  .recovery-management{display:grid;gap:12px;border-top:1px solid var(--line);padding-top:18px}.recovery-management h3,.recovery-management p{margin:0}.recovery-management p{line-height:1.5}.recovery-management .actions{flex-wrap:wrap}
   .account-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;border-bottom:1px solid var(--line);padding-bottom:18px}
   .account-heading h2{margin:0;font-family:Georgia,"Times New Roman",serif;font-size:2rem;font-weight:500;letter-spacing:0}
   .account-heading p{margin:4px 0 0;color:var(--muted)}

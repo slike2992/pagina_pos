@@ -11,6 +11,8 @@ const compile = source => ts.transpileModule(source, {
 }).outputText;
 const helperCode = compile(await readFile(new URL('../src/lib/wompi-client.ts', import.meta.url), 'utf8'));
 const idempotencyCode = compile(await readFile(new URL('../src/scripts/client-idempotency.ts', import.meta.url), 'utf8'));
+const returnCode = compile(await readFile(new URL('../src/lib/checkout-return.ts', import.meta.url), 'utf8'));
+const recoveryCode = compile(await readFile(new URL('../src/lib/subscription-recovery.ts', import.meta.url), 'utf8'));
 const page = await readFile(new URL('../src/pages/cuenta.astro', import.meta.url), 'utf8');
 const accountScript = page.match(/<script>([\s\S]*?)<\/script>/)?.[1];
 assert.ok(accountScript, 'account controller must exist');
@@ -38,9 +40,10 @@ const reply = (body, status = 200) => ({ ok: status >= 200 && status < 300, stat
 function browser() {
   const scripts = [];
   const appended = [];
+  const storage = new Map();
   const timers = new Map();
   const elements = new Map();
-  let clock = 0, nextTimer = 0, nextKey = 0;
+  let clock = 0, nextTimer = 0, nextKey = 0, now = Date.UTC(2026, 10, 10);
   function element() {
     const listeners = new Map();
     const attributes = new Map();
@@ -56,7 +59,7 @@ function browser() {
       },
       setAttribute(name, value) { attributes.set(name, value); },
       getAttribute(name) { return attributes.get(name) ?? null; },
-      removeAttribute(name) { attributes.delete(name); },
+      removeAttribute(name) { attributes.delete(name); if (name === 'href') delete this.href; },
       remove() { this.removed = true; },
       focus() {}, showModal() { this.hidden = false; }, close() { this.hidden = true; },
       replaceChildren(...children) { this.children = children; },
@@ -81,13 +84,14 @@ function browser() {
   const window = {
     setTimeout(callback, delay) { const id = ++nextTimer; timers.set(id, { callback, due: clock + delay }); return id; },
     clearTimeout(id) { timers.delete(id); },
-    location: { assign() { assert.fail('unexpected navigation'); } },
+    location: { origin: 'https://staging.example.invalid', assign() { assert.fail('unexpected navigation'); } },
   };
   const sandbox = {
     document, window, URL, Intl, Error, Uint8Array,
+    Date: class extends Date { constructor(...args) { super(...(args.length ? args : [now])); } static now() { return now; } },
     crypto: { randomUUID: () => `00000000-0000-4000-8000-${String(++nextKey).padStart(12, '0')}` },
     fetch() { assert.fail('unmodelled HTTP request'); },
-    sessionStorage: { setItem() { assert.fail('unexpected storage write'); } },
+    sessionStorage: { setItem(key, value) { storage.set(key, value); }, getItem: key => storage.get(key) ?? null },
     location: window.location,
     FormData: class { constructor(form) { this.values = new Map(form.values); } get(key) { return this.values.get(key) ?? null; } },
     Option: class { constructor(text, value) { this.text = text; this.value = value; } },
@@ -100,8 +104,9 @@ function browser() {
   }
   const helper = module(helperCode);
   return {
-    ...helper, document, window, sandbox, context, module, elements, scripts, appended, timers, element,
+    ...helper, document, window, sandbox, context, module, elements, scripts, appended, timers, element, storage,
     keys: () => nextKey,
+    setNow(value) { now = value; },
     activeScripts: () => scripts.filter(script => !script.removed),
     foreign(url, { loaded = false, attributes = {} } = {}) {
       const script = element(); script.src = url;
@@ -145,10 +150,12 @@ async function account(options = {}) {
     '#confirm-cancel', "[data-section='plan-management']", '#target-plan', "[data-action='change-plan']",
     '#plan-dialog', '#confirm-plan-change', "[data-section='payment-source']", "[data-action='add-payment-source']",
     '.payment-source-status', "[data-acceptance='terms']", "[data-acceptance='personal-data']",
+    "[data-section='recovery']", '[data-recovery-summary]', '.recovery-status',
+    "[data-action='prepare-recovery']", "[data-action='pay-recovery']", "[data-action='recovery-result']", "[data-action='refresh-recovery']",
     "[data-acceptance='recurring']", "button[type='submit']", "[data-action='logout']", '#email',
     ...['tenant-name', 'principal-name', 'tenant-status', 'plan', 'price', 'subscription-status', 'period-end',
       'cancel-date', 'payment-source-current', 'wompi-terms', 'wompi-personal-data', 'recurring-consent',
-      'target-plan-name', 'plan-change-copy'].map(name => `[data-field='${name}']`)];
+      'target-plan-name', 'plan-change-copy', 'recovery-amount', 'recovery-period', 'recovery-guidance'].map(name => `[data-field='${name}']`)];
   for (const selector of selectors) h.elements.set(selector, h.element());
   const get = selector => h.elements.get(selector);
   const loginForm = get('#login-form');
@@ -163,9 +170,9 @@ async function account(options = {}) {
   const recurring = get("[data-acceptance='recurring']");
   const calls = [], widgets = [];
   let loginCount = 0, initCount = 0;
-  const subscription = { status: 'active', plan: { code: 'basic', name: 'Básico' },
+  let subscription = { subscriptionId: '11111111-1111-4111-8111-111111111111', status: 'active', plan: { code: 'basic', name: 'Básico' },
     price: { amountMinor: 7990000, currency: 'COP', billingInterval: 'monthly' },
-    currentPeriodEnd: '2030-02-01T00:00:00Z', cancelAtPeriodEnd: false };
+    currentPeriodEnd: '2030-02-01T00:00:00Z', cancelAtPeriodEnd: false, ...options.subscription };
   const Widget = class {
     constructor(value) { this.config = plain(value); widgets.push(this); }
     open(callback) {
@@ -188,6 +195,11 @@ async function account(options = {}) {
         tenant: { tenantId: `synthetic-tenant-${loginCount}`, name: 'QA', role: options.role ?? 'owner', status: 'active' } });
     }
     if (path === '/v1/me/subscription') return reply(subscription);
+    if (path === '/v1/me/subscription/recovery') return options.recovery ? options.recovery(call)
+      : reply({ type: 'recovery', subscriptionId: subscription.subscriptionId, status: 'blocked', blockReason: 'requires_review',
+        periodStart: '2020-01-01T00:00:00.000Z', periodEnd: '2020-02-01T00:00:00.000Z',
+        amountMinor: 7990000, currency: 'COP', needsFurtherRecovery: true, orderId: null, checkoutSessionId: null, expiresAt: null });
+    if (path === '/v1/me/billing/checkout-sessions' && call.method === 'POST' && options.checkout) return options.checkout(call);
     if (path === '/v1/me/billing/payment-sources' && call.method === 'GET') {
       return options.current ? options.current(call) : reply({ paymentSource: null });
     }
@@ -198,14 +210,18 @@ async function account(options = {}) {
     assert.fail(`unexpected HTTP route: ${call.method} ${path}`);
   };
   const idempotency = h.module(idempotencyCode);
+  const checkoutReturn = h.module(returnCode);
+  const recovery = h.module(recoveryCode, name => name === './checkout-return' ? checkoutReturn : assert.fail(`unexpected recovery import: ${name}`));
   h.module(accountCode, name => {
     if (name === '../scripts/client-idempotency') return idempotency;
     if (name === '../lib/wompi-client') return { prepareWompiSession: h.prepareWompiSession };
+    if (name === '../lib/subscription-recovery') return recovery;
     assert.fail(`unexpected controller import: ${name}`);
   });
   return Object.assign(h, {
     get, button, status, terms, data, recurring, calls, widgets, Widget,
     initCount: () => initCount,
+    setSubscription(value) { subscription = { ...subscription, ...value }; },
     posts: () => calls.filter(call => call.method === 'POST' && call.url.endsWith('/payment-sources')),
     consent(a = true, b = true, c = true) { terms.checked = a; data.checked = b; recurring.checked = c; },
     async login() {
@@ -595,5 +611,255 @@ test('provider rejection permits a fresh attempt while ambiguous POST failures b
       assert.notEqual(h.posts()[0].headers['idempotency-key'], h.posts()[1].headers['idempotency-key']);
       assert.equal(h.button.disabled, false);
     }
+  }
+});
+
+test('overdue states supported by the API retain explicit three-part card consent without activating access', async () => {
+  for (const state of ['past_due', 'grace', 'restricted', 'suspended']) {
+    const h = await account({ subscription: { status: state, currentPeriodEnd: '2020-01-01T00:00:00Z' } });
+    await h.login();
+    assert.equal(h.get("[data-section='payment-source']").hidden, false);
+    assert.equal(h.get("[data-section='plan-management']").hidden, true);
+    h.consent(true, true, false); await h.click();
+    assert.equal(h.appended.length, 0); assert.equal(h.posts().length, 0);
+    h.consent(); await h.openWidget(); await h.widgets[0].callback(source);
+    assert.equal(JSON.parse(h.posts()[0].body).recurringConsent, true);
+    assert.notEqual(h.get("[data-field='subscription-status']").textContent, 'Activo');
+  }
+});
+
+test('members, cancelled subscriptions and scheduled cancellations cannot manage payment sources', async () => {
+  for (const options of [{ role: 'member' }, { subscription: { status: 'cancelled' } },
+    { subscription: { cancelAtPeriodEnd: true } }, { subscription: { status: 'cancel_at_period_end' } }]) {
+    const h = await account(options); await h.login();
+    assert.equal(h.get("[data-section='payment-source']").hidden, true);
+    assert.equal(h.calls.filter(call => call.url.endsWith('/payment-sources')).length, 0);
+    assert.equal(h.appended.length, 0);
+  }
+});
+
+const recoverySubscriptionId = '11111111-1111-4111-8111-111111111111';
+const recoverySessionId = '22222222-2222-4222-8222-222222222222';
+const historicalStart = '2020-01-01T00:00:00.000Z';
+const historicalEnd = '2020-02-01T00:00:00.000Z';
+const recoveryOfferFixture = (changes = {}) => ({ type: 'recovery', subscriptionId: recoverySubscriptionId,
+  status: 'available', blockReason: null, periodStart: historicalStart, periodEnd: historicalEnd,
+  amountMinor: 7990017, currency: 'COP', needsFurtherRecovery: true,
+  orderId: null, checkoutSessionId: null, expiresAt: null, ...changes });
+function recoveryCheckoutFixture(offer = recoveryOfferFixture(), changes = {}) {
+  const checkout = { checkoutSessionId: recoverySessionId, reference: 'QA-RECOVERY',
+    amountInCents: offer.amountMinor, currency: offer.currency, expirationTime: '2035-01-01T00:00:00.000Z',
+    recovery: { subscriptionId: offer.subscriptionId, subscriptionPeriodId: '33333333-3333-4333-8333-333333333333',
+      periodStart: offer.periodStart, periodEnd: offer.periodEnd, needsFurtherRecovery: offer.needsFurtherRecovery }, ...changes };
+  const url = new URL('https://checkout.wompi.co/p/');
+  for (const [key, value] of Object.entries({ reference: checkout.reference, 'amount-in-cents': String(checkout.amountInCents),
+    currency: checkout.currency, 'expiration-time': checkout.expirationTime, 'signature:integrity': 'synthetic-integrity',
+    'redirect-url': `https://staging.example.invalid/pago/resultado?checkoutSessionId=${checkout.checkoutSessionId}` })) url.searchParams.set(key, value);
+  return { ...checkout, checkoutUrl: url.href };
+}
+const recoveryAccount = (options = {}) => account({
+  subscription: { status: 'suspended', currentPeriodEnd: historicalStart },
+  recovery: () => reply(recoveryOfferFixture()), checkout: () => reply(recoveryCheckoutFixture()), ...options,
+});
+const recoveryControl = (h, action) => h.get(`[data-action='${action}']`);
+const recoveryClick = async (h, action = 'prepare-recovery') => { await recoveryControl(h, action).dispatch('click'); await flush(); };
+const recoveryPosts = h => h.calls.filter(call => call.method === 'POST' && call.url.endsWith('/billing/checkout-sessions'));
+
+test('recovery reads an authenticated server offer without creating a checkout or loading SDKs', async () => {
+  const h = await recoveryAccount(); await h.login();
+  const calls = h.calls.filter(call => call.url.endsWith('/subscription/recovery'));
+  assert.equal(calls.length, 1); assert.equal(calls[0].method, 'GET');
+  assert.equal(calls[0].headers.authorization, 'Bearer synthetic-auth-1');
+  assert.equal(h.get("[data-section='recovery']").hidden, false);
+  assert.equal(h.get('[data-recovery-summary]').hidden, false);
+  assert.equal(h.get("[data-field='recovery-amount']").textContent, '79.900,17 COP');
+  assert.match(h.get("[data-field='recovery-period']").textContent, /enero.*2020.*febrero.*2020.*UTC/);
+  assert.match(h.get("[data-field='recovery-guidance']").textContent, /pasado/);
+  assert.equal(recoveryPosts(h).length, 0); assert.equal(h.appended.length, 0); assert.equal(h.initCount(), 0);
+});
+
+test('manual recovery uses the exact server snapshot and displays checkout without navigating or granting access', async () => {
+  const h = await recoveryAccount(); await h.login(); await recoveryClick(h);
+  const posts = recoveryPosts(h); assert.equal(posts.length, 1);
+  assert.deepEqual(JSON.parse(posts[0].body), { type: 'recovery', subscriptionId: recoverySubscriptionId, expectedPeriodStart: historicalStart });
+  assert.equal(posts[0].headers.authorization, 'Bearer synthetic-auth-1');
+  assert.equal(posts[0].headers['idempotency-key'], '00000000-0000-4000-8000-000000000001');
+  assert.equal(recoveryControl(h, 'pay-recovery').hidden, false);
+  const url = new URL(recoveryControl(h, 'pay-recovery').href);
+  assert.equal(url.searchParams.get('amount-in-cents'), '7990017');
+  assert.equal(url.searchParams.get('signature:integrity'), 'synthetic-integrity');
+  assert.equal(new URL(url.searchParams.get('redirect-url')).searchParams.get('checkoutSessionId'), recoverySessionId);
+  assert.equal(recoveryControl(h, 'recovery-result').href, '/pago/resultado?checkoutSessionId=' + recoverySessionId);
+  assert.deepEqual([...h.storage], [[`cripton:recovery:${recoverySessionId}`, 'true']]);
+  assert.notEqual(h.get("[data-field='subscription-status']").textContent, 'Activo');
+  assert.ok(h.calls.every(call => !call.url.includes('/pos-sso'))); assert.equal(h.appended.length, 0);
+});
+
+test('recovery ignores duplicate preparation both during the request and after a checkout is ready', async () => {
+  const response = deferred(); const h = await recoveryAccount({ checkout: () => response.promise });
+  await h.login(); const pending = recoveryClick(h); await flush(); await recoveryClick(h);
+  assert.equal(recoveryPosts(h).length, 1); assert.equal(recoveryControl(h, 'prepare-recovery').disabled, true);
+  response.resolve(reply(recoveryCheckoutFixture())); await pending; await recoveryClick(h);
+  assert.equal(recoveryPosts(h).length, 1); assert.equal(h.keys(), 1);
+});
+
+test('an ambiguous recovery request retries only the same payload and idempotency key', async () => {
+  let requests = 0;
+  const h = await recoveryAccount({ checkout() { if (++requests === 1) throw new TypeError('Synthetic network failure'); return reply(recoveryCheckoutFixture()); } });
+  await h.login(); await recoveryClick(h); assert.equal(recoveryControl(h, 'pay-recovery').hidden, true);
+  assert.equal(recoveryControl(h, 'prepare-recovery').disabled, false);
+  await recoveryClick(h);
+  assert.equal(recoveryPosts(h).length, 2); assert.equal(h.keys(), 1);
+  assert.equal(recoveryPosts(h)[0].body, recoveryPosts(h)[1].body);
+  assert.equal(recoveryPosts(h)[0].headers['idempotency-key'], recoveryPosts(h)[1].headers['idempotency-key']);
+});
+
+test('refreshing an existing pending period preserves the attempt and reuses its checkout', async () => {
+  const offer = recoveryOfferFixture({ status: 'pending_payment', orderId: '44444444-4444-4444-8444-444444444444',
+    checkoutSessionId: recoverySessionId, expiresAt: '2035-01-01T00:00:00.000Z' });
+  const h = await recoveryAccount({ recovery: () => reply(offer), checkout: () => reply(recoveryCheckoutFixture(offer)) });
+  await h.login(); assert.match(recoveryControl(h, 'prepare-recovery').textContent, /pendiente/);
+  await recoveryClick(h); await recoveryClick(h, 'refresh-recovery'); await recoveryClick(h);
+  assert.equal(recoveryPosts(h).length, 2);
+  assert.equal(recoveryPosts(h)[0].headers['idempotency-key'], recoveryPosts(h)[1].headers['idempotency-key']);
+  assert.equal(new URL(recoveryControl(h, 'pay-recovery').href).searchParams.get('reference'), 'QA-RECOVERY');
+});
+
+test('a stale recovery snapshot conflict exposes no checkout and never silently advances the period', async () => {
+  const h = await recoveryAccount({ checkout: () => reply({ error: { code: 'checkout_conflict', message: 'Actualiza Mi cuenta.' } }, 409) });
+  await h.login(); await recoveryClick(h); await recoveryClick(h);
+  assert.equal(h.get('.recovery-status').dataset.state, 'error'); assert.equal(recoveryControl(h, 'pay-recovery').hidden, true);
+  assert.ok(recoveryPosts(h).every(call => JSON.parse(call.body).expectedPeriodStart === historicalStart));
+  assert.equal(new Set(recoveryPosts(h).map(call => call.headers['idempotency-key'])).size, 1);
+});
+
+test('the next historical period requires refreshed server coverage and gets a new serial attempt', async () => {
+  let applied = false;
+  const next = recoveryOfferFixture({ periodStart: historicalEnd, periodEnd: '2020-03-01T00:00:00.000Z' });
+  const h = await recoveryAccount({ recovery: () => reply(applied ? next : recoveryOfferFixture()),
+    checkout: () => reply(recoveryCheckoutFixture(applied ? next : recoveryOfferFixture())) });
+  await h.login(); await recoveryClick(h);
+  const oldKey = recoveryPosts(h)[0].headers['idempotency-key'];
+  await recoveryClick(h, 'refresh-recovery'); await recoveryClick(h);
+  assert.equal(recoveryPosts(h)[1].headers['idempotency-key'], oldKey);
+  assert.equal(JSON.parse(recoveryPosts(h)[1].body).expectedPeriodStart, historicalStart);
+  applied = true; h.setSubscription({ currentPeriodEnd: historicalEnd, status: 'suspended' });
+  await recoveryClick(h, 'refresh-recovery'); await recoveryClick(h);
+  assert.equal(JSON.parse(recoveryPosts(h)[2].body).expectedPeriodStart, historicalEnd);
+  assert.notEqual(recoveryPosts(h)[2].headers['idempotency-key'], oldKey);
+  assert.equal(h.get("[data-field='subscription-status']").textContent, 'Suspendido');
+  assert.match(h.get("[data-field='recovery-guidance']").textContent, /pasado/);
+});
+
+test('every server block reason prevents new checkout while allowing consultation of an existing payment', async () => {
+  for (const reason of ['not_due', 'cancellation', 'payment_pending', 'requires_review', 'plan_change_pending']) {
+    const h = await recoveryAccount({ recovery: () => reply(recoveryOfferFixture({ status: 'blocked', blockReason: reason,
+      checkoutSessionId: reason === 'payment_pending' ? recoverySessionId : null })) });
+    await h.login(); await recoveryClick(h);
+    assert.equal(recoveryControl(h, 'prepare-recovery').disabled, true); assert.equal(recoveryPosts(h).length, 0);
+    assert.equal(h.get('[data-recovery-summary]').hidden, true);
+    assert.ok(h.get('.recovery-status').textContent.length > 0);
+    assert.equal(recoveryControl(h, 'recovery-result').hidden, reason !== 'payment_pending');
+  }
+});
+
+test('malformed, foreign or incomplete recovery offers fail closed before any checkout', async () => {
+  for (const changes of [{ subscriptionId: recoverySessionId }, { type: 'upgrade' }, { status: ['available'] },
+    { periodStart: 'not-a-date' }, { periodStart: '2020-02-31T00:00:00.000Z' }, { periodEnd: historicalStart },
+    { amountMinor: -1 }, { amountMinor: 1.25 }, { currency: 'USD' }, { needsFurtherRecovery: 'false' },
+    { checkoutSessionId: 'not-an-id' }, { periodEnd: undefined }]) {
+    const h = await recoveryAccount({ recovery: () => reply(recoveryOfferFixture(changes)) });
+    await h.login(); await recoveryClick(h);
+    assert.equal(h.get('.recovery-status').dataset.state, 'error'); assert.equal(recoveryPosts(h).length, 0);
+    assert.equal(recoveryControl(h, 'pay-recovery').hidden, true);
+  }
+});
+
+test('checkout differences in subscription, period or quoted amount never produce a payment link', async () => {
+  for (const changes of [{ amountInCents: 7990000 }, { currency: 'USD' },
+    { recovery: { ...recoveryCheckoutFixture().recovery, subscriptionId: recoverySessionId } },
+    { recovery: { ...recoveryCheckoutFixture().recovery, periodStart: '2020-01-02T00:00:00.000Z' } },
+    { recovery: { ...recoveryCheckoutFixture().recovery, periodEnd: '2020-03-01T00:00:00.000Z' } }]) {
+    const h = await recoveryAccount({ checkout: () => reply(recoveryCheckoutFixture(recoveryOfferFixture(), changes)) });
+    await h.login(); await recoveryClick(h);
+    assert.equal(h.get('.recovery-status').dataset.state, 'error'); assert.equal(recoveryControl(h, 'pay-recovery').hidden, true);
+    assert.equal(recoveryControl(h, 'recovery-result').hidden, true);
+  }
+});
+
+test('foreign, tampered and mismatched-return checkout URLs are rejected before navigation', async () => {
+  const original = recoveryCheckoutFixture();
+  for (const mutate of [url => { url.hostname = 'evil.example.invalid'; },
+    url => url.searchParams.set('amount-in-cents', '1'), url => url.searchParams.append('reference', 'DUPLICATE'),
+    url => url.searchParams.set('redirect-url', 'https://evil.example.invalid/pago/resultado'),
+    url => url.searchParams.set('redirect-url', `https://staging.example.invalid/pago/resultado?checkoutSessionId=${recoverySubscriptionId}`)]) {
+    const url = new URL(original.checkoutUrl); mutate(url);
+    const h = await recoveryAccount({ checkout: () => reply({ ...original, checkoutUrl: url.href }) });
+    await h.login(); await recoveryClick(h);
+    assert.equal(h.get('.recovery-status').dataset.state, 'error'); assert.equal(recoveryControl(h, 'pay-recovery').hidden, true);
+  }
+});
+
+test('an expired checkout cannot be opened even if it expires after being displayed', async () => {
+  const checkout = recoveryCheckoutFixture(recoveryOfferFixture(), { expirationTime: '2026-11-10T00:01:00.000Z' });
+  const h = await recoveryAccount({ checkout: () => reply(checkout) }); await h.login(); await recoveryClick(h);
+  assert.equal(recoveryControl(h, 'pay-recovery').hidden, false);
+  h.setNow(Date.parse(checkout.expirationTime)); let prevented = false;
+  await recoveryControl(h, 'pay-recovery').dispatch('click', { preventDefault() { prevented = true; } });
+  assert.equal(prevented, true); assert.equal(recoveryControl(h, 'pay-recovery').hidden, true);
+  assert.equal(recoveryControl(h, 'pay-recovery').href, undefined);
+});
+
+test('logout invalidates an in-flight checkout response and removes its payment links', async () => {
+  const response = deferred(); const h = await recoveryAccount({ checkout: () => response.promise });
+  await h.login(); const pending = recoveryClick(h); await flush(); await h.logout();
+  response.resolve(reply(recoveryCheckoutFixture())); await pending;
+  assert.equal(h.get("[data-section='recovery']").hidden, true);
+  assert.equal(recoveryControl(h, 'pay-recovery').hidden, true); assert.equal(h.get('.recovery-status').textContent, '');
+});
+
+test('a stale recovery offer cannot overwrite the next authenticated session', async () => {
+  const response = deferred(); let reads = 0;
+  const h = await recoveryAccount({ recovery: () => ++reads === 1 ? response.promise
+    : reply(recoveryOfferFixture({ status: 'blocked', blockReason: 'requires_review' })) });
+  await h.login(); await h.logout(); await h.login();
+  response.resolve(reply(recoveryOfferFixture())); await flush();
+  assert.equal(recoveryControl(h, 'prepare-recovery').disabled, true);
+  assert.match(h.get('.recovery-status').textContent, /revisión/); assert.equal(recoveryPosts(h).length, 0);
+});
+
+test('recovery endpoint failures remain retryable through authenticated refresh without creating an order', async () => {
+  let failed = true;
+  const h = await recoveryAccount({ recovery: () => failed ? reply({ error: { message: 'Synthetic unavailable offer' } }, 503)
+    : reply(recoveryOfferFixture()) });
+  await h.login(); assert.equal(h.get('.recovery-status').dataset.state, 'error');
+  assert.equal(recoveryControl(h, 'prepare-recovery').disabled, true);
+  failed = false; await recoveryClick(h, 'refresh-recovery');
+  assert.equal(recoveryControl(h, 'prepare-recovery').disabled, false); assert.equal(recoveryPosts(h).length, 0);
+  assert.equal(h.appended.length, 0);
+});
+
+test('non-managing roles and unexpired active subscriptions cannot prepare manual recovery', async () => {
+  for (const options of [{ role: 'member' }, { subscription: { status: 'active', currentPeriodEnd: '2035-01-01T00:00:00.000Z' } },
+    { subscription: { status: 'cancelled', currentPeriodEnd: historicalStart } }]) {
+    const h = await recoveryAccount(options); await h.login(); await recoveryClick(h);
+    assert.equal(h.get("[data-section='recovery']").hidden, true); assert.equal(recoveryPosts(h).length, 0);
+    assert.equal(h.calls.filter(call => call.url.endsWith('/subscription/recovery')).length, 0);
+  }
+});
+
+test('a refreshed future subscription hides recovery without inferring access from the previous checkout', async () => {
+  const h = await recoveryAccount(); await h.login(); await recoveryClick(h);
+  h.setSubscription({ status: 'active', currentPeriodEnd: '2035-01-01T00:00:00.000Z' });
+  await recoveryClick(h, 'refresh-recovery');
+  assert.equal(h.get("[data-section='recovery']").hidden, true); assert.equal(recoveryControl(h, 'pay-recovery').hidden, true);
+  assert.ok(h.calls.every(call => !call.url.includes('/pos-sso'))); assert.equal(recoveryPosts(h).length, 1);
+});
+
+test('denied storage access or writes cannot prevent a validated manual checkout', async () => {
+  for (const deny of [h => Object.defineProperty(h.sandbox, 'sessionStorage', { get() { throw new Error('Synthetic storage denied'); } }),
+    h => { h.sandbox.sessionStorage.setItem = () => { throw new Error('Synthetic quota failure'); }; }]) {
+    const h = await recoveryAccount(); deny(h); await h.login(); await recoveryClick(h);
+    assert.equal(recoveryControl(h, 'pay-recovery').hidden, false); assert.equal(recoveryPosts(h).length, 1);
   }
 });

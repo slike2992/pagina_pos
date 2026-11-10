@@ -2,6 +2,9 @@
 
 ## Desarrollo vigente
 
+- [Recuperación de suscripciones](SUBSCRIPTION_RECOVERY.md): continuidad desde
+  vencimiento previo, contrato de oferta/checkout, pagos seriales y límites de acceso.
+
 - [Calidad, conversión y accesibilidad](WEB_QUALITY_2026-10-26.md): validación compartida, responsive y peso antes/después.
 
 - [Plan de captación, SEO y condiciones](WEB_GROWTH_PLAN_2026-10-26.md): alcance implementado y dependencias reales.

@@ -1,5 +1,24 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-09 — Recuperación manual desde el vencimiento anterior
+
+- Mi cuenta consume GET autenticado `/v1/me/subscription/recovery` y la variante
+  `{type:'recovery',subscriptionId,expectedPeriodStart}` del POST existente de
+  billing/checkout-sessions. Importes y períodos proceden del servidor. Reutiliza
+  un pendiente y conserva idempotencia ante respuesta incierta; otro período
+  requiere actualizar la oferta. No calcula fechas de cobro desde el nuevo pago.
+- Retorno: GET público de checkout incorpora `recovery` y cobertura actual.
+  Conserva polling acotado y espera `fulfilled`; un período aplicado que todavía
+  acaba en pasado muestra deuda pendiente y Mi cuenta, sin empresa lista,
+  contraseña inicial o SSO automático. Storage es opcional y no acredita pago.
+- Tarjeta: muestra gestión en estados vencidos ya admitidos por API. Conserva
+  helper Wompi, carga lazy, retry y los tres consentimientos del prerequisito.
+- Consumidores: publicar API y GET/HEAD/OPTIONS exactos del proxy antes de web;
+  los POST existentes y el payload de upgrade se conservan. Sin migraciones,
+  reglas de proveedor, precios ni cambios de SDK en este bloque frontend.
+- Pruebas de UI/contrato con DOM/HTTP/reloj simulados y Astro check. No equivalen
+  a aceptación de navegador, DB, cobro ni despliegue. Ver [detalle](SUBSCRIPTION_RECOVERY.md).
+
 ## 2026-10-26 — Calidad de frontend y formularios
 
 - Consumidores: web/registro y despliegue comercial. Se conservan contratos HTTP,
