@@ -1,5 +1,24 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-10 — Publicación y aceptación externa de recuperación
+
+- Web c90569e publicada en codex/staging-signup-recovery e integrada mediante
+  fast-forward en codex/pagina-pos-landing, preservando trabajo local de marca.
+  Activa en staging después del runtime compatible SaaS 53a51fc4fb0d.
+- Build aislado Ubuntu: Node 24.22.2, lockfile congelado, 164/164 pruebas,
+  Astro check/build y HTML/SEO aprobados. El fallo Windows de parseCookie
+  anterior es del entorno de build; no se cambiaron dependencias para ocultarlo.
+- En navegador: período fallido/importe/referencia visibles; rechazo oficial
+  Sandbox y correo desde pagos; reintento aprobado con misma orden/checkout.
+  Actualizar retiró aviso/enlaces y mostró Activo. Retorno antiguo reconoció
+  la recuperación; login nuevo y SSO al mismo tenant abrieron Inicio del POS.
+- SQL confirma una adopción, una aprobación y un período paid. Fuente local
+  revoked/auto_renew=false, sin nuevos cargos recurrentes. Sin cambios de
+  migraciones, dependencias, CSS, marca, legales o indexación de staging.
+- Evidencia detallada: pos_saas/docs/QA_RENEWAL_CYCLE_2026-11-09.md. No acredita
+  producción, QR Bre-B, fallo ambiguo externo ni todos los módulos del POS.
+  Los apartados siguientes conservan la evidencia previa al despliegue.
+
 ## 2026-11-10 — Aviso y recuperación del próximo período rechazado
 
 - Mi cuenta consume `renewalIssue?: {subscriptionPeriodId, status:'failed',
