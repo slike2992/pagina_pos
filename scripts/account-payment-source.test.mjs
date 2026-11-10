@@ -163,6 +163,7 @@ async function account(options = {}) {
   get('#tenant-field').hidden = true;
   get('.account-panel').hidden = true;
   get('#cancel-dialog').hidden = true;
+  get('#plan-dialog').hidden = true;
   const button = get("[data-action='add-payment-source']");
   button.disabled = true;
   const status = get('.payment-source-status');
@@ -207,6 +208,7 @@ async function account(options = {}) {
       : reply({ ...subscription, cancelAtPeriodEnd: true });
     if (path === '/v1/me/subscription/reactivate') return options.reactivate ? options.reactivate(call)
       : reply({ ...subscription, cancelAtPeriodEnd: false, status: 'active' });
+    if (path === '/v1/me/subscription/change' && options.change) return options.change(call);
     if (path === '/v1/me/subscription/recovery') return options.recovery ? options.recovery(call)
       : reply({ type: 'recovery', subscriptionId: subscription.subscriptionId, status: 'blocked', blockReason: 'requires_review',
         periodStart: '2020-01-01T00:00:00.000Z', periodEnd: '2020-02-01T00:00:00.000Z',
@@ -1055,6 +1057,323 @@ test('a foreign tenant in a recovery refresh cannot re-enable suspended access',
 const unauthorized = () => ({ ok: false, status: 401, json() { assert.fail('a 401 body must not be read before resetting auth'); } });
 const tenantResponse = () => reply({ activeTenantId: 'synthetic-tenant-1',
   tenants: [{ tenantId: 'synthetic-tenant-1', name: 'QA', role: 'owner', status: 'suspended' }] });
+
+test('subscription refresh is a named native button outside the conditional recovery section', () => {
+  const recoverySection = page.match(/<section[^>]*data-section="recovery"[\s\S]*?<\/section>/)?.[0];
+  assert.ok(recoverySection);
+  assert.doesNotMatch(recoverySection, /data-action="refresh-recovery"/);
+  assert.match(page, /<button class="button secondary" data-action="refresh-recovery" type="button" aria-busy="false">Actualizar suscripción<\/button>/);
+  assert.equal((page.match(/data-action="refresh-recovery"/g) ?? []).length, 1);
+});
+
+test('a current account refresh updates coverage and actions using only authenticated reads', async () => {
+  const h = await account(); await h.login();
+  const previousEnd = h.get("[data-field='period-end']").textContent;
+  assert.equal(h.get("[data-section='recovery']").hidden, true);
+  const before = h.calls.length;
+  h.setSubscription({ currentPeriodStart: '2030-02-01T00:00:00.000Z', currentPeriodEnd: '2030-03-01T00:00:00.000Z', cancelAtPeriodEnd: true });
+  h.setTenant({ status: 'suspended' });
+  await recoveryClick(h, 'refresh-recovery');
+  assert.notEqual(h.get("[data-field='period-end']").textContent, previousEnd);
+  assert.equal(h.get("[data-field='period-end']").textContent, h.get("[data-field='cancel-date']").textContent);
+  assert.equal(accountAction(h, 'cancel').hidden, true);
+  assert.equal(accountAction(h, 'reactivate').hidden, false);
+  assert.equal(accountAction(h, 'open-pos').getAttribute('aria-disabled'), 'true');
+  assert.equal(h.get("[data-field='tenant-status']").textContent, 'Suspendido');
+  assert.match(h.get('.account-status').textContent, /renovación está cancelada.*Suscripción actualizada/s);
+  assert.equal(h.get('.account-status').dataset.state, 'success');
+  assert.deepEqual(h.calls.slice(before).map(call => [call.method, new URL(call.url).pathname, call.headers.authorization]), [
+    ['GET', '/v1/me/subscription', 'Bearer synthetic-auth-1'], ['GET', '/v1/me/tenants', 'Bearer synthetic-auth-1'],
+  ]);
+  assert.equal(h.appended.length, 0); assert.equal(h.navigations.length, 0); assert.equal(h.timers.size, 0);
+});
+
+test('refresh stays busy through both reads and rejects duplicate clicks', async () => {
+  for (const phase of ['subscription', 'tenants']) {
+    const response = deferred(); let hold = false;
+    const h = await account({
+      readSubscription: (_call, view) => hold && phase === 'subscription' ? response.promise : reply(view),
+      tenants: () => hold && phase === 'tenants' ? response.promise : reply({ activeTenantId: 'synthetic-tenant-1',
+        tenants: [{ tenantId: 'synthetic-tenant-1', name: 'QA', role: 'owner', status: 'active' }] }),
+    });
+    await h.login(); hold = true; await recoveryClick(h, 'refresh-recovery');
+    const button = recoveryControl(h, 'refresh-recovery');
+    assert.equal(button.disabled, true); assert.equal(button.getAttribute('aria-busy'), 'true');
+    assert.match(h.get('.account-status').textContent, /Actualizando suscripción/);
+    const before = h.calls.length; await recoveryClick(h, 'refresh-recovery'); assert.equal(h.calls.length, before);
+    hold = false;
+    response.resolve(phase === 'subscription' ? reply({ status: 'active', plan: { code: 'basic', name: 'Básico' },
+      price: { amountMinor: 7990000, currency: 'COP' }, currentPeriodStart: '2026-11-01', currentPeriodEnd: '2030-02-01' })
+      : reply({ activeTenantId: 'synthetic-tenant-1', tenants: [{ tenantId: 'synthetic-tenant-1', role: 'owner', status: 'active' }] }));
+    await flush();
+    assert.equal(button.disabled, false); assert.equal(button.getAttribute('aria-busy'), 'false');
+  }
+});
+
+test('current-account refresh 401 resets the session at either read and permits login again', async () => {
+  for (const phase of ['subscription', 'tenants']) {
+    let expired = false;
+    const h = await account({
+      readSubscription: (_call, view) => expired && phase === 'subscription' ? unauthorized() : reply(view),
+      tenants: () => unauthorized(),
+    });
+    await h.login(); h.consent(); expired = true;
+    const before = h.calls.length; await recoveryClick(h, 'refresh-recovery');
+    assert.equal(h.calls.length - before, phase === 'subscription' ? 1 : 2);
+    assert.equal(h.get('.account-panel').hidden, true); assert.equal(h.get('#login-form').hidden, false);
+    assert.match(h.get('.status').textContent, /sesión.*expiró.*iniciar sesión/);
+    assert.equal(h.get('#email').focused, true); assert.equal(h.recurring.checked, false);
+    assert.equal(accountAction(h, 'cancel').hidden, true);
+    assert.equal(accountAction(h, 'open-pos').getAttribute('aria-disabled'), 'true');
+    assert.equal(recoveryControl(h, 'refresh-recovery').getAttribute('aria-busy'), 'false');
+    const after = h.calls.length; await recoveryClick(h, 'refresh-recovery'); assert.equal(h.calls.length, after);
+    expired = false; await h.login(); assert.equal(h.get('.account-panel').hidden, false);
+  }
+});
+
+const activeTenantResponse = (number = 1) => reply({ activeTenantId: `synthetic-tenant-${number}`,
+  tenants: [{ tenantId: `synthetic-tenant-${number}`, name: 'QA', role: 'owner', status: 'active' }] });
+const planChangeFixture = () => ({ subscriptionChangeId: 'synthetic-plan-change', changeType: 'upgrade', status: 'pending_payment',
+  toPlan: { name: 'Profesional' }, quote: { amountMinor: 100000, currency: 'COP' },
+  effectiveAt: '2030-02-01T00:00:00Z', nextAction: 'checkout' });
+
+test('either deferred refresh GET disables and guards renewal, SSO, SDK and plan actions without hiding them', async () => {
+  for (const phase of ['subscription', 'tenants']) {
+    for (const scheduled of [false, true]) {
+      const response = deferred(); let hold = false, view;
+      const h = await account({ subscription: { cancelAtPeriodEnd: scheduled },
+        readSubscription: (_call, current) => { view = current; return hold && phase === 'subscription' ? response.promise : reply(current); },
+        tenants: () => hold && phase === 'tenants' ? response.promise : activeTenantResponse(),
+      });
+      await h.login(); h.consent();
+      if (!scheduled) await accountAction(h, 'cancel').dispatch('click');
+      h.get('#target-plan').value = 'professional';
+      const visibility = ['cancel', 'reactivate'].map(action => accountAction(h, action).hidden);
+      const sourceBefore = [h.button, h.terms, h.data, h.recurring].map(control => control.disabled);
+      hold = true; await recoveryClick(h, 'refresh-recovery');
+      assert.deepEqual(['cancel', 'reactivate'].map(action => accountAction(h, action).hidden), visibility);
+      for (const control of [accountAction(h, scheduled ? 'reactivate' : 'cancel'), h.get('#confirm-cancel'), h.button,
+        h.terms, h.data, h.recurring, h.get('#target-plan'), accountAction(h, 'change-plan'), h.get('#confirm-plan-change')]) {
+        assert.equal(control.disabled, true);
+      }
+      assert.equal(accountAction(h, 'open-pos').getAttribute('aria-disabled'), 'true');
+      const before = h.calls.length;
+      await accountAction(h, 'cancel').dispatch('click'); await h.get('#confirm-cancel').dispatch('click');
+      await accountAction(h, 'reactivate').dispatch('click');
+      accountAction(h, 'open-pos').removeAttribute('aria-disabled');
+      await accountAction(h, 'open-pos').dispatch('click');
+      await h.click(); await accountAction(h, 'change-plan').dispatch('click'); await h.get('#confirm-plan-change').dispatch('click');
+      assert.equal(h.calls.length, before, 'programmatic events must not bypass the refresh lock');
+      assert.equal(h.appended.length, 0); assert.equal(h.initCount(), 0); assert.equal(h.widgets.length, 0);
+      assert.equal(h.navigations.length, 0); assert.equal(h.get('#plan-dialog').hidden, true);
+      if (!scheduled) assert.equal(h.get('#cancel-dialog').hidden, false, 'blocked confirmation preserves the open modal');
+      hold = false; response.resolve(phase === 'subscription' ? reply(view) : activeTenantResponse()); await flush();
+      assert.deepEqual([h.button, h.terms, h.data, h.recurring].map(control => control.disabled), sourceBefore);
+      for (const control of [accountAction(h, scheduled ? 'reactivate' : 'cancel'),
+        h.get('#target-plan'), accountAction(h, 'change-plan'), h.get('#confirm-plan-change')]) assert.equal(control.disabled, false);
+      assert.equal(accountAction(h, 'open-pos').getAttribute('aria-disabled'), null);
+      if (scheduled) await accountAction(h, 'reactivate').dispatch('click');
+      else await h.get('#confirm-cancel').dispatch('click');
+      await flush(); assert.equal(renewalCalls(h).length, 1); assert.equal(h.get('#cancel-dialog').hidden, true);
+      await accountAction(h, 'open-pos').dispatch('click'); assert.equal(ssoCalls(h).length, 1);
+      h.consent(); await h.openWidget(); assert.equal(h.widgets.length, 1);
+    }
+  }
+});
+
+test('refresh cannot replace account identity during a deferred cancellation or reactivation and is retryable afterwards', async () => {
+  for (const scheduled of [false, true]) {
+    const response = deferred(); let view;
+    const h = await account({ subscription: { cancelAtPeriodEnd: scheduled },
+      readSubscription: (_call, current) => { view = current; return reply(current); },
+      cancel: () => response.promise, reactivate: () => response.promise,
+    });
+    await h.login();
+    if (!scheduled) await accountAction(h, 'cancel').dispatch('click');
+    const pending = scheduled ? accountAction(h, 'reactivate').dispatch('click') : h.get('#confirm-cancel').dispatch('click');
+    await flush(); assert.equal(recoveryControl(h, 'refresh-recovery').disabled, true);
+    const before = h.calls.length; await recoveryClick(h, 'refresh-recovery'); assert.equal(h.calls.length, before);
+    if (!scheduled) assert.equal(h.get('#cancel-dialog').hidden, false);
+    h.setSubscription({ cancelAtPeriodEnd: !scheduled });
+    response.resolve(reply({ ...view, cancelAtPeriodEnd: !scheduled })); await pending; await flush();
+    assert.equal(h.get('#cancel-dialog').hidden, true); assert.equal(h.get('.account-status').dataset.state, 'success');
+    assert.match(h.get('.account-status').textContent, scheduled ? /vuelve a estar habilitada/ : /quedó cancelada/);
+    assert.equal(accountAction(h, 'cancel').hidden, !scheduled);
+    assert.equal(recoveryControl(h, 'refresh-recovery').disabled, false);
+    await recoveryClick(h, 'refresh-recovery');
+    assert.equal(h.calls.filter(call => call.url.endsWith('/v1/me/subscription')).length, 2);
+    assert.equal(h.get('.account-status').dataset.state, 'success');
+  }
+});
+
+test('a deferred SSO keeps refresh disabled and a failed SSO releases it for manual retry', async () => {
+  const response = deferred(); const h = await account({ sso: () => response.promise }); await h.login();
+  const pending = accountAction(h, 'open-pos').dispatch('click'); await flush();
+  assert.equal(recoveryControl(h, 'refresh-recovery').disabled, true);
+  const before = h.calls.length; await recoveryClick(h, 'refresh-recovery'); assert.equal(h.calls.length, before);
+  response.resolve(reply({ error: { message: 'Synthetic SSO unavailable' } }, 503)); await pending;
+  assert.equal(recoveryControl(h, 'refresh-recovery').disabled, false);
+  await recoveryClick(h, 'refresh-recovery'); assert.match(h.get('.account-status').textContent, /Suscripción actualizada/);
+  assert.equal(h.navigations.length, 0);
+});
+
+test('payment metadata, SDK initialization and source POST each exclude refresh until their pending work settles', async () => {
+  for (const phase of ['current-source', 'metadata', 'SDK', 'source-POST']) {
+    const response = deferred(); let initializeCallback;
+    const h = await account({
+      current: () => phase === 'current-source' ? response.promise : reply({ paymentSource: null }),
+      metadata: () => phase === 'metadata' ? response.promise : reply(config),
+      initialize: callback => { if (phase === 'SDK') initializeCallback = callback; else callback({ sessionId }, null); },
+      post: () => phase === 'source-POST' ? response.promise : reply({ displayHint: 'QA card' }),
+    });
+    await h.login(); let pending;
+    if (phase === 'SDK') { h.consent(); pending = h.click(); await h.loadAll(); assert.ok(initializeCallback); }
+    if (phase === 'source-POST') { h.consent(); await h.openWidget(); pending = h.widgets[0].callback(source); await flush(); }
+    assert.equal(recoveryControl(h, 'refresh-recovery').disabled, true);
+    const before = h.calls.length; await recoveryClick(h, 'refresh-recovery'); assert.equal(h.calls.length, before);
+    if (phase === 'SDK') initializeCallback({ sessionId }, null);
+    else response.resolve(reply(phase === 'metadata' ? config : phase === 'source-POST' ? { displayHint: 'QA card' } : { paymentSource: null }));
+    if (pending) await pending; await flush();
+    assert.equal(recoveryControl(h, 'refresh-recovery').disabled, false);
+    await recoveryClick(h, 'refresh-recovery'); assert.equal(h.get('.account-status').dataset.state, 'success');
+  }
+});
+
+test('refresh supersedes a reopenable widget so its callback cannot POST during or after the GET', async () => {
+  const response = deferred(); let hold = false, view;
+  const h = await account({ readSubscription: (_call, current) => {
+    view = current; return hold ? response.promise : reply(current);
+  } });
+  await h.login(); h.consent(); await h.openWidget(); const oldCallback = h.widgets[0].callback;
+  hold = true; await recoveryClick(h, 'refresh-recovery'); const before = h.calls.length;
+  await oldCallback(source); await h.click();
+  assert.equal(h.calls.length, before); assert.equal(h.posts().length, 0); assert.equal(h.widgets.length, 1);
+  assert.equal(h.button.disabled, true);
+  hold = false; response.resolve(reply(view)); await flush();
+  await oldCallback(source); assert.equal(h.posts().length, 0);
+  h.consent(); await h.openWidget(); await h.widgets[1].callback(source); assert.equal(h.posts().length, 1);
+});
+
+test('failed refresh restores source controls without releasing an ambiguous registration block', async () => {
+  for (const ambiguous of [false, true]) {
+    let fail = false;
+    const h = await account({ readSubscription: (_call, view) => fail ? reply({}, 503) : reply(view),
+      post: () => { throw new TypeError('Synthetic ambiguous registration'); } });
+    await h.login();
+    if (ambiguous) { h.consent(); await h.openWidget(); await h.widgets[0].callback(source); }
+    const disabled = [h.button, h.terms, h.data, h.recurring].map(control => control.disabled);
+    fail = true; await recoveryClick(h, 'refresh-recovery');
+    assert.deepEqual([h.button, h.terms, h.data, h.recurring].map(control => control.disabled), disabled);
+    assert.equal(accountAction(h, 'cancel').disabled, false); assert.equal(accountAction(h, 'open-pos').getAttribute('aria-disabled'), null);
+    assert.equal(accountAction(h, 'change-plan').disabled, false); assert.equal(h.get('#confirm-plan-change').disabled, false);
+    assert.equal(recoveryControl(h, 'refresh-recovery').disabled, false);
+    fail = false; await recoveryClick(h, 'refresh-recovery'); assert.equal(h.get('.account-status').dataset.state, 'success');
+  }
+});
+
+test('plan quote and checkout exclude refresh, and quote retry cannot start while the GET is pending', async () => {
+  for (const phase of ['quote', 'checkout']) {
+    const response = deferred(), read = deferred(); let holdRead = false, view;
+    const h = await account({ readSubscription: (_call, current) => { view = current; return holdRead ? read.promise : reply(current); },
+      change: () => phase === 'quote' ? response.promise : reply(planChangeFixture()),
+      checkout: () => response.promise,
+    });
+    await h.login(); h.get('#target-plan').value = 'professional'; await accountAction(h, 'change-plan').dispatch('click');
+    assert.equal(h.get('#plan-dialog').hidden, false);
+    const pending = h.get('#confirm-plan-change').dispatch('click'); await flush();
+    assert.equal(recoveryControl(h, 'refresh-recovery').disabled, true);
+    assert.equal(h.get('#confirm-plan-change').disabled, true); assert.equal(accountAction(h, 'change-plan').disabled, true);
+    const before = h.calls.length; await recoveryClick(h, 'refresh-recovery'); assert.equal(h.calls.length, before);
+    response.resolve(reply({ error: { message: 'Synthetic temporary plan failure' } }, 503)); await pending;
+    assert.equal(recoveryControl(h, 'refresh-recovery').disabled, false);
+    holdRead = true; await recoveryClick(h, 'refresh-recovery'); const during = h.calls.length;
+    await accountAction(h, 'change-plan').dispatch('click'); await h.get('#confirm-plan-change').dispatch('click');
+    assert.equal(h.calls.length, during);
+    holdRead = false; read.resolve(reply(view)); await flush();
+    assert.equal(accountAction(h, 'change-plan').disabled, false); assert.equal(h.get('#confirm-plan-change').disabled, false);
+    h.get('#target-plan').value = 'professional'; await accountAction(h, 'change-plan').dispatch('click');
+    if (phase === 'quote') await h.get('#confirm-plan-change').dispatch('click');
+    assert.equal(h.calls.length, during + 2, 'tenant read and one explicit plan retry must resume');
+    assert.equal(h.navigations.length, 0);
+  }
+});
+
+test('a stale plan response cannot release a newer refresh lock or continue an old checkout', async () => {
+  const quote = deferred(), read = deferred(); let holdRead = false, view;
+  const h = await account({ change: () => quote.promise,
+    readSubscription: (_call, current) => { view = current; return holdRead ? read.promise : reply(current); },
+  });
+  await h.login(); h.get('#target-plan').value = 'professional';
+  const pending = h.get('#confirm-plan-change').dispatch('click'); await flush();
+  await h.logout(); await h.login(); holdRead = true; await recoveryClick(h, 'refresh-recovery');
+  const message = h.get('.account-status').textContent, before = h.calls.length;
+  quote.resolve(reply(planChangeFixture())); await pending;
+  assert.equal(h.calls.length, before); assert.equal(h.get('.account-status').textContent, message);
+  assert.equal(recoveryControl(h, 'refresh-recovery').disabled, true); assert.equal(h.button.disabled, true);
+  assert.equal(h.get('#confirm-plan-change').disabled, true);
+  holdRead = false; read.resolve(reply(view)); await flush();
+  assert.equal(recoveryControl(h, 'refresh-recovery').disabled, false); assert.equal(h.button.disabled, false);
+});
+
+test('late refresh responses including 401 and delayed JSON cannot change a newer login or its busy state', async () => {
+  for (const phase of ['subscription', 'tenants']) {
+    for (const kind of ['401', 'success', 'json']) {
+      const response = deferred(); let hold = false;
+      const oldBody = phase === 'subscription' ? { status: 'cancel_at_period_end', cancelAtPeriodEnd: true }
+        : { activeTenantId: 'synthetic-tenant-1', tenants: [{ tenantId: 'synthetic-tenant-1', role: 'member', status: 'suspended' }] };
+      const held = () => kind === 'json' ? { ok: true, status: 200, json: () => response.promise } : response.promise;
+      const h = await account({
+        readSubscription: (_call, view) => hold && phase === 'subscription' ? held() : reply(view),
+        tenants: () => hold && phase === 'tenants' ? held() : reply({ activeTenantId: 'synthetic-tenant-2',
+          tenants: [{ tenantId: 'synthetic-tenant-2', name: 'New account', role: 'owner', status: 'active' }] }),
+      });
+      await h.login(); hold = true; await recoveryClick(h, 'refresh-recovery');
+      await h.logout(); hold = false; await h.login();
+      const before = h.calls.length;
+      const message = h.get('.account-status').textContent;
+      response.resolve(kind === '401' ? unauthorized() : kind === 'json' ? oldBody : reply(oldBody)); await flush();
+      assert.equal(h.get('.account-panel').hidden, false); assert.equal(h.get('#login-form').hidden, true);
+      assert.equal(h.get('.account-status').textContent, message); assert.doesNotMatch(h.get('.status').textContent, /expiró/);
+      assert.equal(accountAction(h, 'cancel').hidden, false); assert.equal(accountAction(h, 'reactivate').hidden, true);
+      assert.equal(recoveryControl(h, 'refresh-recovery').disabled, false);
+      assert.equal(recoveryControl(h, 'refresh-recovery').getAttribute('aria-busy'), 'false');
+      assert.equal(h.calls.length, before, 'old responses must stop the old request chain');
+      await recoveryClick(h, 'refresh-recovery'); assert.equal(h.calls.at(-1).headers.authorization, 'Bearer synthetic-auth-2');
+    }
+  }
+});
+
+test('failed current-account GET preserves the confirmed view and shows a visible error with manual retry', async () => {
+  for (const phase of ['subscription', 'tenants']) {
+    for (const kind of ['503', 'network', 'foreign-tenant']) {
+      let fail = false;
+      const failure = () => {
+        if (kind === 'network') throw new Error('Synthetic temporary network failure');
+        return kind === 'foreign-tenant' ? reply({ activeTenantId: 'another-tenant', tenants: [] })
+          : reply({ error: { message: 'Synthetic temporary failure' } }, 503);
+      };
+      if (kind === 'foreign-tenant' && phase === 'subscription') continue;
+      const h = await account({
+        readSubscription: (_call, view) => fail && phase === 'subscription' ? failure() : reply(view),
+        tenants: () => fail && phase === 'tenants' ? failure() : reply({ activeTenantId: 'synthetic-tenant-1',
+          tenants: [{ tenantId: 'synthetic-tenant-1', name: 'QA', role: 'owner', status: 'active' }] }),
+      });
+      await h.login(); const previous = h.get("[data-field='period-end']").textContent;
+      h.setSubscription({ currentPeriodEnd: '2031-01-01T00:00:00.000Z', cancelAtPeriodEnd: true });
+      fail = true; await recoveryClick(h, 'refresh-recovery');
+      assert.equal(h.get('.account-panel').hidden, false); assert.equal(h.get('#login-form').hidden, true);
+      assert.equal(h.get("[data-field='period-end']").textContent, previous);
+      assert.equal(accountAction(h, 'cancel').hidden, false); assert.equal(accountAction(h, 'reactivate').hidden, true);
+      assert.equal(h.get("[data-section='recovery']").hidden, true);
+      assert.equal(h.get('.account-status').dataset.state, 'error'); assert.ok(h.get('.account-status').textContent);
+      assert.equal(recoveryControl(h, 'refresh-recovery').disabled, false);
+      fail = false; await recoveryClick(h, 'refresh-recovery');
+      assert.notEqual(h.get("[data-field='period-end']").textContent, previous);
+      assert.equal(accountAction(h, 'reactivate').hidden, false);
+      assert.equal(h.get('.account-status').dataset.state, 'success');
+    }
+  }
+});
 
 test('a current-session 401 at either refresh step or offer resets the whole account and stops the request chain', async () => {
   for (const phase of ['subscription', 'tenants', 'offer']) {

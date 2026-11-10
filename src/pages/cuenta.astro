@@ -49,7 +49,6 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
           <button class="button" data-action="prepare-recovery" type="button" disabled>Preparar este pago</button>
           <a class="button" data-action="pay-recovery" hidden>Pagar este período en Wompi</a>
           <a class="button secondary" data-action="recovery-result" hidden>Consultar este pago</a>
-          <button class="button secondary" data-action="refresh-recovery" type="button">Actualizar mi suscripción</button>
         </div>
       </section>
       <section class="payment-source-management" data-section="payment-source" hidden>
@@ -70,6 +69,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       <p class="status" id="account-access-guidance" data-field="access-guidance" hidden></p>
       <p class="status account-status" role="status" aria-live="polite"></p>
       <div class="actions">
+        <button class="button secondary" data-action="refresh-recovery" type="button" aria-busy="false">Actualizar suscripción</button>
         <a class="button" data-action="open-pos" aria-disabled="true" aria-describedby="account-access-guidance" tabindex="-1">Abrir POS</a>
         <button class="button secondary" data-action="cancel" type="button">Cancelar renovación</button>
         <button class="button secondary" data-action="reactivate" type="button" hidden>Reactivar renovación</button>
@@ -164,6 +164,8 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     let recoveryGeneration = 0;
     let posBusy = false;
     let renewalBusy = false;
+    let subscriptionRefreshing = false;
+    let planBusy = false;
 
     const field = (name: string) => root.querySelector<HTMLElement>(`[data-field='${name}']`)!;
     const messageFrom = (body: unknown, fallback: string) => typeof body === "object" && body && "error" in body
@@ -199,11 +201,15 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       const managementAllowed = canManageRenewal();
       const scheduled = renewalScheduled();
       cancelButton.hidden = !managementAllowed || scheduled;
-      cancelButton.disabled = renewalBusy || cancelButton.hidden;
-      confirmCancel.disabled = renewalBusy || cancelButton.hidden;
+      cancelButton.disabled = subscriptionRefreshing || renewalBusy || cancelButton.hidden;
+      confirmCancel.disabled = subscriptionRefreshing || renewalBusy || cancelButton.hidden;
       reactivateButton.hidden = !managementAllowed || !scheduled;
-      reactivateButton.disabled = renewalBusy || reactivateButton.hidden;
-      if (canOpenPos() && !posBusy) {
+      reactivateButton.disabled = subscriptionRefreshing || renewalBusy || reactivateButton.hidden;
+      recoveryRefresh.disabled = recoveryBusy || renewalBusy || posBusy || paymentSourceBusy || planBusy;
+      planSelect.disabled = subscriptionRefreshing || planBusy;
+      changePlanButton.disabled = subscriptionRefreshing || planBusy;
+      confirmPlanChange.disabled = subscriptionRefreshing || planBusy;
+      if (canOpenPos() && !posBusy && !subscriptionRefreshing) {
         posLink.href = posUrl;
         posLink.removeAttribute("aria-disabled");
         posLink.removeAttribute("tabindex");
@@ -266,12 +272,26 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     };
     const loadRecoveryOffer = async (refreshSubscription = false) => {
       if (recoveryBusy || !accessToken || !currentSubscription || !accountLogin) return;
+      if (refreshSubscription && (renewalBusy || posBusy || paymentSourceBusy || planBusy)) return;
       const token = accessToken;
       const generation = ++recoveryGeneration;
       const isCurrent = () => token === accessToken && generation === recoveryGeneration;
       recoveryBusy = true;
+      const sourceControls = [paymentSourceButton, termsAcceptance, personalDataAcceptance, recurringAcceptance];
+      const sourceDisabled = sourceControls.map(control => control.disabled);
       recoveryPrepare.disabled = true;
       recoveryRefresh.disabled = true;
+      recoveryRefresh.setAttribute("aria-busy", "true");
+      if (refreshSubscription) {
+        subscriptionRefreshing = true;
+        // An overlay without a cancellation callback is reopenable. Refresh
+        // supersedes that idle attempt so its later token cannot submit.
+        paymentSourceAttempt = "";
+        sourceControls.forEach(control => { control.disabled = true; });
+        accountStatus.textContent = "Actualizando suscripción…";
+        accountStatus.dataset.state = "";
+      }
+      renderAccountActions();
       recoveryOffer = null;
       clearRecoveryLinks();
       recoverySummary.hidden = true;
@@ -298,6 +318,8 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
             throw new Error("No pudimos confirmar la empresa de esta sesión. Vuelve a iniciar sesión.");
           }
           renderAccount({ ...accountLogin!, tenant }, body as Subscription);
+          accountStatus.textContent = [accountStatus.textContent, "Suscripción actualizada."].filter(Boolean).join(" ");
+          accountStatus.dataset.state = "success";
         }
         if (recoverySection.hidden) return;
         const response = await fetch(`${apiUrl}/v1/me/subscription/recovery`, { headers: { authorization: `Bearer ${token}` } });
@@ -335,10 +357,22 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         recoveryStatus.textContent = "Revisa el importe y las fechas antes de preparar el checkout.";
       } catch (error) {
         if (!isCurrent()) return;
-        recoveryStatus.textContent = messageFrom(error, error instanceof Error ? error.message : "No pudimos consultar la recuperación. Actualiza Mi cuenta.");
+        recoveryStatus.textContent = messageFrom(error, error instanceof Error ? error.message : refreshSubscription
+          ? "No pudimos actualizar la suscripción. Intenta actualizar de nuevo."
+          : "No pudimos consultar la recuperación. Actualiza Mi cuenta.");
         recoveryStatus.dataset.state = "error";
+        if (refreshSubscription) {
+          accountStatus.textContent = recoveryStatus.textContent;
+          accountStatus.dataset.state = "error";
+        }
       } finally {
-        if (isCurrent()) { recoveryBusy = false; recoveryRefresh.disabled = false; }
+        if (isCurrent()) {
+          recoveryBusy = false;
+          subscriptionRefreshing = false;
+          if (refreshSubscription) sourceControls.forEach((control, index) => { control.disabled = sourceDisabled[index]; });
+          renderAccountActions();
+          recoveryRefresh.setAttribute("aria-busy", "false");
+        }
       }
     };
     recoveryPrepare.addEventListener("click", async () => {
@@ -383,7 +417,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         recoveryStatus.dataset.state = "error";
         recoveryPrepare.disabled = false;
       } finally {
-        if (isCurrent()) { recoveryBusy = false; recoveryRefresh.disabled = false; }
+        if (isCurrent()) { recoveryBusy = false; renderAccountActions(); }
       }
     });
     recoveryPay.addEventListener("click", event => {
@@ -402,7 +436,10 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       return url.href;
     };
     const preparePaymentSource = async () => {
+      if (subscriptionRefreshing || paymentSourceBusy || !accessToken) return;
       const preparingAccessToken = accessToken;
+      paymentSourceBusy = true;
+      renderAccountActions();
       paymentSourceButton.disabled = true;
       termsAcceptance.disabled = true;
       personalDataAcceptance.disabled = true;
@@ -441,6 +478,11 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         paymentSourceStatus.dataset.state = "error";
         paymentSourceButton.textContent = "Reintentar registro seguro";
         paymentSourceButton.disabled = false;
+      } finally {
+        if (accessToken === preparingAccessToken) {
+          paymentSourceBusy = false;
+          renderAccountActions();
+        }
       }
     };
 
@@ -485,7 +527,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
 
     const planNames: Record<string, string> = { basic: "Básico", professional: "Profesional", enterprise: "Empresarial" };
     paymentSourceButton.addEventListener("click", async () => {
-      if (paymentSourceBusy || !accessToken) return;
+      if (subscriptionRefreshing || paymentSourceBusy || !accessToken) return;
       if (!paymentSourceConfig) { await preparePaymentSource(); return; }
       if (!termsAcceptance.checked || !personalDataAcceptance.checked || !recurringAcceptance.checked) {
         paymentSourceStatus.textContent = "Acepta los documentos de Wompi y autoriza la renovación automática para continuar.";
@@ -497,6 +539,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       const attempt = createIdempotencyKey();
       paymentSourceAttempt = attempt;
       paymentSourceBusy = true;
+      renderAccountActions();
       paymentSourceButton.disabled = true;
       paymentSourceStatus.textContent = "Preparando la ventana segura de Wompi…";
       paymentSourceStatus.dataset.state = "";
@@ -512,7 +555,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       });
       let submitted = false;
       checkout.open(async (result) => {
-        if (submitted || paymentSourceAttempt !== attempt || accessToken !== registrationAccessToken) return;
+        if (subscriptionRefreshing || submitted || paymentSourceAttempt !== attempt || accessToken !== registrationAccessToken) return;
         const source = result?.payment_source;
         if (!source || typeof source.token !== "string" || !["CARD", "NEQUI"].includes(source.type)) {
           paymentSourceStatus.textContent = "Wompi no devolvió un medio de pago válido.";
@@ -522,6 +565,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         }
         submitted = true;
         paymentSourceBusy = true;
+        renderAccountActions();
         paymentSourceButton.disabled = true;
         paymentSourceStatus.textContent = "Registrando el medio de pago…";
         try {
@@ -563,13 +607,17 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
             : undefined;
           paymentSourceButton.disabled = code !== "payment_source_provider_rejected";
         } finally {
-          if (paymentSourceAttempt === attempt) paymentSourceBusy = false;
+          if (paymentSourceAttempt === attempt && accessToken === registrationAccessToken) {
+            paymentSourceBusy = false;
+            renderAccountActions();
+          }
         }
       });
       // The provider closes its overlay without a cancellation callback.
       // A later opening supersedes this attempt; only one callback can submit.
       if (!submitted) {
         paymentSourceBusy = false;
+        renderAccountActions();
         paymentSourceButton.disabled = false;
         paymentSourceStatus.textContent = "Completa el registro en Wompi. Si cierras la ventana, puedes volver a abrirla.";
       }
@@ -578,10 +626,12 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         paymentSourceStatus.textContent = error instanceof Error ? error.message : "No fue posible abrir Wompi. Vuelve a intentarlo.";
         paymentSourceStatus.dataset.state = "error";
         paymentSourceBusy = false;
+        renderAccountActions();
         paymentSourceButton.disabled = false;
       }
     });
-    const continueToUpgradeCheckout = async (change: PlanChange) => {
+    const continueToUpgradeCheckout = async (change: PlanChange, isCurrent: () => boolean) => {
+      if (subscriptionRefreshing || !accessToken || !isCurrent()) return;
       if (!checkoutIdempotencyKey) checkoutIdempotencyKey = createIdempotencyKey();
       const response = await fetch(`${apiUrl}/v1/me/billing/checkout-sessions`, {
         method: "POST",
@@ -593,21 +643,29 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         body: JSON.stringify({ subscriptionChangeId: change.subscriptionChangeId })
       });
       const body = await response.json();
+      if (!isCurrent()) return;
       if (!response.ok) throw body;
       sessionStorage.setItem("checkout-session-id", body.checkoutSessionId);
       location.assign(body.checkoutUrl);
     };
 
     changePlanButton.addEventListener("click", async () => {
+      if (subscriptionRefreshing || planBusy || !accessToken) return;
       if (pendingChange?.nextAction === "checkout") {
-        changePlanButton.disabled = true;
+        const token = accessToken;
+        const login = accountLogin;
+        const isCurrent = () => token === accessToken && login === accountLogin;
+        planBusy = true;
+        renderAccountActions();
         accountStatus.textContent = "Preparando el pago seguro…";
         try {
-          await continueToUpgradeCheckout(pendingChange);
+          await continueToUpgradeCheckout(pendingChange, isCurrent);
         } catch (error) {
+          if (!isCurrent()) return;
           accountStatus.textContent = messageFrom(error, "No fue posible abrir el pago seguro.");
           accountStatus.dataset.state = "error";
-          changePlanButton.disabled = false;
+        } finally {
+          if (isCurrent()) { planBusy = false; renderAccountActions(); }
         }
         return;
       }
@@ -623,7 +681,12 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
 
     confirmPlanChange.addEventListener("click", async (event) => {
       event.preventDefault();
-      confirmPlanChange.disabled = true;
+      if (subscriptionRefreshing || planBusy || !accessToken) return;
+      const token = accessToken;
+      const login = accountLogin;
+      const isCurrent = () => token === accessToken && login === accountLogin;
+      planBusy = true;
+      renderAccountActions();
       if (!changeIdempotencyKey) changeIdempotencyKey = createIdempotencyKey();
       try {
         const response = await fetch(`${apiUrl}/v1/me/subscription/change`, {
@@ -636,6 +699,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
           body: JSON.stringify({ targetPlanCode: planSelect.value })
         });
         const body = await response.json();
+        if (!isCurrent()) return;
         if (!response.ok) throw body;
         pendingChange = body as PlanChange;
         planDialog.close();
@@ -649,28 +713,31 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         accountStatus.textContent = `Prorrateo confirmado: ${amount}. Preparando el pago seguro…`;
         accountStatus.dataset.state = "success";
         try {
-          await continueToUpgradeCheckout(pendingChange);
+          await continueToUpgradeCheckout(pendingChange, isCurrent);
         } catch (error) {
+          if (!isCurrent()) return;
           accountStatus.textContent = `${messageFrom(error, "No fue posible abrir el pago seguro.")} La cotización sigue disponible en esta sesión.`;
           accountStatus.dataset.state = "error";
           changePlanButton.textContent = "Continuar al pago";
         }
       } catch (error) {
+        if (!isCurrent()) return;
         accountStatus.textContent = messageFrom(error, "No fue posible solicitar el cambio de plan.");
         accountStatus.dataset.state = "error";
         planDialog.close();
       } finally {
-        confirmPlanChange.disabled = false;
+        if (isCurrent()) { planBusy = false; renderAccountActions(); }
       }
     });
 
     cancelButton.addEventListener("click", () => {
       renderAccountActions();
-      if (renewalBusy || !canManageRenewal() || renewalScheduled()) return;
+      if (subscriptionRefreshing || renewalBusy || !canManageRenewal() || renewalScheduled()) return;
       dialog.showModal();
     });
     confirmCancel.addEventListener("click", async (event) => {
       event.preventDefault();
+      if (subscriptionRefreshing) return;
       if (renewalBusy || !canManageRenewal() || renewalScheduled()) { renderAccountActions(); dialog.close(); return; }
       const token = accessToken;
       const login = accountLogin;
@@ -697,7 +764,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       }
     });
     reactivateButton.addEventListener("click", async () => {
-      if (renewalBusy || !canManageRenewal() || !renewalScheduled()) { renderAccountActions(); return; }
+      if (subscriptionRefreshing || renewalBusy || !canManageRenewal() || !renewalScheduled()) { renderAccountActions(); return; }
       const token = accessToken;
       const login = accountLogin;
       const isCurrent = () => token === accessToken && login === accountLogin;
@@ -724,7 +791,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     });
     posLink.addEventListener("click", async (event) => {
       event.preventDefault();
-      if (!canOpenPos() || posLink.getAttribute("aria-disabled") === "true") return;
+      if (subscriptionRefreshing || posBusy || !canOpenPos() || posLink.getAttribute("aria-disabled") === "true") return;
       const token = accessToken;
       const login = accountLogin;
       const isCurrent = () => token === accessToken && login === accountLogin;
@@ -761,6 +828,9 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       accountLogin = null;
       recoveryGeneration++;
       recoveryBusy = false;
+      subscriptionRefreshing = false;
+      planBusy = false;
+      paymentSourceBusy = false;
       recoveryOffer = null;
       recoveryKey = "";
       recoverySnapshot = "";
@@ -768,6 +838,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       recoverySection.hidden = true;
       recoveryPrepare.disabled = true;
       recoveryRefresh.disabled = false;
+      recoveryRefresh.setAttribute("aria-busy", "false");
       field("recovery-amount").textContent = "";
       field("recovery-period").textContent = "";
       field("recovery-guidance").textContent = "";

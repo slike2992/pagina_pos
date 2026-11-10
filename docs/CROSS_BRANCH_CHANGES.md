@@ -1,5 +1,47 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-10 — Actualización manual también para cuentas vigentes
+
+- Mi cuenta mueve el botón nativo «Actualizar suscripción» a sus acciones
+  generales, fuera de recovery. Reutiliza estilos, lectura autenticada de
+  suscripción y `/v1/me/tenants`, validación de la empresa activa y guardas
+  de token/generación. Fecha, estado y acciones se actualizan juntos después
+  de ambas lecturas; un fallo previo conserva la vista confirmada.
+- Progreso, resultado y error usan el status accesible visible de la cuenta.
+  El botón deshabilitado y `aria-busy` acompañan la guarda de duplicados.
+  Un 401 actual ejecuta el reset existente; respuestas/JSON/401 tardíos no
+  cambian un login posterior ni restauran controles de otra sesión. Permite
+  reintentar fallos GET sin recargar autenticación ni la página.
+- Exclusión con operaciones en curso: renovar/cancelar, SSO, preparación de
+  metadatos/SDK/POST de tarjeta y cotización/checkout de plan bloquean el
+  refresco. Mientras éste lee, sus botones/confirmaciones y consentimientos
+  quedan deshabilitados con guardas en handlers; no se ocultan por busy ni se
+  añaden estilos. `finally` restaura controles sólo en la sesión vigente,
+  conservando bloqueos previos de tarjeta ante resultados ambiguos.
+- Un widget reabrible sin callback de cierre queda superado por el refresco:
+  sus tokens tardíos no envían un POST y se puede abrir un intento nuevo.
+  Las respuestas antiguas de cambio de plan tampoco continúan checkout ni
+  liberan el bloqueo de un refresco posterior. Cancelar en vuelo conserva la
+  identidad de cuenta hasta aplicar su respuesta y cerrar el modal.
+- Consumidores: portal Mi cuenta y estático web. Compatible con las API
+  actuales; sin rutas nuevas, polling, cambios de permisos, migraciones,
+  llamadas al proveedor ni cobros. Recovery conserva su oferta e idempotencia.
+- Validación Node24: 116/116 pruebas de cuenta y retorno de pago; Astro check
+  sobre 46 archivos sin errores, advertencias ni hints. Los casos nuevos
+  cubren ubicación/nombre accesible, cuenta vigente con nuevo fin/acciones,
+  busy/duplicados, reset401, respuestas tardías y GET recuperable con reintento.
+  Ocho casos adicionales con HTTP/SDK diferidos prueban exclusión en ambos
+  sentidos, confirmación del modal, controles restaurados, reintentos y que
+  una operación vieja no desbloquee la sesión nueva. No llaman al proveedor.
+- Navegador local con Astro y HTTP sintético: cuenta activa actualiza el fin
+  de enero a febrero2030, muestra éxito, conserva el resumen ante503, permite
+  reintentar y vuelve al login/foco Correo ante401. SDK/proveedor deshabilitados;
+  no acredita aceptación backend ni cargo real. Sin commit ni deploy. El ciclo
+  UI de cancelar/reactivar y la evidencia backend continúan con el operador.
+  Revisión de exclusión en navegador: GET retrasado mantiene visibles y
+  deshabilitados plan, tarjeta, renovación y POS; al completarse recuperan su
+  disponibilidad anterior. No se ejecuta el ciclo real de cancelación/cobro.
+
 ## 2026-11-10 — Recuperación con sesión vencida
 
 - Seguimiento: una renovación anticipada ya pagada puede adelantar el inicio
