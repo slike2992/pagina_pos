@@ -1,5 +1,23 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-09 — Acciones de cuenta coherentes con estado y período
+
+- Mi cuenta deshabilita «Abrir POS» para tenants fuera de active/restricted y
+  roles fuera del contrato de membresía. Retira href, marca aria-disabled y
+  conserva la guarda del handler contra eventos programáticos/duplicados.
+  No deniega por fecha vencida los estados grace/restricted que el servidor
+  permite; SSO y sus limitaciones siguen bajo autoridad del backend.
+- Cancelar/reactivar conserva roles y estado de cancelación; sólo ofrece las
+  acciones con período válido inicio <= ahora < fin. El handler vuelve a
+  comprobarlo al confirmar. Se explica el atraso junto al estado de la cuenta.
+- Actualizar recovery relee suscripción y la empresa activa mediante el GET
+  existente /v1/me/tenants. No reutiliza estado/rol antiguo ni acepta otro tenant.
+  SSO y cambios de renovación ignoran respuestas de otra sesión/vista.
+- Consumidores: web Mi cuenta y despliegue estático. Sin contratos nuevos,
+  migraciones, cambios de permisos, SDK, proveedor ni checkout. Pruebas VM de
+  estados, roles, fechas límite, ARIA y respuestas obsoletas; aceptación Linux
+  y navegador a cargo del operador. Ver [detalle](SUBSCRIPTION_RECOVERY.md).
+
 ## 2026-11-09 — Recuperación manual desde el vencimiento anterior
 
 - Mi cuenta consume GET autenticado `/v1/me/subscription/recovery` y la variante

@@ -72,6 +72,27 @@ Se conserva íntegro `wompi-client.ts`, carga lazy, retry y los tres consentimie
 independientes; registrar la tarjeta envía `recurringConsent: true`. La tarjeta
 no es requisito para el checkout manual y registrarla no confirma recuperación.
 
+## Acciones de Mi cuenta según estado confirmado
+
+«Abrir POS» sólo queda disponible para una membresía de rol conocido y un tenant
+`active` o `restricted`, como admite el SSO existente. Para `suspended`, `pending`
+u otro estado no admitido se retira el enlace y se marca `aria-disabled`; el
+handler también bloquea eventos programáticos y solicitudes duplicadas. Una
+fecha vencida no introduce una denegación nueva en `grace` o `restricted`: las
+limitaciones de acceso siguen siendo autoridad del backend.
+
+Cancelar/reactivar conserva los roles owner/admin/billing y el estado de la
+cancelación; requiere además un período válido `inicio <= ahora < fin`.
+Períodos vencidos, futuros, incompletos o inválidos ocultan y deshabilitan ambas
+acciones, también al confirmar un modal abierto antes del vencimiento. El atraso
+se explica junto al estado, sin ofrecer cancelar un período que ya terminó.
+
+Actualizar recovery relee la suscripción y `GET /v1/me/tenants` de la misma
+sesión/empresa para no reutilizar el estado de tenant del login anterior al pago.
+Las respuestas SSO/cancelación/reactivación de otra sesión o de una vista ya
+reemplazada se ignoran. Estos controles son UX: no cambian permisos ni política
+de acceso del servidor y no convierten un retorno de pago en acceso autorizado.
+
 ## Verificación local y límites
 
 Con Node24, desde la raíz de esta web:

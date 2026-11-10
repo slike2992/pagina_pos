@@ -155,24 +155,27 @@ async function account(options = {}) {
     "[data-acceptance='recurring']", "button[type='submit']", "[data-action='logout']", '#email',
     ...['tenant-name', 'principal-name', 'tenant-status', 'plan', 'price', 'subscription-status', 'period-end',
       'cancel-date', 'payment-source-current', 'wompi-terms', 'wompi-personal-data', 'recurring-consent',
-      'target-plan-name', 'plan-change-copy', 'recovery-amount', 'recovery-period', 'recovery-guidance'].map(name => `[data-field='${name}']`)];
+      'target-plan-name', 'plan-change-copy', 'recovery-amount', 'recovery-period', 'recovery-guidance', 'access-guidance'].map(name => `[data-field='${name}']`)];
   for (const selector of selectors) h.elements.set(selector, h.element());
   const get = selector => h.elements.get(selector);
   const loginForm = get('#login-form');
   loginForm.reset = () => { loginForm.values = []; };
   get('#tenant-field').hidden = true;
   get('.account-panel').hidden = true;
+  get('#cancel-dialog').hidden = true;
   const button = get("[data-action='add-payment-source']");
   button.disabled = true;
   const status = get('.payment-source-status');
   const terms = get("[data-acceptance='terms']");
   const data = get("[data-acceptance='personal-data']");
   const recurring = get("[data-acceptance='recurring']");
-  const calls = [], widgets = [];
+  const calls = [], widgets = [], navigations = [];
+  h.window.location.assign = url => navigations.push(url);
   let loginCount = 0, initCount = 0;
+  let tenant = { tenantId: 'synthetic-tenant-1', name: 'QA', role: options.role ?? 'owner', status: options.tenantStatus ?? 'active' };
   let subscription = { subscriptionId: '11111111-1111-4111-8111-111111111111', status: 'active', plan: { code: 'basic', name: 'Básico' },
     price: { amountMinor: 7990000, currency: 'COP', billingInterval: 'monthly' },
-    currentPeriodEnd: '2030-02-01T00:00:00Z', cancelAtPeriodEnd: false, ...options.subscription };
+    currentPeriodStart: '2026-11-01T00:00:00.000Z', currentPeriodEnd: '2030-02-01T00:00:00Z', cancelAtPeriodEnd: false, ...options.subscription };
   const Widget = class {
     constructor(value) { this.config = plain(value); widgets.push(this); }
     open(callback) {
@@ -191,10 +194,19 @@ async function account(options = {}) {
     assert.equal(new URL(url).origin, 'https://api.example.invalid');
     if (path === '/v1/auth/login') {
       loginCount++;
+      tenant = { ...tenant, tenantId: `synthetic-tenant-${loginCount}` };
       return reply({ accessToken: `synthetic-auth-${loginCount}`, principal: { displayName: 'QA' },
-        tenant: { tenantId: `synthetic-tenant-${loginCount}`, name: 'QA', role: options.role ?? 'owner', status: 'active' } });
+        tenant: { ...tenant } });
     }
     if (path === '/v1/me/subscription') return reply(subscription);
+    if (path === '/v1/me/tenants') return options.tenants ? options.tenants(call)
+      : reply({ activeTenantId: tenant.tenantId, tenants: [{ ...tenant }] });
+    if (path === '/v1/auth/pos-sso') return options.sso ? options.sso(call)
+      : reply({ redirectUrl: 'https://pos.example.invalid/auth/sso?ticket=synthetic-ticket' }, 201);
+    if (path === '/v1/me/subscription/cancel') return options.cancel ? options.cancel(call)
+      : reply({ ...subscription, cancelAtPeriodEnd: true });
+    if (path === '/v1/me/subscription/reactivate') return options.reactivate ? options.reactivate(call)
+      : reply({ ...subscription, cancelAtPeriodEnd: false, status: 'active' });
     if (path === '/v1/me/subscription/recovery') return options.recovery ? options.recovery(call)
       : reply({ type: 'recovery', subscriptionId: subscription.subscriptionId, status: 'blocked', blockReason: 'requires_review',
         periodStart: '2020-01-01T00:00:00.000Z', periodEnd: '2020-02-01T00:00:00.000Z',
@@ -219,9 +231,10 @@ async function account(options = {}) {
     assert.fail(`unexpected controller import: ${name}`);
   });
   return Object.assign(h, {
-    get, button, status, terms, data, recurring, calls, widgets, Widget,
+    get, button, status, terms, data, recurring, calls, widgets, Widget, navigations,
     initCount: () => initCount,
     setSubscription(value) { subscription = { ...subscription, ...value }; },
+    setTenant(value) { tenant = { ...tenant, ...value }; },
     posts: () => calls.filter(call => call.method === 'POST' && call.url.endsWith('/payment-sources')),
     consent(a = true, b = true, c = true) { terms.checked = a; data.checked = b; recurring.checked = c; },
     async login() {
@@ -658,7 +671,7 @@ function recoveryCheckoutFixture(offer = recoveryOfferFixture(), changes = {}) {
   return { ...checkout, checkoutUrl: url.href };
 }
 const recoveryAccount = (options = {}) => account({
-  subscription: { status: 'suspended', currentPeriodEnd: historicalStart },
+  subscription: { status: 'suspended', currentPeriodStart: '2019-12-01T00:00:00.000Z', currentPeriodEnd: historicalStart },
   recovery: () => reply(recoveryOfferFixture()), checkout: () => reply(recoveryCheckoutFixture()), ...options,
 });
 const recoveryControl = (h, action) => h.get(`[data-action='${action}']`);
@@ -862,4 +875,153 @@ test('denied storage access or writes cannot prevent a validated manual checkout
     const h = await recoveryAccount(); deny(h); await h.login(); await recoveryClick(h);
     assert.equal(recoveryControl(h, 'pay-recovery').hidden, false); assert.equal(recoveryPosts(h).length, 1);
   }
+});
+
+const accountAction = (h, action) => h.get(`[data-action='${action}']`);
+const ssoCalls = h => h.calls.filter(call => call.url.endsWith('/auth/pos-sso'));
+const renewalCalls = h => h.calls.filter(call => /\/subscription\/(cancel|reactivate)$/.test(call.url));
+
+test('suspended, pending and other unavailable tenants cannot open POS even through programmatic events', async () => {
+  for (const tenantStatus of ['suspended', 'pending', 'provisioning', 'failed', 'unknown']) {
+    const h = await account({ tenantStatus }); await h.login();
+    const link = accountAction(h, 'open-pos');
+    assert.equal(link.getAttribute('aria-disabled'), 'true'); assert.equal(link.getAttribute('tabindex'), '-1');
+    assert.equal(link.href, undefined);
+    await link.dispatch('click');
+    link.removeAttribute('aria-disabled'); await link.dispatch('click');
+    assert.equal(ssoCalls(h).length, 0); assert.equal(h.navigations.length, 0);
+    assert.match(h.get("[data-field='access-guidance']").textContent, /POS/);
+  }
+});
+
+test('grace and restricted preserve server-authorized POS access for every existing membership role', async () => {
+  for (const role of ['owner', 'admin', 'member', 'billing']) {
+    for (const tenantStatus of ['active', 'restricted']) {
+      const h = await account({ role, tenantStatus, subscription: { status: tenantStatus === 'restricted' ? 'restricted' : 'grace',
+        currentPeriodStart: '2026-09-01T00:00:00.000Z', currentPeriodEnd: '2026-10-01T00:00:00.000Z' } });
+      await h.login(); const link = accountAction(h, 'open-pos');
+      assert.equal(link.getAttribute('aria-disabled'), null); assert.equal(link.href, 'https://pos.example.invalid');
+      await link.dispatch('click');
+      assert.equal(ssoCalls(h).length, 1); assert.equal(h.navigations.length, 1);
+      assert.match(h.navigations[0], /^https:\/\/pos\.example\.invalid\/auth\/sso\?/);
+    }
+  }
+});
+
+test('ARIA-disabled and unknown-role POS links cannot issue SSO; an in-flight request cannot duplicate', async () => {
+  const response = deferred(); const h = await account({ sso: () => response.promise }); await h.login();
+  const link = accountAction(h, 'open-pos'); link.setAttribute('aria-disabled', 'true');
+  await link.dispatch('click'); assert.equal(ssoCalls(h).length, 0);
+  link.removeAttribute('aria-disabled'); const pending = link.dispatch('click'); await flush(); await link.dispatch('click');
+  assert.equal(ssoCalls(h).length, 1);
+  response.resolve(reply({ redirectUrl: 'https://pos.example.invalid/auth/sso?ticket=synthetic-ticket' }, 201)); await pending;
+  assert.equal(link.getAttribute('aria-disabled'), 'true'); assert.equal(h.navigations.length, 1);
+  const unknown = await account({ role: 'unknown' }); await unknown.login();
+  await accountAction(unknown, 'open-pos').dispatch('click'); assert.equal(ssoCalls(unknown).length, 0);
+});
+
+test('expired recovery hides renewal toggles and explains debt without sending cancellation or reactivation', async () => {
+  for (const cancelAtPeriodEnd of [false, true]) {
+    const h = await recoveryAccount({ tenantStatus: 'suspended', subscription: { status: 'suspended',
+      currentPeriodStart: '2026-09-01T00:00:00.000Z', currentPeriodEnd: '2026-10-01T00:00:00.000Z', cancelAtPeriodEnd } });
+    await h.login();
+    assert.equal(accountAction(h, 'cancel').hidden, true); assert.equal(accountAction(h, 'cancel').disabled, true);
+    assert.equal(accountAction(h, 'reactivate').hidden, true); assert.equal(accountAction(h, 'reactivate').disabled, true);
+    assert.match(h.get("[data-field='access-guidance']").textContent, /atraso.*recuperación.*suspendido/);
+    await accountAction(h, 'cancel').dispatch('click'); assert.equal(h.get('#cancel-dialog').hidden, true);
+    await h.get('#confirm-cancel').dispatch('click'); await accountAction(h, 'reactivate').dispatch('click');
+    assert.equal(renewalCalls(h).length, 0); assert.equal(ssoCalls(h).length, 0);
+  }
+});
+
+test('missing, invalid, reversed and future periods disable renewal toggles without breaking rendering', async () => {
+  for (const period of [{ currentPeriodStart: null }, { currentPeriodEnd: null }, { currentPeriodEnd: 'not-a-date' },
+    { currentPeriodStart: 'not-a-date' }, { currentPeriodStart: '2031-01-01T00:00:00.000Z' },
+    { currentPeriodStart: '2028-01-01T00:00:00.000Z' }]) {
+    for (const cancelAtPeriodEnd of [false, true]) {
+      const h = await account({ subscription: { ...period, cancelAtPeriodEnd } }); await h.login();
+      assert.equal(h.get('.account-panel').hidden, false);
+      assert.equal(accountAction(h, 'cancel').hidden, true); assert.equal(accountAction(h, 'reactivate').hidden, true);
+      await h.get('#confirm-cancel').dispatch('click'); await accountAction(h, 'reactivate').dispatch('click');
+      assert.equal(renewalCalls(h).length, 0);
+      assert.match(h.get("[data-field='access-guidance']").textContent, /período/);
+    }
+  }
+});
+
+test('current-period owner/admin/billing retain cancellation and reactivation while members cannot manage', async () => {
+  for (const role of ['owner', 'admin', 'billing', 'member']) {
+    const h = await account({ role }); await h.login();
+    assert.equal(accountAction(h, 'cancel').hidden, role === 'member');
+    await accountAction(h, 'cancel').dispatch('click'); await h.get('#confirm-cancel').dispatch('click');
+    if (role === 'member') { assert.equal(renewalCalls(h).length, 0); continue; }
+    assert.equal(renewalCalls(h).length, 1); assert.equal(accountAction(h, 'cancel').hidden, true);
+    assert.equal(accountAction(h, 'reactivate').hidden, false);
+    await accountAction(h, 'reactivate').dispatch('click');
+    assert.equal(renewalCalls(h).length, 2); assert.equal(accountAction(h, 'cancel').hidden, false);
+    assert.equal(accountAction(h, 'reactivate').hidden, true);
+    assert.ok(renewalCalls(h).every(call => call.headers.authorization === 'Bearer synthetic-auth-1'));
+  }
+});
+
+test('renewal validity is inclusive at period start and expires before an already open modal can submit', async () => {
+  const end = '2026-11-10T00:01:00.000Z';
+  const h = await account({ subscription: { currentPeriodStart: '2026-11-10T00:00:00.000Z', currentPeriodEnd: end } });
+  await h.login(); assert.equal(accountAction(h, 'cancel').hidden, false);
+  await accountAction(h, 'cancel').dispatch('click'); assert.equal(h.get('#cancel-dialog').hidden, false);
+  h.setNow(Date.parse(end)); await h.get('#confirm-cancel').dispatch('click');
+  assert.equal(renewalCalls(h).length, 0); assert.equal(h.get('#cancel-dialog').hidden, true);
+  assert.equal(accountAction(h, 'cancel').hidden, true); assert.match(h.get("[data-field='access-guidance']").textContent, /atraso/);
+});
+
+test('a stale SSO response cannot navigate or re-enable POS after another login is suspended', async () => {
+  for (const reject of [false, true]) {
+    const response = deferred(); const h = await account({ sso: () => response.promise }); await h.login();
+    const pending = accountAction(h, 'open-pos').dispatch('click'); await flush();
+    await h.logout(); h.setTenant({ status: 'suspended' }); await h.login();
+    if (reject) response.reject(new TypeError('Synthetic stale failure'));
+    else response.resolve(reply({ redirectUrl: 'https://pos.example.invalid/auth/sso?ticket=synthetic-ticket' }, 201));
+    await pending;
+    assert.equal(h.navigations.length, 0); assert.equal(accountAction(h, 'open-pos').getAttribute('aria-disabled'), 'true');
+    assert.equal(accountAction(h, 'open-pos').href, undefined); assert.equal(h.get('.account-status').textContent, '');
+  }
+});
+
+test('late renewal responses cannot overwrite a subsequent member session', async () => {
+  for (const scheduled of [false, true]) {
+    const response = deferred(); const h = await account({ subscription: { cancelAtPeriodEnd: scheduled },
+      cancel: () => response.promise, reactivate: () => response.promise });
+    await h.login();
+    const pending = scheduled ? accountAction(h, 'reactivate').dispatch('click') : h.get('#confirm-cancel').dispatch('click');
+    await flush(); await h.logout(); h.setTenant({ role: 'member' }); await h.login();
+    const currentMessage = h.get('.account-status').textContent;
+    response.resolve(reply({ status: 'active', currentPeriodStart: '2026-11-01T00:00:00.000Z',
+      currentPeriodEnd: '2030-02-01T00:00:00Z', cancelAtPeriodEnd: !scheduled })); await pending;
+    assert.match(h.get("[data-field='principal-name']").textContent, /member/);
+    assert.equal(accountAction(h, 'cancel').hidden, true); assert.equal(accountAction(h, 'reactivate').hidden, true);
+    assert.equal(h.get('.account-status').textContent, currentMessage);
+  }
+});
+
+test('recovery refresh uses current tenant state and role along with updated coverage', async () => {
+  const h = await recoveryAccount({ tenantStatus: 'suspended' }); await h.login();
+  assert.equal(accountAction(h, 'open-pos').getAttribute('aria-disabled'), 'true');
+  h.setSubscription({ status: 'active', currentPeriodStart: '2026-11-01T00:00:00.000Z', currentPeriodEnd: '2035-01-01T00:00:00.000Z' });
+  h.setTenant({ status: 'restricted', role: 'member' }); await recoveryClick(h, 'refresh-recovery');
+  assert.equal(h.get("[data-field='tenant-status']").textContent, 'Solo lectura');
+  assert.equal(accountAction(h, 'open-pos').getAttribute('aria-disabled'), null);
+  assert.equal(accountAction(h, 'cancel').hidden, true); assert.equal(accountAction(h, 'reactivate').hidden, true);
+  const read = h.calls.find(call => call.url.endsWith('/v1/me/tenants'));
+  assert.equal(read.headers.authorization, 'Bearer synthetic-auth-1');
+  assert.equal(h.navigations.length, 0); assert.equal(ssoCalls(h).length, 0);
+});
+
+test('a foreign tenant in a recovery refresh cannot re-enable suspended access', async () => {
+  const h = await recoveryAccount({ tenantStatus: 'suspended', tenants: () => reply({ activeTenantId: 'another-tenant',
+    tenants: [{ tenantId: 'another-tenant', status: 'active', role: 'owner' }] }) });
+  await h.login(); h.setSubscription({ status: 'active', currentPeriodEnd: '2035-01-01T00:00:00.000Z' });
+  await recoveryClick(h, 'refresh-recovery');
+  assert.equal(accountAction(h, 'open-pos').getAttribute('aria-disabled'), 'true');
+  assert.equal(h.get("[data-field='tenant-status']").textContent, 'Suspendido');
+  assert.equal(h.get('.recovery-status').dataset.state, 'error');
 });

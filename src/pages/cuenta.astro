@@ -67,9 +67,10 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         <button class="button secondary" data-action="add-payment-source" type="button" disabled>Agregar tarjeta</button>
         <p class="status payment-source-status" role="status" aria-live="polite"></p>
       </section>
+      <p class="status" id="account-access-guidance" data-field="access-guidance" hidden></p>
       <p class="status account-status" role="status" aria-live="polite"></p>
       <div class="actions">
-        <a class="button" data-action="open-pos" href={posUrl}>Abrir POS</a>
+        <a class="button" data-action="open-pos" aria-disabled="true" aria-describedby="account-access-guidance" tabindex="-1">Abrir POS</a>
         <button class="button secondary" data-action="cancel" type="button">Cancelar renovación</button>
         <button class="button secondary" data-action="reactivate" type="button" hidden>Reactivar renovación</button>
         <button class="text-button" data-action="logout" type="button">Cerrar sesión</button>
@@ -106,7 +107,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
 
     type Tenant = { tenantId: string; tenantKey: string; name: string; status: string; role: string };
     type LoginResult = { accessToken: string; expiresAt: string; principal: { displayName: string }; tenant: Tenant };
-    type Subscription = { subscriptionId: string; status: string; plan: { code: string; name: string }; price: { amountMinor: number; currency: string; billingInterval: string }; currentPeriodEnd: string | null; cancelAtPeriodEnd: boolean };
+    type Subscription = { subscriptionId: string; status: string; plan: { code: string; name: string }; price: { amountMinor: number; currency: string; billingInterval: string }; currentPeriodStart: string | null; currentPeriodEnd: string | null; cancelAtPeriodEnd: boolean };
     type PlanChange = { subscriptionChangeId: string; changeType: "upgrade" | "downgrade"; status: string; toPlan: { name: string }; quote: { amountMinor: number; currency: string }; effectiveAt: string; nextAction: "checkout" | "wait_for_period_end" };
     type PaymentSourceConfig = { publicKey: string; widgetScriptUrl: string; fraudScriptUrl: string; acceptance: { token: string; permalink: string }; personalDataAuthorization: { token: string; permalink: string } };
     type PaymentSource = { type: "card" | "nequi"; displayHint: string | null; recurringConsentAt: string };
@@ -161,12 +162,14 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     let recoverySnapshot = "";
     let recoveryBusy = false;
     let recoveryGeneration = 0;
+    let posBusy = false;
+    let renewalBusy = false;
 
     const field = (name: string) => root.querySelector<HTMLElement>(`[data-field='${name}']`)!;
     const messageFrom = (body: unknown, fallback: string) => typeof body === "object" && body && "error" in body
       ? (body as { error?: { message?: string } }).error?.message ?? fallback
       : fallback;
-    const formatDate = (value: string | null) => value
+    const formatDate = (value: string | null) => value && Number.isFinite(Date.parse(value))
       ? new Intl.DateTimeFormat("es-CO", { dateStyle: "long" }).format(new Date(value))
       : "Por confirmar";
     const statusLabels: Record<string, string> = {
@@ -174,7 +177,57 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       suspended: "Suspendido", cancel_at_period_end: "Cancelación programada", pending: "Pendiente"
     };
 
+    const periodState = () => {
+      const start = Date.parse(currentSubscription?.currentPeriodStart ?? "");
+      const end = Date.parse(currentSubscription?.currentPeriodEnd ?? "");
+      if (!Number.isFinite(start) || !Number.isFinite(end) || start >= end) return "invalid";
+      const now = Date.now();
+      return end <= now ? "expired" : start > now ? "future" : "current";
+    };
+    // SSO authorizes active/restricted tenants with an active membership. An
+    // expired date alone must not override the server's grace/restriction policy.
+    const canOpenPos = () => Boolean(accessToken && accountLogin
+      && ["owner", "admin", "member", "billing"].includes(accountLogin.tenant.role)
+      && ["active", "restricted"].includes(accountLogin.tenant.status));
+    const renewalScheduled = () => Boolean(currentSubscription?.cancelAtPeriodEnd || currentSubscription?.status === "cancel_at_period_end");
+    const canManageRenewal = () => Boolean(accessToken && accountLogin && currentSubscription
+      && ["owner", "admin", "billing"].includes(accountLogin.tenant.role)
+      && ["active", "past_due", "grace", "restricted", "suspended", "cancel_at_period_end"].includes(currentSubscription.status)
+      && periodState() === "current");
+    const renderAccountActions = () => {
+      const managementAllowed = canManageRenewal();
+      const scheduled = renewalScheduled();
+      cancelButton.hidden = !managementAllowed || scheduled;
+      cancelButton.disabled = renewalBusy || cancelButton.hidden;
+      confirmCancel.disabled = renewalBusy || cancelButton.hidden;
+      reactivateButton.hidden = !managementAllowed || !scheduled;
+      reactivateButton.disabled = renewalBusy || reactivateButton.hidden;
+      if (canOpenPos() && !posBusy) {
+        posLink.href = posUrl;
+        posLink.removeAttribute("aria-disabled");
+        posLink.removeAttribute("tabindex");
+      } else {
+        posLink.setAttribute("aria-disabled", "true");
+        posLink.setAttribute("tabindex", "-1");
+        posLink.removeAttribute("href");
+      }
+      const messages: string[] = [];
+      if (accountLogin && currentSubscription) {
+        const period = periodState();
+        if (period === "expired") messages.push(`La suscripción presenta atraso: el período cubierto terminó el ${formatDate(currentSubscription.currentPeriodEnd)}. Revisa los períodos pendientes de recuperación.`);
+        else if (period === "invalid") messages.push("No pudimos confirmar un período vigente. Cancelar o reactivar la renovación no está disponible; actualiza Mi cuenta.");
+        else if (period === "future") messages.push("El período informado todavía no comenzó. Cancelar o reactivar la renovación no está disponible; actualiza Mi cuenta.");
+        if (!canOpenPos()) messages.push(accountLogin.tenant.status === "suspended"
+          ? "El acceso al POS está suspendido para esta empresa."
+          : "El acceso al POS no está disponible para esta empresa o identidad. Revisa su estado en Mi cuenta.");
+      }
+      field("access-guidance").textContent = messages.join(" ");
+      field("access-guidance").hidden = messages.length === 0;
+    };
+
     const renderAccount = (login: LoginResult, subscription: Subscription) => {
+      if (accountLogin !== login) { posBusy = false; renewalBusy = false; }
+      accountLogin = login;
       currentSubscription = subscription;
       field("tenant-name").textContent = login.tenant.name;
       field("principal-name").textContent = `${login.principal.displayName} · ${login.tenant.role}`;
@@ -187,8 +240,6 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       field("cancel-date").textContent = formatDate(subscription.currentPeriodEnd);
       const scheduled = subscription.cancelAtPeriodEnd || subscription.status === "cancel_at_period_end";
       const canManage = ["owner", "admin", "billing"].includes(login.tenant.role);
-      cancelButton.hidden = scheduled || !canManage;
-      reactivateButton.hidden = !scheduled || !canManage;
       planSection.hidden = scheduled || !canManage || subscription.status !== "active";
       paymentSourceSection.hidden = scheduled || !canManage || !["active", "past_due", "grace", "restricted", "suspended"].includes(subscription.status);
       recoverySection.hidden = !canManage || !["active", "past_due", "grace", "restricted", "suspended"].includes(subscription.status)
@@ -196,7 +247,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       planSelect.value = subscription.plan.code;
       accountStatus.textContent = scheduled ? `La renovación está cancelada desde el ${formatDate(subscription.currentPeriodEnd)}.` : "";
       accountStatus.dataset.state = scheduled ? "success" : "";
-      posLink.href = posUrl;
+      renderAccountActions();
       loginForm.hidden = true;
       panel.hidden = false;
     };
@@ -228,7 +279,18 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
           const body = await response.json();
           if (!isCurrent()) return;
           if (!response.ok) throw body;
-          renderAccount(accountLogin!, body as Subscription);
+          const tenantsResponse = await fetch(`${apiUrl}/v1/me/tenants`, { headers: { authorization: `Bearer ${token}` } });
+          const tenantsBody = await tenantsResponse.json();
+          if (!isCurrent()) return;
+          if (!tenantsResponse.ok) throw tenantsBody;
+          const tenantId = accountLogin!.tenant.tenantId.toLowerCase();
+          const tenant = Array.isArray(tenantsBody.tenants) ? tenantsBody.tenants.find((candidate: Tenant) =>
+            typeof candidate?.tenantId === "string" && candidate.tenantId.toLowerCase() === tenantId) : undefined;
+          if (typeof tenantsBody.activeTenantId !== "string" || tenantsBody.activeTenantId.toLowerCase() !== tenantId
+              || !tenant || typeof tenant.role !== "string" || typeof tenant.status !== "string") {
+            throw new Error("No pudimos confirmar la empresa de esta sesión. Vuelve a iniciar sesión.");
+          }
+          renderAccount({ ...accountLogin!, tenant }, body as Subscription);
         }
         if (recoverySection.hidden) return;
         const response = await fetch(`${apiUrl}/v1/me/subscription/recovery`, { headers: { authorization: `Bearer ${token}` } });
@@ -593,64 +655,82 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       }
     });
 
-    cancelButton.addEventListener("click", () => dialog.showModal());
+    cancelButton.addEventListener("click", () => {
+      renderAccountActions();
+      if (renewalBusy || !canManageRenewal() || renewalScheduled()) return;
+      dialog.showModal();
+    });
     confirmCancel.addEventListener("click", async (event) => {
       event.preventDefault();
-      confirmCancel.disabled = true;
+      if (renewalBusy || !canManageRenewal() || renewalScheduled()) { renderAccountActions(); dialog.close(); return; }
+      const token = accessToken;
+      const login = accountLogin;
+      const isCurrent = () => token === accessToken && login === accountLogin;
+      renewalBusy = true;
+      renderAccountActions();
       try {
-        const response = await fetch(`${apiUrl}/v1/me/subscription/cancel`, { method: "POST", headers: { authorization: `Bearer ${accessToken}` } });
+        const response = await fetch(`${apiUrl}/v1/me/subscription/cancel`, { method: "POST", headers: { authorization: `Bearer ${token}` } });
         const body = await response.json();
+        if (!isCurrent()) return;
         if (!response.ok) throw body;
-        currentSubscription = body as Subscription;
-        field("subscription-status").textContent = statusLabels[currentSubscription.status] ?? currentSubscription.status;
-        cancelButton.hidden = true;
-        reactivateButton.hidden = false;
-        planSection.hidden = true;
-        accountStatus.textContent = `La renovación quedó cancelada desde el ${formatDate(currentSubscription.currentPeriodEnd)}.`;
+        const subscription = body as Subscription;
+        renderAccount(login!, subscription);
+        accountStatus.textContent = `La renovación quedó cancelada desde el ${formatDate(subscription.currentPeriodEnd)}.`;
         accountStatus.dataset.state = "success";
         dialog.close();
       } catch (error) {
+        if (!isCurrent()) return;
         accountStatus.textContent = messageFrom(error, "No fue posible cancelar la renovación.");
         accountStatus.dataset.state = "error";
         dialog.close();
       } finally {
-        confirmCancel.disabled = false;
+        if (isCurrent()) { renewalBusy = false; renderAccountActions(); }
       }
     });
     reactivateButton.addEventListener("click", async () => {
-      reactivateButton.disabled = true;
+      if (renewalBusy || !canManageRenewal() || !renewalScheduled()) { renderAccountActions(); return; }
+      const token = accessToken;
+      const login = accountLogin;
+      const isCurrent = () => token === accessToken && login === accountLogin;
+      renewalBusy = true;
+      renderAccountActions();
       accountStatus.textContent = "Reactivando la renovación…";
       accountStatus.dataset.state = "";
       try {
-        const response = await fetch(`${apiUrl}/v1/me/subscription/reactivate`, { method: "POST", headers: { authorization: `Bearer ${accessToken}` } });
+        const response = await fetch(`${apiUrl}/v1/me/subscription/reactivate`, { method: "POST", headers: { authorization: `Bearer ${token}` } });
         const body = await response.json();
+        if (!isCurrent()) return;
         if (!response.ok) throw body;
-        currentSubscription = body as Subscription;
-        field("subscription-status").textContent = statusLabels[currentSubscription.status] ?? currentSubscription.status;
-        reactivateButton.hidden = true;
-        cancelButton.hidden = false;
-        planSection.hidden = currentSubscription.status !== "active";
-        accountStatus.textContent = "La renovación está activa nuevamente.";
+        renderAccount(login!, body as Subscription);
+        accountStatus.textContent = "La renovación automática vuelve a estar habilitada.";
         accountStatus.dataset.state = "success";
+        if (!paymentSourceSection.hidden) void preparePaymentSource();
       } catch (error) {
+        if (!isCurrent()) return;
         accountStatus.textContent = messageFrom(error, "No fue posible reactivar la renovación.");
         accountStatus.dataset.state = "error";
       } finally {
-        reactivateButton.disabled = false;
+        if (isCurrent()) { renewalBusy = false; renderAccountActions(); }
       }
     });
     posLink.addEventListener("click", async (event) => {
       event.preventDefault();
-      if (!accessToken || posLink.getAttribute("aria-disabled") === "true") return;
-      posLink.setAttribute("aria-disabled", "true");
+      if (!canOpenPos() || posLink.getAttribute("aria-disabled") === "true") return;
+      const token = accessToken;
+      const login = accountLogin;
+      const isCurrent = () => token === accessToken && login === accountLogin;
+      posBusy = true;
+      let navigating = false;
+      renderAccountActions();
       accountStatus.textContent = "Abriendo el POS…";
       accountStatus.dataset.state = "";
       try {
         const response = await fetch(`${apiUrl}/v1/auth/pos-sso`, {
           method: "POST",
-          headers: { authorization: `Bearer ${accessToken}` }
+          headers: { authorization: `Bearer ${token}` }
         });
         const body = await response.json();
+        if (!isCurrent() || !canOpenPos()) return;
         if (!response.ok) throw body;
         const destination = new URL(String(body.redirectUrl ?? ""));
         const expected = new URL(posUrl);
@@ -658,10 +738,13 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
           throw new Error("Destino POS inválido");
         }
         window.location.assign(destination.toString());
+        navigating = true;
       } catch (error) {
+        if (!isCurrent()) return;
         accountStatus.textContent = messageFrom(error, "No fue posible abrir el POS.");
         accountStatus.dataset.state = "error";
-        posLink.removeAttribute("aria-disabled");
+      } finally {
+        if (isCurrent()) { if (!navigating) posBusy = false; renderAccountActions(); }
       }
     });
     panel.querySelector<HTMLButtonElement>("[data-action='logout']")!.addEventListener("click", () => {
@@ -677,8 +760,11 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       recoveryStatus.textContent = "";
       recoveryStatus.dataset.state = "";
       clearRecoveryLinks();
-      posLink.removeAttribute("aria-disabled");
+      posBusy = false;
+      renewalBusy = false;
       currentSubscription = null;
+      renderAccountActions();
+      dialog.close();
       pendingChange = null;
       changeIdempotencyKey = "";
       checkoutIdempotencyKey = "";
@@ -711,6 +797,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
   .login-form{display:grid;gap:12px}
   .password-recovery-link{justify-self:start;color:var(--green);font-size:.9rem;font-weight:750;text-decoration-thickness:1px;text-underline-offset:3px}
   .account-panel{display:grid;gap:22px}
+  .actions a[aria-disabled="true"]{opacity:.55;cursor:not-allowed}
   .recovery-management{display:grid;gap:12px;border-top:1px solid var(--line);padding-top:18px}.recovery-management h3,.recovery-management p{margin:0}.recovery-management p{line-height:1.5}.recovery-management .actions{flex-wrap:wrap}
   .account-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;border-bottom:1px solid var(--line);padding-bottom:18px}
   .account-heading h2{margin:0;font-family:Georgia,"Times New Roman",serif;font-size:2rem;font-weight:500;letter-spacing:0}
