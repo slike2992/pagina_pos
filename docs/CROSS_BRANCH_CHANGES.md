@@ -42,6 +42,15 @@
   deshabilitados plan, tarjeta, renovación y POS; al completarse recuperan su
   disponibilidad anterior. No se ejecuta el ciclo real de cancelación/cobro.
 
+Cierre posterior de este bloque: commit 221c59b publicado y build aislado
+Ubuntu con Node 24.22.2/pnpm 11.25.0, Astro check/build sin incidencias y suite
+completa 151/151. Activado sólo dist en staging por enlace atómico, sin reiniciar
+API, POS o worker. Navegador real con QA Recurrencia: progreso y bloqueo temporal,
+«Suscripción actualizada», fin 10 de diciembre y cancelación preservados;
+controles restaurados. SQL conserva un pago y una orden REN. Runtime 8ae78d53ca20,
+cuatro servicios activos y edge HTTPS aprobado (21 variantes/26 preflights).
+La evidencia local sintética anterior se distingue de esta aceptación real.
+Informe compartido en pos_saas: docs/QA_RENEWAL_CYCLE_2026-11-09.md.
 ## 2026-11-10 — Recuperación con sesión vencida
 
 - Seguimiento: una renovación anticipada ya pagada puede adelantar el inicio
