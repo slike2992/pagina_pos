@@ -3,7 +3,8 @@
 ## Desarrollo vigente
 
 - [Recuperación de suscripciones](SUBSCRIPTION_RECOVERY.md): continuidad desde
-  vencimiento previo, contrato de oferta/checkout, pagos seriales y límites de acceso.
+  vencimiento previo, DTO opcional `renewalIssue`, aviso de renovación rechazada
+  con cobertura vigente, contrato de oferta/checkout y límites de acceso.
 
 - [Calidad, conversión y accesibilidad](WEB_QUALITY_2026-10-26.md): validación compartida, responsive y peso antes/después.
 

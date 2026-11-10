@@ -14,6 +14,15 @@ vigencia y estado; no renueva tokens ni pagos. Una compra pagada o vencida no se
 reanuda. En staging/producción la clave inicial llega por correo, nunca por las
 rutas de desarrollo. Publicar primero la API y el allowlist del proxy, luego web.
 
+Mi cuenta admite el campo opcional nullable `renewalIssue` de
+`GET /v1/me/subscription`: un rechazo definitivo del próximo período se muestra
+con importe, fechas UTC y referencia, separado de la cobertura actual. Ausente
+o `null` conserva compatibilidad; un detalle malformado no se aplica a la vista
+confirmada. La recuperación puede consultarse con cobertura vigente, pero sólo
+la oferta del servidor habilita preparar el pago con el POST existente. La API
+debe reutilizar la orden rechazada y bloquear pagos pendientes, ambiguos o ya
+aprobados. Ver [DTO y recorrido](docs/SUBSCRIPTION_RECOVERY.md).
+
 ## Desarrollo
 
 Requiere Node >=22.12; esta revisión utiliza Node 24.19. No usar el Node 18

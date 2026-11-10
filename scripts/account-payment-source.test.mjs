@@ -150,18 +150,20 @@ async function account(options = {}) {
     '#confirm-cancel', "[data-section='plan-management']", '#target-plan', "[data-action='change-plan']",
     '#plan-dialog', '#confirm-plan-change', "[data-section='payment-source']", "[data-action='add-payment-source']",
     '.payment-source-status', "[data-acceptance='terms']", "[data-acceptance='personal-data']",
-    "[data-section='recovery']", '[data-recovery-summary]', '.recovery-status',
+    "[data-section='recovery']", "[data-section='renewal-issue']", '[data-recovery-summary]', '.recovery-status',
     "[data-action='prepare-recovery']", "[data-action='pay-recovery']", "[data-action='recovery-result']", "[data-action='refresh-recovery']",
     "[data-acceptance='recurring']", "button[type='submit']", "[data-action='logout']", '#email',
     ...['tenant-name', 'principal-name', 'tenant-status', 'plan', 'price', 'subscription-status', 'period-end',
       'cancel-date', 'payment-source-current', 'wompi-terms', 'wompi-personal-data', 'recurring-consent',
-      'target-plan-name', 'plan-change-copy', 'recovery-amount', 'recovery-period', 'recovery-guidance', 'access-guidance'].map(name => `[data-field='${name}']`)];
+      'target-plan-name', 'plan-change-copy', 'recovery-amount', 'recovery-period', 'recovery-guidance', 'access-guidance',
+      'renewal-issue-amount', 'renewal-issue-period', 'renewal-issue-reference', 'renewal-issue-recorded'].map(name => `[data-field='${name}']`)];
   for (const selector of selectors) h.elements.set(selector, h.element());
   const get = selector => h.elements.get(selector);
   const loginForm = get('#login-form');
   loginForm.reset = () => { loginForm.values = []; };
   get('#tenant-field').hidden = true;
   get('.account-panel').hidden = true;
+  get("[data-section='renewal-issue']").hidden = true;
   get('#cancel-dialog').hidden = true;
   get('#plan-dialog').hidden = true;
   const button = get("[data-action='add-payment-source']");
@@ -1473,5 +1475,213 @@ test('recovery checkout 401 uses the same canonical reset and cannot sign out a 
     if (!stale) assert.match(h.get('.status').textContent, /expiró/);
     else assert.doesNotMatch(h.get('.status').textContent, /expiró/);
     assert.equal(recoveryControl(h, 'pay-recovery').hidden, true); assert.equal(recoveryPosts(h).length, 1);
+  }
+});
+
+const renewalIssueFixture = (changes = {}) => ({
+  subscriptionPeriodId: '33333333-3333-4333-8333-333333333333', status: 'failed', paymentStatus: 'declined',
+  periodStart: '2030-02-01T00:00:00.000Z', periodEnd: '2030-03-01T00:00:00.000Z',
+  amountMinor: 7990017, currency: 'COP', reference: 'QA-RENEWAL-DECLINED', recordedAt: '2026-11-10T00:00:00.000Z', ...changes,
+});
+const issueSection = h => h.get("[data-section='renewal-issue']");
+const issueField = (h, name) => h.get(`[data-field='renewal-issue-${name}']`);
+const renewalOfferFixture = (changes = {}) => {
+  const issue = renewalIssueFixture();
+  return recoveryOfferFixture({ periodStart: issue.periodStart, periodEnd: issue.periodEnd,
+    amountMinor: issue.amountMinor, needsFurtherRecovery: false, ...changes });
+};
+const renewalAccount = (options = {}) => account({ subscription: { renewalIssue: renewalIssueFixture() },
+  recovery: () => reply(renewalOfferFixture()),
+  checkout: () => reply(recoveryCheckoutFixture(renewalOfferFixture(), { reference: renewalIssueFixture().reference })), ...options });
+
+test('an absent or null renewalIssue preserves compatibility and hides all issue details', async () => {
+  for (const subscription of [{}, { renewalIssue: null }]) {
+    const h = await account({ subscription }); await h.login();
+    assert.equal(h.get('.account-panel').hidden, false); assert.equal(issueSection(h).hidden, true);
+    for (const name of ['amount', 'period', 'reference', 'recorded']) assert.equal(issueField(h, name).textContent, '');
+    assert.equal(h.get("[data-section='recovery']").hidden, true);
+    assert.equal(h.calls.filter(call => call.url.endsWith('/subscription/recovery')).length, 0);
+  }
+});
+
+test('a confirmed declined renewal displays exact cents, UTC dates and reference apart from active coverage', async () => {
+  const h = await renewalAccount(); await h.login();
+  assert.equal(issueSection(h).hidden, false); assert.equal(issueField(h, 'amount').textContent, '79.900,17 COP');
+  assert.match(issueField(h, 'period').textContent, /febrero.*2030.*marzo.*2030.*UTC/);
+  assert.match(issueField(h, 'recorded').textContent, /noviembre.*2026.*UTC/);
+  assert.equal(issueField(h, 'reference').textContent, 'QA-RENEWAL-DECLINED');
+  assert.equal(h.get("[data-field='period-end']").textContent,
+    new Intl.DateTimeFormat('es-CO', { dateStyle: 'long' }).format(new Date(renewalIssueFixture().periodStart)));
+  assert.equal(h.get("[data-field='subscription-status']").textContent, 'Activo');
+  assert.equal(h.get("[data-section='recovery']").hidden, false);
+  assert.equal(recoveryControl(h, 'prepare-recovery').disabled, false);
+  assert.equal(recoveryPosts(h).length, 0); assert.equal(h.appended.length, 0); assert.deepEqual([...h.storage], []);
+  const markup = page.match(/<section[^>]*data-section="renewal-issue"[\s\S]*?<\/section>/)?.[0];
+  assert.match(markup, /aria-labelledby="renewal-issue-heading"/);
+  assert.match(markup, /cobertura actual.*vencimiento.*aún no amplía/);
+  assert.match(markup, /Registrar otra tarjeta no confirma/);
+});
+
+test('all renewalIssue fields are required and malformed details never become a confirmed account', async () => {
+  const invalid = [false, true, 1, 'failed', [], {}, ...Object.keys(renewalIssueFixture()).map(key => {
+    const value = renewalIssueFixture(); delete value[key]; return value;
+  }), ...[
+    { subscriptionPeriodId: 'not-a-uuid' }, { subscriptionPeriodId: null },
+    { status: 'pending' }, { status: ['failed'] }, { paymentStatus: 'approved' }, { paymentStatus: 'error' },
+    { periodStart: '2030-02-30T00:00:00.000Z' }, { periodStart: '2030-02-01' },
+    { periodEnd: '2030-02-01T00:00:00.000Z' }, { periodEnd: '2029-02-01T00:00:00.000Z' },
+    { periodEnd: '2030-03-01T00:00:00+00:00' }, { periodEnd: null },
+    { recordedAt: '2026-02-30T00:00:00Z' }, { recordedAt: 'today' }, { recordedAt: 1794268800000 },
+    { amountMinor: '7990017' }, { amountMinor: 0 }, { amountMinor: -1 }, { amountMinor: 7990017.5 },
+    { amountMinor: Number.MAX_SAFE_INTEGER + 1 }, { amountMinor: null },
+    { currency: 'USD' }, { currency: ['COP'] }, { reference: null }, { reference: '' },
+    { reference: '   ' }, { reference: ' QA ' }, { reference: 'QA\nREF' },
+  ].map(renewalIssueFixture)];
+  for (const renewalIssue of invalid) {
+    const h = await account({ subscription: { renewalIssue } }); await h.login();
+    assert.equal(h.get('.account-panel').hidden, true, JSON.stringify(renewalIssue));
+    assert.equal(h.get('#login-form').hidden, false); assert.equal(issueSection(h).hidden, true);
+    assert.match(h.get('.status').textContent, /No pudimos comprobar.*renovación rechazada/);
+    assert.equal(h.calls.filter(call => call.url.endsWith('/subscription/recovery')).length, 0);
+    assert.equal(recoveryPosts(h).length, 0); assert.equal(h.appended.length, 0);
+  }
+});
+
+test('a malformed refreshed issue preserves the confirmed account and cannot enable a payment', async () => {
+  for (const initialIssue of [null, renewalIssueFixture()]) {
+    const h = await renewalAccount({ subscription: { renewalIssue: initialIssue } }); await h.login();
+    const previous = h.get("[data-field='period-end']").textContent;
+    h.setSubscription({ renewalIssue: renewalIssueFixture({ amountMinor: '7990017' }), currentPeriodEnd: '2035-01-01T00:00:00Z' });
+    await recoveryClick(h, 'refresh-recovery'); await recoveryClick(h);
+    assert.equal(h.get("[data-field='period-end']").textContent, previous);
+    assert.equal(issueSection(h).hidden, !initialIssue); assert.equal(h.get('.account-status').dataset.state, 'error');
+    assert.equal(recoveryControl(h, 'pay-recovery').hidden, true); assert.equal(recoveryPosts(h).length, 0);
+    h.setSubscription({ renewalIssue: initialIssue }); await recoveryClick(h, 'refresh-recovery');
+    assert.equal(h.get('.account-status').dataset.state, 'success');
+  }
+});
+
+test('an active renewal issue obeys every server block including not_due without preparing a payment', async () => {
+  for (const reason of ['not_due', 'payment_pending', 'requires_review', 'cancellation', 'plan_change_pending']) {
+    const h = await renewalAccount({ recovery: () => reply(renewalOfferFixture({ status: 'blocked', blockReason: reason })) });
+    await h.login(); await recoveryClick(h);
+    assert.equal(issueSection(h).hidden, false); assert.equal(h.get("[data-section='recovery']").hidden, false);
+    assert.equal(recoveryControl(h, 'prepare-recovery').disabled, true);
+    assert.equal(recoveryControl(h, 'pay-recovery').hidden, true); assert.equal(recoveryPosts(h).length, 0);
+    if (reason === 'not_due') assert.match(h.get('.recovery-status').textContent, /no está habilitada por el servidor/);
+  }
+});
+
+test('an active declined renewal prepares only the existing recovery contract and retains the reviewed order', async () => {
+  const h = await renewalAccount(); await h.login(); await recoveryClick(h);
+  assert.equal(recoveryPosts(h).length, 1);
+  assert.deepEqual(JSON.parse(recoveryPosts(h)[0].body), { type: 'recovery', subscriptionId: recoverySubscriptionId,
+    expectedPeriodStart: renewalIssueFixture().periodStart });
+  const url = new URL(recoveryControl(h, 'pay-recovery').href);
+  assert.equal(url.searchParams.get('reference'), renewalIssueFixture().reference);
+  assert.equal(url.searchParams.get('amount-in-cents'), '7990017');
+  assert.equal(issueSection(h).hidden, false); assert.equal(h.get("[data-field='subscription-status']").textContent, 'Activo');
+  assert.match(h.get('.recovery-status').textContent, /confirmará en el servidor/); assert.deepEqual(h.navigations, []);
+});
+
+test('a renewal recovery offer or checkout cannot substitute amount, period, reference or period ID', async () => {
+  for (const changes of [{ amountMinor: 7990018 }, { periodStart: '2030-02-02T00:00:00Z' },
+    { periodEnd: '2030-04-01T00:00:00Z' }]) {
+    const h = await renewalAccount({ recovery: () => reply(renewalOfferFixture(changes)) });
+    await h.login(); await recoveryClick(h);
+    assert.equal(h.get('.recovery-status').dataset.state, 'error'); assert.equal(recoveryPosts(h).length, 0);
+    assert.equal(recoveryControl(h, 'prepare-recovery').disabled, true);
+  }
+  for (const changes of [{ reference: 'OTHER-ORDER' },
+    { recovery: { ...recoveryCheckoutFixture(renewalOfferFixture()).recovery, subscriptionPeriodId: recoverySessionId } },
+    { amountInCents: 7990018 }]) {
+    const h = await renewalAccount({ checkout: () => reply(recoveryCheckoutFixture(renewalOfferFixture(),
+      { reference: renewalIssueFixture().reference, ...changes })) });
+    await h.login(); await recoveryClick(h);
+    assert.equal(h.get('.recovery-status').dataset.state, 'error'); assert.equal(recoveryPosts(h).length, 1);
+    assert.equal(recoveryControl(h, 'pay-recovery').hidden, true); assert.equal(recoveryControl(h, 'pay-recovery').href, undefined);
+  }
+});
+
+test('server approval followed by refresh clears the issue and payment links and updates coverage together', async () => {
+  const h = await renewalAccount(); await h.login(); await recoveryClick(h);
+  assert.equal(recoveryControl(h, 'pay-recovery').hidden, false);
+  const offerReads = h.calls.filter(call => call.url.endsWith('/subscription/recovery')).length;
+  h.setSubscription({ renewalIssue: null, currentPeriodStart: renewalIssueFixture().periodStart,
+    currentPeriodEnd: renewalIssueFixture().periodEnd });
+  await recoveryClick(h, 'refresh-recovery'); await recoveryClick(h);
+  assert.equal(issueSection(h).hidden, true);
+  for (const name of ['amount', 'period', 'reference', 'recorded']) assert.equal(issueField(h, name).textContent, '');
+  assert.equal(h.get("[data-field='period-end']").textContent,
+    new Intl.DateTimeFormat('es-CO', { dateStyle: 'long' }).format(new Date(renewalIssueFixture().periodEnd)));
+  assert.equal(h.get("[data-section='recovery']").hidden, true); assert.equal(recoveryControl(h, 'pay-recovery').hidden, true);
+  assert.equal(recoveryControl(h, 'pay-recovery').href, undefined);
+  assert.equal(h.calls.filter(call => call.url.endsWith('/subscription/recovery')).length, offerReads);
+  assert.equal(recoveryPosts(h).length, 1);
+});
+
+test('members may read a renewal issue without acquiring billing permissions', async () => {
+  const h = await renewalAccount({ role: 'member' }); await h.login(); await recoveryClick(h);
+  assert.equal(issueSection(h).hidden, false); assert.equal(h.get("[data-section='recovery']").hidden, true);
+  assert.equal(recoveryPosts(h).length, 0); assert.equal(h.calls.filter(call => call.url.endsWith('/subscription/recovery')).length, 0);
+});
+
+test('logout and current-session 401 clear all renewal issue data and subsequent login cannot inherit it', async () => {
+  for (const expired of [false, true]) {
+    let deny = false;
+    const h = await renewalAccount({ readSubscription: (_call, view) => deny ? unauthorized() : reply(view) });
+    await h.login(); assert.equal(issueSection(h).hidden, false);
+    if (expired) { deny = true; await recoveryClick(h, 'refresh-recovery'); } else await h.logout();
+    assert.equal(issueSection(h).hidden, true); assert.equal(h.get('.account-panel').hidden, true);
+    for (const name of ['amount', 'period', 'reference', 'recorded']) assert.equal(issueField(h, name).textContent, '');
+    deny = false; h.setSubscription({ renewalIssue: null }); await h.login();
+    assert.equal(h.get('.account-panel').hidden, false); assert.equal(issueSection(h).hidden, true);
+  }
+});
+
+test('late login and refresh subscription bodies cannot restore or remove another session renewal issue', async () => {
+  for (const phase of ['login', 'refresh']) for (const delayedJson of [false, true]) for (const oldIssue of [null, renewalIssueFixture()]) {
+    let hold = phase === 'login'; const response = deferred(); let oldView;
+    const h = await renewalAccount({ subscription: { renewalIssue: oldIssue }, readSubscription: (_call, view) => {
+      if (!hold) return reply(view);
+      oldView = { ...view };
+      return delayedJson ? { ok: true, status: 200, json: () => response.promise } : response.promise;
+    } });
+    let pending;
+    if (phase === 'login') { pending = h.login(); await flush(); }
+    else { await h.login(); hold = true; await recoveryClick(h, 'refresh-recovery'); }
+    await h.logout(); hold = false;
+    const newIssue = oldIssue ? null : renewalIssueFixture({ reference: 'NEW-SESSION' });
+    h.setSubscription({ renewalIssue: newIssue }); await h.login();
+    const before = h.calls.length;
+    response.resolve(delayedJson ? oldView : reply(oldView)); if (pending) await pending; await flush();
+    assert.equal(h.get('.account-panel').hidden, false); assert.equal(issueSection(h).hidden, !newIssue);
+    assert.equal(issueField(h, 'reference').textContent, newIssue?.reference ?? '');
+    assert.equal(h.calls.length, before); assert.equal(recoveryControl(h, 'refresh-recovery').disabled, false);
+  }
+});
+
+test('server checkout denials for pending, ambiguous or approved payments never create a payable link', async () => {
+  for (const message of ['Pago pendiente de confirmación', 'Cobro requiere revisión', 'La orden ya está pagada']) {
+    const h = await renewalAccount({ checkout: () => reply({ error: { message } }, 409) });
+    await h.login(); await recoveryClick(h);
+    assert.equal(recoveryPosts(h).length, 1); assert.equal(issueSection(h).hidden, false);
+    assert.equal(recoveryControl(h, 'pay-recovery').hidden, true); assert.equal(recoveryControl(h, 'pay-recovery').href, undefined);
+    assert.equal(h.get('.recovery-status').textContent, message); assert.equal(h.get('.recovery-status').dataset.state, 'error');
+  }
+});
+
+test('a login subscription 401 resets issue data while a stale 401 cannot close a later login', async () => {
+  for (const stale of [false, true]) {
+    const response = deferred(); let hold = true;
+    const h = await renewalAccount({ readSubscription: (_call, view) => hold ? response.promise : reply(view) });
+    const pending = h.login(); await flush();
+    if (stale) { await h.logout(); hold = false; await h.login(); }
+    response.resolve(unauthorized()); await pending;
+    assert.equal(h.get('.account-panel').hidden, !stale); assert.equal(issueSection(h).hidden, !stale);
+    if (!stale) {
+      assert.match(h.get('.status').textContent, /expiró/);
+      for (const name of ['amount', 'period', 'reference', 'recorded']) assert.equal(issueField(h, name).textContent, '');
+    } else assert.equal(issueField(h, 'reference').textContent, renewalIssueFixture().reference);
   }
 });

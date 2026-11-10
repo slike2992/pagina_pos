@@ -1,5 +1,40 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-10 — Aviso y recuperación del próximo período rechazado
+
+- Mi cuenta consume `renewalIssue?: {subscriptionPeriodId, status:'failed',
+  paymentStatus:'declined', periodStart, periodEnd, amountMinor, currency:'COP',
+  reference, recordedAt} | null` de GET `/v1/me/subscription`. Ausente/null
+  conserva compatibilidad; UUID, tipos, estados, fechas UTC reales/intervalo,
+  entero seguro positivo, moneda y referencia se validan antes de aplicar la
+  respuesta. Un detalle malformado no se convierte en estado confirmado.
+- El aviso separa el próximo período rechazado de la cobertura actual; muestra
+  importe con centavos, fechas UTC y referencia, y guía a recuperación/soporte.
+  Recuperación se consulta también en active con issue, con los roles existentes.
+  `blocked/not_due` indica no habilitado por servidor; ningún bloqueo se elude.
+- Oferta y checkout se contrastan con el rechazo revisado (importe, período,
+  referencia e ID de período). Conserva GET/POST e idempotencia existentes, sin
+  importe calculado ni endpoints nuevos. La API coordinada debe reutilizar la
+  misma orden tras rechazo definitivo incluso antes del corte y bloquear
+  pendientes/ambiguos/aprobados. No se decide ni confirma un pago en JavaScript.
+- Actualizar con `renewalIssue: null` retira aviso/datos y enlaces anteriores;
+  logout/401 actual también los limpian. Login, refresh y respuestas JSON/HTTP
+  tardías conservan aislamiento mediante generaciones y guardas de sesión.
+- Consumidores: portal web y API SaaS. Publicar primero API y su recuperación;
+  el contrato compartido/root lo documenta el integrador. Sin migraciones,
+  dependencias, CSS adicional, cambios de retorno de pago, términos o marca.
+- Validación Node24.22.1: 104/104 pruebas de cuenta (13 nuevas), 129/129 junto
+  al retorno y 157/157 de las cinco suites de lógica sin auditoría SEO. Astro
+  check: 46 archivos, cero errores/advertencias/hints. Build detenido en
+  prerender por `Named export 'parseCookie' not found` del módulo `cookie`,
+  incidencia Windows ya documentada; HTML/SEO final sin validar. No se alteran
+  dependencias para ocultarla. `git diff --check` aprobado.
+- Pruebas con DOM/HTTP/SDK simulados; ver [contrato y recorrido](SUBSCRIPTION_RECOVERY.md).
+  Aceptación con sesión en navegador, backend/proveedor y publicación quedan
+  para el padre. Checkout aislado `artifacts/web-qa-recovery`, sin commit ni push.
+  Coordinación root: control remoto intentado sin acceso; diagnóstico offline
+  alineado y referencias web locales sin entrantes, sin certificar fetch nuevo.
+
 ## 2026-11-10 — Recuperación de checkout tras rechazo definitivo
 
 - El retorno distingue «Consultar de nuevo» (sólo lectura) de intentar otro

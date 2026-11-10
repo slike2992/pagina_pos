@@ -1,9 +1,74 @@
-# Recuperación de períodos vencidos
+# Recuperación de períodos y renovación rechazada
 
 La política aprobada conserva continuidad desde el vencimiento anterior. Cada
 checkout compra un solo período consecutivo; la web no calcula sus fechas ni
 prorratea importes. Un período pagado que todavía termina en el pasado no pone
 la suscripción al día ni concede acceso al POS.
+
+## Próximo período rechazado con cobertura actual
+
+`GET /v1/me/subscription` incorpora el campo **opcional y nullable**
+`renewalIssue`. Ausente o `null` mantiene el recorrido anterior. Un objeto válido
+contiene todos estos campos:
+
+```ts
+renewalIssue?: {
+  subscriptionPeriodId: string; // UUID
+  status: 'failed';
+  paymentStatus: 'declined';
+  periodStart: string; // ISO UTC con Z
+  periodEnd: string;   // ISO UTC con Z, posterior al inicio
+  amountMinor: number; // entero seguro positivo en centavos
+  currency: 'COP';
+  reference: string;   // no vacía, sin espacios exteriores ni controles
+  recordedAt: string;  // ISO UTC con Z
+} | null;
+```
+
+La web valida tipos, UUID, estados exactos, fechas reales, intervalo, importe,
+moneda y referencia antes de aplicar la respuesta de suscripción. No convierte
+fechas imposibles, cadenas numéricas o estados pendientes/ambiguos/aprobados en
+un rechazo confirmado. En login, un detalle inválido impide abrir la cuenta; en
+actualización conserva la vista confirmada y muestra error sin enlace de pago.
+La misma validación se aplica a respuestas de cancelar/reactivar.
+
+El aviso muestra importe con centavos, período y registro en UTC y referencia;
+el estado y vencimiento de la cobertura actual permanecen en su resumen separado.
+No amplía cobertura ni cambia permisos por observar un rechazo. Reutiliza los
+estilos y la sección de recuperación: owner/admin/billing pueden consultar la
+oferta también en `active` con `renewalIssue`, sin esperar al corte. Una oferta
+`blocked/not_due` indica que la recuperación aún no está habilitada por el
+servidor; los demás bloqueos conservan sus mensajes y nunca preparan checkout.
+Una membresía de lectura puede ver el aviso sin adquirir permisos de billing.
+
+La oferta habilitada debe coincidir en importe y fechas con el rechazo revisado;
+el checkout debe conservar también referencia e ID de período. Se usa el mismo
+GET de oferta y POST `/v1/me/billing/checkout-sessions` con
+`{type:'recovery', subscriptionId, expectedPeriodStart}` y su idempotencia actual.
+No se envía un importe nuevo ni se añaden endpoints. La API coordinada debe
+recuperar **la misma orden** tras rechazo definitivo, incluso antes del corte,
+y rechazar cualquier pago pendiente, ambiguo o con aprobación histórica. Estas
+garantías financieras corresponden al backend; JavaScript sólo presenta su
+oferta y comprueba coherencia de las respuestas.
+
+Tras la aprobación y aplicación, una lectura autenticada con `renewalIssue: null`
+retira el aviso y sus datos, actualiza cobertura y elimina enlaces anteriores.
+El retorno de Wompi y registrar otra tarjeta no confirman ese cambio. Logout o
+401 actual limpian también los detalles. Generaciones de login/recuperación y
+guardas de sesión descartan HTTP, JSON y errores tardíos de otra sesión.
+
+Publicar primero el contrato y la recuperación de la API; una API anterior que
+omita el campo sigue siendo compatible y no muestra el aviso. El contrato HTTP
+compartido se documenta en `pos_saas` por el integrador; este checkout sólo
+modifica la web. Sin migraciones, nuevas dependencias o cambios de términos.
+
+Evidencia local de este bloque (Node24.22.1): 104/104 pruebas de cuenta,
+129/129 junto al retorno, 157/157 en las cinco suites de lógica; Astro check
+sin errores, advertencias ni hints en 46 archivos. Build detenido en prerender
+por `Named export 'parseCookie' not found` de `cookie`, incidencia ya descrita
+abajo. No acredita HTML final/SEO, navegador autenticado, API/SQL, proveedor ni
+despliegue. El padre realizará la aceptación de interfaz y revisará antes de
+commit/push.
 
 ## Contrato y recorrido
 
@@ -13,7 +78,8 @@ Implementado con el contrato comunicado por Herschel y documentado en
 `SubscriptionRecoveryStatus`). Publicar primero API y el allowlist del proxy.
 
 1. Mi cuenta conserva el login y la selección de empresa existentes. Para los
-   roles owner/admin/billing y estados vencidos admitidos consulta
+   roles owner/admin/billing y estados vencidos admitidos (o `active` con rechazo
+   de renovación validado) consulta
    `GET /v1/me/subscription/recovery` con Bearer. Es una oferta sin DML.
 2. La oferta contiene `subscriptionId`, estado `available|pending_payment|blocked`,
    `blockReason`, `periodStart`, `periodEnd`, `amountMinor`, `currency`,

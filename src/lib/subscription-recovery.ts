@@ -36,11 +36,38 @@ export type RecoveryOffer = {
   expiresAt: string | null;
 };
 
+export type RenewalIssue = {
+  subscriptionPeriodId: string;
+  status: 'failed';
+  paymentStatus: 'declined';
+  periodStart: string;
+  periodEnd: string;
+  amountMinor: number;
+  currency: 'COP';
+  reference: string;
+  recordedAt: string;
+};
+
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const utc = (value: unknown): value is string => typeof value === 'string'
   && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/.test(value)
   && Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0, 19) === value.slice(0, 19);
 const object = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
+
+export function readRenewalIssue(value: unknown): RenewalIssue | null {
+  if (value === undefined || value === null) return null;
+  if (!object(value) || Array.isArray(value)
+      || typeof value.subscriptionPeriodId !== 'string' || !uuid.test(value.subscriptionPeriodId)
+      || value.status !== 'failed' || value.paymentStatus !== 'declined'
+      || !utc(value.periodStart) || !utc(value.periodEnd) || !utc(value.recordedAt)
+      || Date.parse(value.periodEnd) <= Date.parse(value.periodStart)
+      || !Number.isSafeInteger(value.amountMinor) || Number(value.amountMinor) <= 0 || value.currency !== 'COP'
+      || typeof value.reference !== 'string' || !value.reference.trim()
+      || value.reference !== value.reference.trim() || /[\u0000-\u001f\u007f]/.test(value.reference)) {
+    throw new Error('No pudimos comprobar el detalle de la renovación rechazada. Actualiza Mi cuenta.');
+  }
+  return value as RenewalIssue;
+}
 
 export function readRecoveryOffer(value: unknown, subscriptionId: string): RecoveryOffer {
   if (!object(value) || value.type !== 'recovery' || typeof value.subscriptionId !== 'string'
