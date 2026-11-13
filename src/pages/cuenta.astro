@@ -39,13 +39,13 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       <section class="plan-management" data-section="plan-management" hidden>
         <div>
           <label for="target-plan">Cambiar plan</label>
-          <select id="target-plan">
-            <option value="basic">Básico</option>
-            <option value="professional">Profesional</option>
-            <option value="enterprise">Empresarial</option>
-          </select>
+          <select id="target-plan" disabled aria-describedby="plan-catalog-status"><option value="">Consultando planes publicados…</option></select>
         </div>
-        <button class="button secondary" data-action="change-plan" type="button">Revisar cambio</button>
+        <button class="button secondary" data-action="change-plan" type="button" disabled>Revisar cambio</button>
+        <div class="plan-catalog-feedback">
+          <p id="plan-catalog-status" class="status" role="status" aria-live="polite">Consultando planes publicados…</p>
+          <button class="text-button" data-action="retry-plans" type="button" hidden>Reintentar consulta de planes</button>
+        </div>
       </section>
       <section class="recovery-management" data-section="recovery" hidden aria-labelledby="recovery-heading">
         <h3 id="recovery-heading">Recuperar períodos pendientes</h3>
@@ -114,6 +114,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
   <script>
     import { createIdempotencyKey } from "../scripts/client-idempotency";
     import { prepareWompiSession } from "../lib/wompi-client";
+    import { loadAccountPlans, selectAccountPlan, renderAccountPlans, type AccountPlanCatalog } from "../lib/account-plans";
     import { readRenewalIssue, readRecoveryOffer, readRecoveryCheckout, recoveryAmount, recoveryDate, recoveryPeriodText, rememberRecoveryCheckout, type RenewalIssue, type RecoveryOffer, type RecoveryCheckout } from "../lib/subscription-recovery";
 
     type Tenant = { tenantId: string; tenantKey: string; name: string; status: string; role: string };
@@ -143,6 +144,8 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     const changePlanButton = root.querySelector<HTMLButtonElement>("[data-action='change-plan']")!;
     const planDialog = root.querySelector<HTMLDialogElement>("#plan-dialog")!;
     const confirmPlanChange = root.querySelector<HTMLButtonElement>("#confirm-plan-change")!;
+    const planCatalogStatus = root.querySelector<HTMLElement>("#plan-catalog-status")!;
+    const retryPlans = root.querySelector<HTMLButtonElement>("[data-action='retry-plans']")!;
     const paymentSourceSection = root.querySelector<HTMLElement>("[data-section='payment-source']")!;
     const paymentSourceButton = root.querySelector<HTMLButtonElement>("[data-action='add-payment-source']")!;
     const paymentSourceStatus = root.querySelector<HTMLElement>(".payment-source-status")!;
@@ -179,6 +182,13 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     let renewalBusy = false;
     let subscriptionRefreshing = false;
     let planBusy = false;
+    let catalogBusy = false;
+    let catalogGeneration = 0;
+    let planCatalog: AccountPlanCatalog | null = null;
+    let planNames: Record<string, string> = Object.create(null);
+    let catalogSelection = "";
+    let catalogOwner: { token: string; tenantId: string; subscriptionId: string; currency: string; billingInterval: string; planCode: string } | null = null;
+    let reviewedPlan: { target: string; subscription: Subscription; login: LoginResult; token: string } | null = null;
 
     const field = (name: string) => root.querySelector<HTMLElement>(`[data-field='${name}']`)!;
     const messageFrom = (body: unknown, fallback: string) => typeof body === "object" && body && "error" in body
@@ -219,9 +229,12 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       reactivateButton.hidden = !managementAllowed || !scheduled;
       reactivateButton.disabled = subscriptionRefreshing || renewalBusy || reactivateButton.hidden;
       recoveryRefresh.disabled = recoveryBusy || renewalBusy || posBusy || paymentSourceBusy || planBusy;
-      planSelect.disabled = subscriptionRefreshing || planBusy;
-      changePlanButton.disabled = subscriptionRefreshing || planBusy;
-      confirmPlanChange.disabled = subscriptionRefreshing || planBusy;
+      const planAllowed = Boolean(accountLogin && currentSubscription && !planSection.hidden
+        && ["owner", "admin", "billing"].includes(accountLogin.tenant.role));
+      planSelect.disabled = subscriptionRefreshing || planBusy || catalogBusy || !planCatalog || !planAllowed;
+      changePlanButton.disabled = subscriptionRefreshing || planBusy || !planAllowed || (pendingChange?.nextAction !== "checkout" && (catalogBusy || !planCatalog));
+      confirmPlanChange.disabled = subscriptionRefreshing || planBusy || catalogBusy || !planCatalog || !planAllowed;
+      retryPlans.disabled = catalogBusy || subscriptionRefreshing || planBusy;
       if (canOpenPos() && !posBusy && !subscriptionRefreshing) {
         posLink.href = posUrl;
         posLink.removeAttribute("aria-disabled");
@@ -271,13 +284,60 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       paymentSourceSection.hidden = scheduled || !canManage || !["active", "past_due", "grace", "restricted", "suspended"].includes(subscription.status);
       recoverySection.hidden = !canManage || !["active", "past_due", "grace", "restricted", "suspended"].includes(subscription.status)
         || (subscription.status === "active" && !issue && (!subscription.currentPeriodEnd || Date.parse(subscription.currentPeriodEnd) > Date.now()));
-      planSelect.value = subscription.plan.code;
       accountStatus.textContent = scheduled ? `La renovación está cancelada desde el ${formatDate(subscription.currentPeriodEnd)}.` : "";
       accountStatus.dataset.state = scheduled ? "success" : "";
       renderAccountActions();
       loginForm.hidden = true;
       panel.hidden = false;
+      void refreshPlanCatalog();
     };
+
+    const refreshPlanCatalog = async () => {
+      if (!accessToken || !accountLogin || !currentSubscription || planSection.hidden) {
+        catalogGeneration++; catalogBusy = false; planCatalog = null; catalogOwner = null; reviewedPlan = null;
+        catalogSelection = ""; planNames = Object.create(null);
+        planSelect.replaceChildren(new Option("Cambio de plan no disponible", ""));
+        renderAccountActions();
+        return;
+      }
+      const generation = ++catalogGeneration;
+      const token = accessToken, login = accountLogin, subscription = currentSubscription;
+      const owner = { token, tenantId: login.tenant.tenantId, subscriptionId: subscription.subscriptionId,
+        currency: subscription.price.currency, billingInterval: subscription.price.billingInterval, planCode: subscription.plan.code };
+      const sameOwner = catalogOwner && Object.keys(owner).every(key => owner[key as keyof typeof owner] === catalogOwner![key as keyof typeof owner]);
+      const preferred = sameOwner ? catalogSelection : subscription.plan.code;
+      catalogOwner = owner;
+      reviewedPlan = null;
+      const isCurrent = () => generation === catalogGeneration && token === accessToken && login === accountLogin && subscription === currentSubscription;
+      catalogBusy = true; planCatalog = null; planNames = Object.create(null);
+      planSelect.replaceChildren(new Option("Consultando planes publicados…", ""));
+      planCatalogStatus.textContent = "Consultando planes publicados…"; planCatalogStatus.dataset.state = "";
+      retryPlans.hidden = true; renderAccountActions();
+      try {
+        const catalog = await loadAccountPlans(apiUrl, { country: "CO", currency: subscription.price.currency, billingInterval: subscription.price.billingInterval });
+        if (!isCurrent()) return;
+        const selected = selectAccountPlan(catalog, subscription.plan.code, preferred);
+        planCatalog = catalog;
+        planNames = Object.fromEntries(catalog.plans.map(plan => [plan.code, plan.name]));
+        catalogSelection = selected;
+        renderAccountPlans(planSelect, catalog, selected);
+        field("plan").textContent = planNames[subscription.plan.code];
+        planCatalogStatus.textContent = `Planes publicados en ${catalog.currency}, período ${catalog.billingInterval === "annual" ? "anual" : "mensual"}. El servidor confirma el valor del cambio.`;
+      } catch (error) {
+        if (!isCurrent()) return;
+        planCatalog = null;
+        planSelect.replaceChildren(new Option("Catálogo no disponible", ""));
+        planCatalogStatus.textContent = error instanceof Error ? error.message : "No fue posible consultar los planes. Reintenta la consulta.";
+        planCatalogStatus.dataset.state = "error"; retryPlans.hidden = false;
+      } finally {
+        if (isCurrent()) { catalogBusy = false; renderAccountActions(); }
+      }
+    };
+    retryPlans.addEventListener("click", () => { if (!catalogBusy) void refreshPlanCatalog(); });
+    planSelect.addEventListener("change", () => {
+      if (planCatalog?.plans.some(plan => plan.code === planSelect.value)) catalogSelection = planSelect.value;
+      reviewedPlan = null; changeIdempotencyKey = "";
+    });
 
     const clearRecoveryLinks = () => {
       recoveryCheckout = null;
@@ -561,7 +621,6 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       }
     });
 
-    const planNames: Record<string, string> = { basic: "Básico", professional: "Profesional", enterprise: "Empresarial" };
     paymentSourceButton.addEventListener("click", async () => {
       if (subscriptionRefreshing || paymentSourceBusy || !accessToken) return;
       if (!paymentSourceConfig) { await preparePaymentSource(); return; }
@@ -705,12 +764,15 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         }
         return;
       }
-      if (!currentSubscription || planSelect.value === currentSubscription.plan.code) {
+      if (!currentSubscription || !accountLogin || planSection.hidden || catalogBusy || !planCatalog
+        || !planCatalog.plans.some(plan => plan.code === planSelect.value)) return;
+      if (planSelect.value === currentSubscription.plan.code) {
         accountStatus.textContent = "Selecciona un plan diferente al actual.";
         accountStatus.dataset.state = "error";
         return;
       }
-      field("target-plan-name").textContent = planNames[planSelect.value] ?? planSelect.value;
+      reviewedPlan = { target: planSelect.value, subscription: currentSubscription, login: accountLogin, token: accessToken };
+      field("target-plan-name").textContent = planNames[reviewedPlan.target];
       field("plan-change-copy").textContent = `El servidor confirmará si corresponde un cobro proporcional o un cambio al finalizar el periodo actual (${formatDate(currentSubscription.currentPeriodEnd)}). Tus datos no se eliminarán.`;
       planDialog.showModal();
     });
@@ -718,6 +780,10 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     confirmPlanChange.addEventListener("click", async (event) => {
       event.preventDefault();
       if (subscriptionRefreshing || planBusy || !accessToken) return;
+      const reviewed = reviewedPlan;
+      if (!reviewed || catalogBusy || !planCatalog || planSection.hidden || reviewed.token !== accessToken
+        || reviewed.login !== accountLogin || reviewed.subscription !== currentSubscription
+        || !planCatalog.plans.some(plan => plan.code === reviewed.target) || reviewed.target !== planSelect.value) return;
       const token = accessToken;
       const login = accountLogin;
       const isCurrent = () => token === accessToken && login === accountLogin;
@@ -732,7 +798,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
             "content-type": "application/json",
             "idempotency-key": changeIdempotencyKey
           },
-          body: JSON.stringify({ targetPlanCode: planSelect.value })
+          body: JSON.stringify({ targetPlanCode: reviewed.target })
         });
         const body = await response.json();
         if (!isCurrent()) return;
@@ -861,6 +927,12 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     });
     const resetAccount = (message = "") => {
       loginGeneration++;
+      catalogGeneration++;
+      catalogBusy = false; planCatalog = null; catalogOwner = null; reviewedPlan = null;
+      catalogSelection = ""; planNames = Object.create(null);
+      planSelect.replaceChildren(new Option("Ingresa para consultar planes", ""));
+      planCatalogStatus.textContent = ""; retryPlans.hidden = true;
+      planDialog.close();
       accessToken = "";
       accountLogin = null;
       recoveryGeneration++;
@@ -903,7 +975,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       paymentSourceButton.disabled = true;
       field("payment-source-current").textContent = "Sin medio de pago registrado";
       paymentSourceButton.textContent = "Agregar tarjeta";
-      changePlanButton.disabled = false;
+      changePlanButton.disabled = true;
       changePlanButton.textContent = "Revisar cambio";
       accountStatus.textContent = "";
       accountStatus.dataset.state = "";
@@ -924,6 +996,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
   .login-form{display:grid;gap:12px}
   .password-recovery-link{justify-self:start;color:var(--green);font-size:.9rem;font-weight:750;text-decoration-thickness:1px;text-underline-offset:3px}
   .account-panel{display:grid;gap:22px}
+  .plan-catalog-feedback{grid-column:1/-1;display:flex;gap:12px;align-items:center;flex-wrap:wrap}.plan-catalog-feedback p{margin:0}
   .actions a[aria-disabled="true"]{opacity:.55;cursor:not-allowed}
   .recovery-management{display:grid;gap:12px;border-top:1px solid var(--line);padding-top:18px}.recovery-management h3,.recovery-management p{margin:0}.recovery-management p{line-height:1.5}.recovery-management .actions{flex-wrap:wrap}
   .account-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;border-bottom:1px solid var(--line);padding-bottom:18px}

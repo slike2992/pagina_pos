@@ -13,6 +13,7 @@ const helperCode = compile(await readFile(new URL('../src/lib/wompi-client.ts', 
 const idempotencyCode = compile(await readFile(new URL('../src/scripts/client-idempotency.ts', import.meta.url), 'utf8'));
 const returnCode = compile(await readFile(new URL('../src/lib/checkout-return.ts', import.meta.url), 'utf8'));
 const recoveryCode = compile(await readFile(new URL('../src/lib/subscription-recovery.ts', import.meta.url), 'utf8'));
+const plansCode = compile(await readFile(new URL('../src/lib/account-plans.ts', import.meta.url), 'utf8'));
 const page = await readFile(new URL('../src/pages/cuenta.astro', import.meta.url), 'utf8');
 const accountScript = page.match(/<script>([\s\S]*?)<\/script>/)?.[1];
 assert.ok(accountScript, 'account controller must exist');
@@ -63,6 +64,7 @@ function browser() {
       remove() { this.removed = true; },
       focus() { this.focused = true; }, showModal() { this.hidden = false; }, close() { this.hidden = true; },
       replaceChildren(...children) { this.children = children; },
+      appendChild(child) { (this.children ??= []).push(child); },
       querySelector(selector) {
         assert.ok(elements.has(selector), `unmodelled DOM selector: ${selector}`);
         return elements.get(selector);
@@ -76,7 +78,7 @@ function browser() {
       assert.equal(selector, '#account');
       return root;
     },
-    createElement(tag) { assert.equal(tag, 'script'); return element(); },
+    createElement(tag) { assert.ok(['script', 'optgroup'].includes(tag)); return element(); },
     head: { append(script) { scripts.push(script); appended.push({ script, attributes: Object.fromEntries(script.attributes) }); } },
   };
   const root = element();
@@ -87,7 +89,7 @@ function browser() {
     location: { origin: 'https://staging.example.invalid', assign() { assert.fail('unexpected navigation'); } },
   };
   const sandbox = {
-    document, window, URL, Intl, Error, Uint8Array,
+    document, window, URL, URLSearchParams, Intl, Error, Uint8Array,
     Date: class extends Date { constructor(...args) { super(...(args.length ? args : [now])); } static now() { return now; } },
     crypto: { randomUUID: () => `00000000-0000-4000-8000-${String(++nextKey).padStart(12, '0')}` },
     fetch() { assert.fail('unmodelled HTTP request'); },
@@ -148,7 +150,7 @@ async function account(options = {}) {
   const selectors = ['#login-form', '.status', '#tenant-field', '#tenant', '.account-panel', '.account-status',
     "[data-action='open-pos']", "[data-action='cancel']", "[data-action='reactivate']", '#cancel-dialog',
     '#confirm-cancel', "[data-section='plan-management']", '#target-plan', "[data-action='change-plan']",
-    '#plan-dialog', '#confirm-plan-change', "[data-section='payment-source']", "[data-action='add-payment-source']",
+    '#plan-dialog', '#confirm-plan-change', '#plan-catalog-status', "[data-action='retry-plans']", "[data-section='payment-source']", "[data-action='add-payment-source']",
     '.payment-source-status', "[data-acceptance='terms']", "[data-acceptance='personal-data']",
     "[data-section='recovery']", "[data-section='renewal-issue']", '[data-recovery-summary]', '.recovery-status',
     "[data-action='prepare-recovery']", "[data-action='pay-recovery']", "[data-action='recovery-result']", "[data-action='refresh-recovery']",
@@ -202,6 +204,12 @@ async function account(options = {}) {
         tenant: { ...tenant } });
     }
     if (path === '/v1/me/subscription') return options.readSubscription ? options.readSubscription(call, subscription) : reply(subscription);
+    if (path === '/v1/public/plans') return reply({ country: 'CO', currency: 'COP', plans:
+      ['basic', 'professional', 'enterprise', 'basic-fe', 'professional-fe', 'enterprise-fe'].map((code, index) => ({
+        code, name: ['Básico', 'Profesional', 'Empresarial', 'Básico FE', 'Profesional FE', 'Empresarial FE'][index],
+        monthly: { amountMinor: 100000 + index, currency: 'COP' }, annual: { amountMinor: 1000000 + index, currency: 'COP' },
+        implementation: { amountMinor: 0, currency: 'COP' }, electronicInvoicing: code.endsWith('-fe'), highlighted: false,
+      })) });
     if (path === '/v1/me/tenants') return options.tenants ? options.tenants(call)
       : reply({ activeTenantId: tenant.tenantId, tenants: [{ ...tenant }] });
     if (path === '/v1/auth/pos-sso') return options.sso ? options.sso(call)
@@ -232,6 +240,7 @@ async function account(options = {}) {
     if (name === '../scripts/client-idempotency') return idempotency;
     if (name === '../lib/wompi-client') return { prepareWompiSession: h.prepareWompiSession };
     if (name === '../lib/subscription-recovery') return recovery;
+    if (name === '../lib/account-plans') return h.module(plansCode);
     assert.fail(`unexpected controller import: ${name}`);
   });
   return Object.assign(h, {
@@ -454,8 +463,9 @@ test('account boot and unauthenticated clicks never fetch metadata or load a pro
 test('login prepares metadata and contract links before consent without loading SDK scripts', async () => {
   const h = await account(); await h.login();
   assert.deepEqual(h.calls.map(call => new URL(call.url).pathname), [
-    '/v1/auth/login', '/v1/me/subscription', '/v1/me/billing/payment-sources', '/v1/public/payment-source-config']);
-  assert.equal(h.calls[2].headers.authorization, 'Bearer synthetic-auth-1');
+    '/v1/auth/login', '/v1/me/subscription', '/v1/public/plans', '/v1/me/billing/payment-sources', '/v1/public/payment-source-config']);
+  assert.equal(h.calls.find(call => call.url.endsWith('/billing/payment-sources')).headers.authorization, 'Bearer synthetic-auth-1');
+  assert.equal(h.calls.find(call => new URL(call.url).pathname === '/v1/public/plans').headers.authorization, undefined);
   assert.equal(h.get("[data-field='wompi-terms']").getAttribute('href'), config.acceptance.permalink);
   assert.equal(h.get("[data-field='wompi-personal-data']").getAttribute('href'), config.personalDataAuthorization.permalink);
   assert.equal(h.terms.checked, false); assert.equal(h.data.checked, false); assert.equal(h.recurring.checked, false);
@@ -1171,8 +1181,8 @@ test('either deferred refresh GET disables and guards renewal, SSO, SDK and plan
       if (!scheduled) assert.equal(h.get('#cancel-dialog').hidden, false, 'blocked confirmation preserves the open modal');
       hold = false; response.resolve(phase === 'subscription' ? reply(view) : activeTenantResponse()); await flush();
       assert.deepEqual([h.button, h.terms, h.data, h.recurring].map(control => control.disabled), sourceBefore);
-      for (const control of [accountAction(h, scheduled ? 'reactivate' : 'cancel'),
-        h.get('#target-plan'), accountAction(h, 'change-plan'), h.get('#confirm-plan-change')]) assert.equal(control.disabled, false);
+      assert.equal(accountAction(h, scheduled ? 'reactivate' : 'cancel').disabled, false);
+      for (const control of [h.get('#target-plan'), accountAction(h, 'change-plan'), h.get('#confirm-plan-change')]) assert.equal(control.disabled, scheduled);
       assert.equal(accountAction(h, 'open-pos').getAttribute('aria-disabled'), null);
       if (scheduled) await accountAction(h, 'reactivate').dispatch('click');
       else await h.get('#confirm-cancel').dispatch('click');
@@ -1295,7 +1305,7 @@ test('plan quote and checkout exclude refresh, and quote retry cannot start whil
     assert.equal(accountAction(h, 'change-plan').disabled, false); assert.equal(h.get('#confirm-plan-change').disabled, false);
     h.get('#target-plan').value = 'professional'; await accountAction(h, 'change-plan').dispatch('click');
     if (phase === 'quote') await h.get('#confirm-plan-change').dispatch('click');
-    assert.equal(h.calls.length, during + 2, 'tenant read and one explicit plan retry must resume');
+    assert.equal(h.calls.length, during + 3, 'tenant read, fresh public catalogue and one explicit plan retry must resume');
     assert.equal(h.navigations.length, 0);
   }
 });
@@ -1340,7 +1350,11 @@ test('late refresh responses including 401 and delayed JSON cannot change a newe
       assert.equal(recoveryControl(h, 'refresh-recovery').disabled, false);
       assert.equal(recoveryControl(h, 'refresh-recovery').getAttribute('aria-busy'), 'false');
       assert.equal(h.calls.length, before, 'old responses must stop the old request chain');
-      await recoveryClick(h, 'refresh-recovery'); assert.equal(h.calls.at(-1).headers.authorization, 'Bearer synthetic-auth-2');
+      const refreshing = h.calls.length;
+      await recoveryClick(h, 'refresh-recovery');
+      const privateReads = h.calls.slice(refreshing).filter(call => new URL(call.url).pathname.startsWith('/v1/me/'));
+      assert.ok(privateReads.length >= 2);
+      assert.ok(privateReads.every(call => call.headers.authorization === 'Bearer synthetic-auth-2'));
     }
   }
 });

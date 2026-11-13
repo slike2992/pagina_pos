@@ -5,6 +5,16 @@ POS, API, worker y Cripton Control pertenecen al repositorio `pos_saas`.
 La web genera HTML estático y consume la API SaaS en los flujos interactivos.
 No almacena una base SQL propia ni confirma pagos en el navegador.
 
+Mi cuenta obtiene las opciones de cambio desde `GET /v1/public/plans`, agrupadas
+sin/con electrónica y filtradas por el país, moneda y periodicidad de su
+suscripción. Conserva el código actual, incluidas las variantes FE. El catálogo
+no autoriza ni cotiza cambios: el POST existente envía sólo el código elegido;
+la API valida y calcula el prorrateo. Si el catálogo falla o no corresponde al
+mercado, sólo bloquea el cambio y permite reintentar, sin impedir abrir el POS o
+administrar la renovación. Respuestas de otra sesión/empresa no restauran datos.
+`src/lib/account-plans.ts` concentra este contrato y `test:web` incluye sus
+pruebas de validación, render y concurrencia junto a las del portal existente.
+
 El retorno de Wompi identifica la compra mediante `checkoutSessionId` en la URL,
 independientemente del ID de transacción del proveedor y de la pestaña de origen.
 Una verificación consumida sólo puede reanudar su checkout original pendiente
