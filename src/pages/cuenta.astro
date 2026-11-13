@@ -47,6 +47,11 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
           <button class="text-button" data-action="retry-plans" type="button" hidden>Reintentar consulta de planes</button>
         </div>
       </section>
+      <section class="recovery-management" data-section="pending-plan-change" hidden aria-labelledby="pending-plan-heading">
+        <h3 id="pending-plan-heading">Cambio de plan pendiente</h3>
+        <p data-field="pending-plan-summary" role="status" aria-live="polite"></p>
+        <button class="button secondary" data-action="refresh-plan-change" type="button">Actualizar estado del cambio</button>
+      </section>
       <section class="recovery-management" data-section="recovery" hidden aria-labelledby="recovery-heading">
         <h3 id="recovery-heading">Recuperar períodos pendientes</h3>
         <p>La continuidad se cuenta desde el vencimiento anterior, no desde la fecha del nuevo pago. Cada checkout recupera un solo período.</p>
@@ -115,12 +120,12 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     import { createIdempotencyKey } from "../scripts/client-idempotency";
     import { prepareWompiSession } from "../lib/wompi-client";
     import { loadAccountPlans, selectAccountPlan, renderAccountPlans, type AccountPlanCatalog } from "../lib/account-plans";
+    import { readPendingPlanChange, readPlanChange, readUpgradeCheckout, UpgradeValidationError, type PlanChange } from "../lib/subscription-upgrade";
     import { readRenewalIssue, readRecoveryOffer, readRecoveryCheckout, recoveryAmount, recoveryDate, recoveryPeriodText, rememberRecoveryCheckout, type RenewalIssue, type RecoveryOffer, type RecoveryCheckout } from "../lib/subscription-recovery";
 
     type Tenant = { tenantId: string; tenantKey: string; name: string; status: string; role: string };
     type LoginResult = { accessToken: string; expiresAt: string; principal: { displayName: string }; tenant: Tenant };
-    type Subscription = { subscriptionId: string; status: string; plan: { code: string; name: string }; price: { amountMinor: number; currency: string; billingInterval: string }; currentPeriodStart: string | null; currentPeriodEnd: string | null; cancelAtPeriodEnd: boolean; renewalIssue?: RenewalIssue | null };
-    type PlanChange = { subscriptionChangeId: string; changeType: "upgrade" | "downgrade"; status: string; toPlan: { name: string }; quote: { amountMinor: number; currency: string }; effectiveAt: string; nextAction: "checkout" | "wait_for_period_end" };
+    type Subscription = { subscriptionId: string; status: string; plan: { code: string; name: string }; price: { amountMinor: number; currency: string; billingInterval: string }; currentPeriodStart: string | null; currentPeriodEnd: string | null; cancelAtPeriodEnd: boolean; renewalIssue?: RenewalIssue | null; pendingChange?: unknown };
     type PaymentSourceConfig = { publicKey: string; widgetScriptUrl: string; fraudScriptUrl: string; acceptance: { token: string; permalink: string }; personalDataAuthorization: { token: string; permalink: string } };
     type PaymentSource = { type: "card" | "nequi"; displayHint: string | null; recurringConsentAt: string };
     type TokenizedSource = { token: string; type: "CARD" | "NEQUI" };
@@ -146,6 +151,8 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     const confirmPlanChange = root.querySelector<HTMLButtonElement>("#confirm-plan-change")!;
     const planCatalogStatus = root.querySelector<HTMLElement>("#plan-catalog-status")!;
     const retryPlans = root.querySelector<HTMLButtonElement>("[data-action='retry-plans']")!;
+    const pendingPlanSection = root.querySelector<HTMLElement>("[data-section='pending-plan-change']")!;
+    const pendingPlanRefresh = root.querySelector<HTMLButtonElement>("[data-action='refresh-plan-change']")!;
     const paymentSourceSection = root.querySelector<HTMLElement>("[data-section='payment-source']")!;
     const paymentSourceButton = root.querySelector<HTMLButtonElement>("[data-action='add-payment-source']")!;
     const paymentSourceStatus = root.querySelector<HTMLElement>(".payment-source-status")!;
@@ -166,6 +173,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     let loginGeneration = 0;
     let currentSubscription: Subscription | null = null;
     let pendingChange: PlanChange | null = null;
+    let pendingProblem = "";
     let changeIdempotencyKey = "";
     let checkoutIdempotencyKey = "";
     let paymentSourceConfig: PaymentSourceConfig | null = null;
@@ -188,7 +196,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     let planNames: Record<string, string> = Object.create(null);
     let catalogSelection = "";
     let catalogOwner: { token: string; tenantId: string; subscriptionId: string; currency: string; billingInterval: string; planCode: string } | null = null;
-    let reviewedPlan: { target: string; subscription: Subscription; login: LoginResult; token: string } | null = null;
+    let reviewedPlan: { target: string; subscription: Subscription; login: LoginResult; token: string; pendingId?: string } | null = null;
 
     const field = (name: string) => root.querySelector<HTMLElement>(`[data-field='${name}']`)!;
     const messageFrom = (body: unknown, fallback: string) => typeof body === "object" && body && "error" in body
@@ -231,9 +239,27 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       recoveryRefresh.disabled = recoveryBusy || renewalBusy || posBusy || paymentSourceBusy || planBusy;
       const planAllowed = Boolean(accountLogin && currentSubscription && !planSection.hidden
         && ["owner", "admin", "billing"].includes(accountLogin.tenant.role));
-      planSelect.disabled = subscriptionRefreshing || planBusy || catalogBusy || !planCatalog || !planAllowed;
-      changePlanButton.disabled = subscriptionRefreshing || planBusy || !planAllowed || (pendingChange?.nextAction !== "checkout" && (catalogBusy || !planCatalog));
-      confirmPlanChange.disabled = subscriptionRefreshing || planBusy || catalogBusy || !planCatalog || !planAllowed;
+      const pendingAction = pendingChange?.nextAction;
+      const resuming = pendingAction === "checkout" || pendingAction === "requote";
+      planSelect.disabled = subscriptionRefreshing || planBusy || catalogBusy || !planCatalog || !planAllowed || Boolean(pendingChange || pendingProblem);
+      changePlanButton.disabled = subscriptionRefreshing || planBusy || !planAllowed || Boolean(pendingProblem)
+        || (pendingChange ? !resuming : catalogBusy || !planCatalog);
+      changePlanButton.textContent = pendingAction === "checkout" ? "Reanudar pago del cambio"
+        : pendingAction === "requote" ? "Revisar cotización vigente" : "Revisar cambio";
+      confirmPlanChange.disabled = subscriptionRefreshing || planBusy || !planAllowed || Boolean(pendingProblem)
+        || (pendingChange ? pendingAction !== "requote" : catalogBusy || !planCatalog);
+      pendingPlanSection.hidden = !accountLogin || !["owner", "admin", "billing"].includes(accountLogin.tenant.role) || !Boolean(pendingChange || pendingProblem);
+      const pendingMessages: Record<string, string> = {
+        checkout: "Puedes reanudar el pago de la misma orden vigente. El plan actual se conserva hasta que el servidor aplique el cambio.",
+        wait_for_payment: "Hay un pago pendiente de confirmación. Actualiza el estado antes de intentar otro pago.",
+        wait_for_activation: "El pago está en proceso de aplicación. Actualiza el estado; no realices otro pago.",
+        requote: "La cotización venció. Solicita explícitamente una cotización vigente antes de pagar; el servidor verificará el historial y calculará el importe.",
+        wait_for_period_end: "El cambio está programado para finalizar el período actual.",
+        review: "El cambio requiere revisión. Actualiza el estado o contacta a soporte antes de pagar.",
+      };
+      field("pending-plan-summary").textContent = pendingProblem || (pendingChange
+        ? `Cambio a ${pendingChange.toPlan.name}. ${pendingChange.nextAction === "requote" ? "Cotización anterior" : "Importe cotizado"}: ${recoveryAmount(pendingChange.quote.amountMinor, pendingChange.quote.currency)}. ${pendingMessages[pendingChange.nextAction]}` : "");
+      pendingPlanRefresh.disabled = subscriptionRefreshing || recoveryBusy || renewalBusy || posBusy || paymentSourceBusy || planBusy;
       retryPlans.disabled = catalogBusy || subscriptionRefreshing || planBusy;
       if (canOpenPos() && !posBusy && !subscriptionRefreshing) {
         posLink.href = posUrl;
@@ -261,6 +287,16 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       // Validate before replacing any confirmed account state, including refresh
       // and renewal responses. Missing/null remains compatible with older APIs.
       const issue = readRenewalIssue(subscription.renewalIssue);
+      let nextPending: PlanChange | null = null;
+      let nextPendingProblem = "";
+      if (["owner", "admin", "billing"].includes(login.tenant.role)) {
+        try { nextPending = readPendingPlanChange(subscription.pendingChange); }
+        catch (error) { nextPendingProblem = error instanceof Error ? error.message : "Actualiza el cambio pendiente antes de pagar."; }
+      }
+      if (pendingChange?.subscriptionChangeId !== nextPending?.subscriptionChangeId || pendingChange?.nextAction !== nextPending?.nextAction) {
+        changeIdempotencyKey = ""; checkoutIdempotencyKey = "";
+      }
+      pendingChange = nextPending; pendingProblem = nextPendingProblem; reviewedPlan = null;
       if (accountLogin !== login) { posBusy = false; renewalBusy = false; }
       accountLogin = login;
       currentSubscription = { ...subscription, renewalIssue: issue };
@@ -520,6 +556,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       }
     });
     recoveryRefresh.addEventListener("click", () => { void loadRecoveryOffer(true); });
+    pendingPlanRefresh.addEventListener("click", () => { void loadRecoveryOffer(true); });
 
     const safeContractUrl = (value: string) => {
       const url = new URL(value);
@@ -726,7 +763,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       }
     });
     const continueToUpgradeCheckout = async (change: PlanChange, isCurrent: () => boolean) => {
-      if (subscriptionRefreshing || !accessToken || !isCurrent()) return;
+      if (subscriptionRefreshing || !accessToken || !isCurrent() || change.nextAction !== "checkout") return false;
       if (!checkoutIdempotencyKey) checkoutIdempotencyKey = createIdempotencyKey();
       const response = await fetch(`${apiUrl}/v1/me/billing/checkout-sessions`, {
         method: "POST",
@@ -738,30 +775,41 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         body: JSON.stringify({ subscriptionChangeId: change.subscriptionChangeId })
       });
       const body = await response.json();
-      if (!isCurrent()) return;
+      if (!isCurrent()) return false;
       if (!response.ok) throw body;
-      sessionStorage.setItem("checkout-session-id", body.checkoutSessionId);
-      location.assign(body.checkoutUrl);
+      const checkout = readUpgradeCheckout(body, change, location.origin);
+      location.assign(checkout.checkoutUrl);
+      return true;
     };
 
     changePlanButton.addEventListener("click", async () => {
-      if (subscriptionRefreshing || planBusy || !accessToken) return;
+      if (subscriptionRefreshing || planBusy || !accessToken || !accountLogin || planSection.hidden || pendingProblem) return;
       if (pendingChange?.nextAction === "checkout") {
         const token = accessToken;
         const login = accountLogin;
         const isCurrent = () => token === accessToken && login === accountLogin;
+        let navigating = false;
         planBusy = true;
         renderAccountActions();
         accountStatus.textContent = "Preparando el pago seguro…";
         try {
-          await continueToUpgradeCheckout(pendingChange, isCurrent);
+          navigating = await continueToUpgradeCheckout(pendingChange, isCurrent);
         } catch (error) {
           if (!isCurrent()) return;
           accountStatus.textContent = messageFrom(error, "No fue posible abrir el pago seguro.");
           accountStatus.dataset.state = "error";
         } finally {
-          if (isCurrent()) { planBusy = false; renderAccountActions(); }
+          if (isCurrent()) { planBusy = navigating; renderAccountActions(); }
         }
+        return;
+      }
+      if (pendingChange) {
+        if (pendingChange.nextAction !== "requote" || !currentSubscription) return;
+        reviewedPlan = { target: pendingChange.toPlan.code, pendingId: pendingChange.subscriptionChangeId,
+          subscription: currentSubscription, login: accountLogin, token: accessToken };
+        field("target-plan-name").textContent = pendingChange.toPlan.name;
+        field("plan-change-copy").textContent = "La cotización anterior venció. Al confirmar, solicitarás al servidor una cotización vigente para este mismo plan. Se verificará el historial de pagos antes de preparar el checkout.";
+        planDialog.showModal();
         return;
       }
       if (!currentSubscription || !accountLogin || planSection.hidden || catalogBusy || !planCatalog
@@ -781,12 +829,16 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       event.preventDefault();
       if (subscriptionRefreshing || planBusy || !accessToken) return;
       const reviewed = reviewedPlan;
-      if (!reviewed || catalogBusy || !planCatalog || planSection.hidden || reviewed.token !== accessToken
-        || reviewed.login !== accountLogin || reviewed.subscription !== currentSubscription
-        || !planCatalog.plans.some(plan => plan.code === reviewed.target) || reviewed.target !== planSelect.value) return;
+      if (!reviewed || planSection.hidden || pendingProblem || reviewed.token !== accessToken
+        || reviewed.login !== accountLogin || reviewed.subscription !== currentSubscription) return;
+      if (reviewed.pendingId) {
+        if (!pendingChange || pendingChange.nextAction !== "requote" || pendingChange.subscriptionChangeId !== reviewed.pendingId
+          || pendingChange.toPlan.code !== reviewed.target) return;
+      } else if (pendingChange || catalogBusy || !planCatalog || !planCatalog.plans.some(plan => plan.code === reviewed.target) || reviewed.target !== planSelect.value) return;
       const token = accessToken;
       const login = accountLogin;
       const isCurrent = () => token === accessToken && login === accountLogin;
+      let navigating = false;
       planBusy = true;
       renderAccountActions();
       if (!changeIdempotencyKey) changeIdempotencyKey = createIdempotencyKey();
@@ -803,7 +855,10 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         const body = await response.json();
         if (!isCurrent()) return;
         if (!response.ok) throw body;
-        pendingChange = body as PlanChange;
+        const change = readPlanChange(body);
+        if (change.toPlan.code !== reviewed.target) throw new UpgradeValidationError("La cotización corresponde a otro plan. Actualiza Mi cuenta antes de pagar.");
+        if (change.subscriptionChangeId !== pendingChange?.subscriptionChangeId) checkoutIdempotencyKey = "";
+        pendingChange = change;
         planDialog.close();
         if (pendingChange.nextAction === "wait_for_period_end") {
           planSection.hidden = true;
@@ -811,11 +866,16 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
           accountStatus.dataset.state = "success";
           return;
         }
-        const amount = new Intl.NumberFormat("es-CO", { style: "currency", currency: pendingChange.quote.currency, maximumFractionDigits: 0 }).format(pendingChange.quote.amountMinor / 100);
+        if (pendingChange.nextAction !== "checkout") {
+          accountStatus.textContent = "Cambio registrado. Revisa su estado antes de preparar otro pago.";
+          accountStatus.dataset.state = "";
+          return;
+        }
+        const amount = recoveryAmount(pendingChange.quote.amountMinor, pendingChange.quote.currency);
         accountStatus.textContent = `Prorrateo confirmado: ${amount}. Preparando el pago seguro…`;
         accountStatus.dataset.state = "success";
         try {
-          await continueToUpgradeCheckout(pendingChange, isCurrent);
+          navigating = await continueToUpgradeCheckout(pendingChange, isCurrent);
         } catch (error) {
           if (!isCurrent()) return;
           accountStatus.textContent = `${messageFrom(error, "No fue posible abrir el pago seguro.")} La cotización sigue disponible en esta sesión.`;
@@ -824,11 +884,11 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         }
       } catch (error) {
         if (!isCurrent()) return;
-        accountStatus.textContent = messageFrom(error, "No fue posible solicitar el cambio de plan.");
+        accountStatus.textContent = messageFrom(error, error instanceof UpgradeValidationError ? error.message : "No fue posible solicitar el cambio de plan.");
         accountStatus.dataset.state = "error";
         planDialog.close();
       } finally {
-        if (isCurrent()) { planBusy = false; renderAccountActions(); }
+        if (isCurrent()) { planBusy = navigating; renderAccountActions(); }
       }
     });
 
@@ -962,6 +1022,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       renderAccountActions();
       dialog.close();
       pendingChange = null;
+      pendingProblem = "";
       changeIdempotencyKey = "";
       checkoutIdempotencyKey = "";
       paymentSourceConfig = null;

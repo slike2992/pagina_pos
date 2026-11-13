@@ -18,7 +18,8 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
     </div>
   </div>
   <script>
-    import { readRecoveryStatus, recoveryDate, recoveryPeriodText, recoveryAmount, isKnownRecoveryCheckout, type RecoveryStatus } from "../../lib/subscription-recovery";
+    import { readRecoveryStatus, recoveryDate, recoveryPeriodText, recoveryAmount, isKnownRecoveryCheckout } from "../../lib/subscription-recovery";
+    import { readCheckoutResult, accountPaymentResult, type CheckoutPurpose, type CheckoutResult } from "../../lib/payment-result";
     const root = document.querySelector<HTMLElement>("#payment-result")!;
     const heading = root.querySelector<HTMLElement>("#result-heading")!;
     const status = root.querySelector<HTMLElement>(".status")!;
@@ -38,14 +39,27 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
     let timer: number | undefined;
     let inFlight = false;
     let stopped = false;
+    let purpose: CheckoutPurpose = "unknown";
 
-    const render = (result: { status: string; reference: string; amountInCents: number; currency: string; recovery?: RecoveryStatus }) => {
+    const render = (result: CheckoutResult) => {
       const recovery = result.recovery === undefined ? null : readRecoveryStatus(result.recovery);
       status.dataset.state = "";
       reference.textContent = result.reference;
       amount.textContent = new Intl.NumberFormat("es-CO", { style: "currency", currency: result.currency, maximumFractionDigits: 0 }).format(result.amountInCents / 100);
       summary.hidden = false;
       retry.hidden = result.status !== "declined";
+      if (result.purpose === "plan_change" || result.purpose === "unknown") {
+        amount.textContent = recoveryAmount(result.amountInCents, result.currency);
+        const view = accountPaymentResult(result);
+        heading.textContent = view.heading;
+        status.textContent = view.status;
+        status.dataset.state = view.state;
+        detail.textContent = view.detail;
+        passwordLink.href = "/cuenta";
+        passwordLink.textContent = "Revisar Mi cuenta";
+        passwordLink.hidden = false;
+        return;
+      }
       if (recovery) {
         amount.textContent = recoveryAmount(result.amountInCents, result.currency);
         const period = recoveryPeriodText(recovery);
@@ -135,11 +149,12 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
         const response = await fetch(`${apiUrl}/v1/checkout-sessions/${encodeURIComponent(checkoutSessionId)}`, { headers: { accept: "application/json" } });
         retryable = response.status === 429 || (response.status >= 500 && response.status < 600);
         if (!response.ok) throw await response.json().catch(() => null);
-        const body = await response.json();
+        const body = readCheckoutResult(await response.json(), purpose);
         if (body.recovery !== undefined) recoveryExpected = true;
         if (recoveryExpected && body.recovery === undefined) throw new Error("Faltan los datos de recuperación. Consulta Mi cuenta.");
         render(body);
-        if (body.status === "fulfilled" && body.recovery === undefined) {
+        purpose = body.purpose;
+        if (body.status === "fulfilled" && body.purpose === "signup") {
           if (import.meta.env.DEV) await loadDevelopmentPasswordSetup();
           else {
             passwordLink.href = "/cuenta";
@@ -148,7 +163,8 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
             detail.textContent = "Tu empresa está lista. Si es tu primera cuenta, recibirás por correo el enlace para crear tu contraseña. Si ya tienes una, puedes ingresar con ella.";
           }
         }
-        pollAgain = !terminalStates.has(body.status);
+        pollAgain = body.purpose === "plan_change" || body.purpose === "unknown"
+          ? accountPaymentResult(body).poll : !terminalStates.has(body.status);
       } catch (error) {
         const message = typeof error === "object" && error && "error" in error ? (error as { error?: { message?: string } }).error?.message : null;
         const willRetry = retryable && attempts < 10;

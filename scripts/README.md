@@ -14,6 +14,8 @@
   concurrencia y salida de página, con temporizadores controlados.
   Recovery conserva esas esperas y distingue período aplicado de suscripción al
   día; cubre metadatos obligatorios, cobertura posterior y storage opcional.
+  Incluye retorno de upgrade según `purpose`/`planChange.status`, sin guía de
+  registro ni falsa activación, y validación de contexto entre consultas.
 - `signup-resume.test.mjs`: reapertura de un enlace consumido que aún tiene un
   checkout pendiente, errores no recuperables e integridad del retorno Wompi.
   Ejecuta el controlador real con DOM/transporte simulados; no acredita pago real.
@@ -32,6 +34,12 @@
   del servidor, centavos/UTC, bloqueos, checkout validado, claves estables,
   períodos sucesivos y respuestas de autenticación obsoletas. Detalles en
   [recuperación](../docs/SUBSCRIPTION_RECOVERY.md).
+- `account-plans.test.mjs`: catálogo publicado sin/con FE y controlador real de
+  Mi cuenta con `pendingChange` del servidor. Cubre las seis acciones, Básico
+  conservado hasta lectura confirmada, replay del mismo checkout, recotización
+  explícita, requested/quoted sólo revisión, doble clic, claves estables tras
+  fallo, respuestas de otra sesión y centavos cotizados exactos
+  (`1989780` → `19.897,80 COP`). No consulta API ni proveedor reales.
 - `audit-performance.mjs`: pesos de HTML, CSS, JavaScript y variantes hero AVIF.
   Valida selección responsiva y fallback; aplica presupuestos sin nuevas dependencias.
   Mide bytes de build/gzip teórico, no transferencias de red ni Web Vitals.
@@ -40,3 +48,16 @@ Usar Node >=22.12. `npm run build:public` ejecuta toda la cadena con el mismo
 process.execPath. Las comprobaciones de navegador y sus límites se documentan
 por bloque en docs. Mantener actualizados allowlist y baseline legal sólo cuando
 corresponda; no cambiar pruebas para ocultar una regresión.
+
+Validación local de este bloque, 2026-11-13: Node 24.22.1, **204/204** pruebas de
+lógica (104 cuenta/payment-source, 38 account-plans, 34 payment-result y 28 de las
+otras suites). La congelación anterior tenía 203; la prueba adicional comprueba
+los centavos del prorrateo mostrado. Comando sin auditoría de HTML construido:
+
+```sh
+node --test scripts/consent.test.mjs scripts/form-feedback.test.mjs scripts/payment-result.test.mjs scripts/signup-resume.test.mjs scripts/account-payment-source.test.mjs scripts/account-plans.test.mjs
+```
+
+Estas pruebas usan VM/DOM/HTTP simulados y no acreditan replay SQL, pago real,
+despliegue ni navegador. El build Ubuntu aislado y `seo.test.mjs` sobre su salida
+quedan para el integrador; no se declara aún un total que incluya esos checks.

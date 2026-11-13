@@ -14,6 +14,7 @@ const idempotencyCode = compile(await readFile(new URL('../src/scripts/client-id
 const returnCode = compile(await readFile(new URL('../src/lib/checkout-return.ts', import.meta.url), 'utf8'));
 const recoveryCode = compile(await readFile(new URL('../src/lib/subscription-recovery.ts', import.meta.url), 'utf8'));
 const plansCode = compile(await readFile(new URL('../src/lib/account-plans.ts', import.meta.url), 'utf8'));
+const upgradeCode = compile(await readFile(new URL('../src/lib/subscription-upgrade.ts', import.meta.url), 'utf8'));
 const page = await readFile(new URL('../src/pages/cuenta.astro', import.meta.url), 'utf8');
 const accountScript = page.match(/<script>([\s\S]*?)<\/script>/)?.[1];
 assert.ok(accountScript, 'account controller must exist');
@@ -150,7 +151,7 @@ async function account(options = {}) {
   const selectors = ['#login-form', '.status', '#tenant-field', '#tenant', '.account-panel', '.account-status',
     "[data-action='open-pos']", "[data-action='cancel']", "[data-action='reactivate']", '#cancel-dialog',
     '#confirm-cancel', "[data-section='plan-management']", '#target-plan', "[data-action='change-plan']",
-    '#plan-dialog', '#confirm-plan-change', '#plan-catalog-status', "[data-action='retry-plans']", "[data-section='payment-source']", "[data-action='add-payment-source']",
+    '#plan-dialog', '#confirm-plan-change', '#plan-catalog-status', "[data-action='retry-plans']", "[data-section='pending-plan-change']", "[data-action='refresh-plan-change']", "[data-field='pending-plan-summary']", "[data-section='payment-source']", "[data-action='add-payment-source']",
     '.payment-source-status', "[data-acceptance='terms']", "[data-acceptance='personal-data']",
     "[data-section='recovery']", "[data-section='renewal-issue']", '[data-recovery-summary]', '.recovery-status',
     "[data-action='prepare-recovery']", "[data-action='pay-recovery']", "[data-action='recovery-result']", "[data-action='refresh-recovery']",
@@ -241,6 +242,7 @@ async function account(options = {}) {
     if (name === '../lib/wompi-client') return { prepareWompiSession: h.prepareWompiSession };
     if (name === '../lib/subscription-recovery') return recovery;
     if (name === '../lib/account-plans') return h.module(plansCode);
+    if (name === '../lib/subscription-upgrade') return h.module(upgradeCode, name => assert.fail(name));
     assert.fail(`unexpected controller import: ${name}`);
   });
   return Object.assign(h, {
@@ -1145,8 +1147,8 @@ test('current-account refresh 401 resets the session at either read and permits 
 
 const activeTenantResponse = (number = 1) => reply({ activeTenantId: `synthetic-tenant-${number}`,
   tenants: [{ tenantId: `synthetic-tenant-${number}`, name: 'QA', role: 'owner', status: 'active' }] });
-const planChangeFixture = () => ({ subscriptionChangeId: 'synthetic-plan-change', changeType: 'upgrade', status: 'pending_payment',
-  toPlan: { name: 'Profesional' }, quote: { amountMinor: 100000, currency: 'COP' },
+const planChangeFixture = () => ({ subscriptionChangeId: '33333333-3333-4333-8333-333333333333', changeType: 'upgrade', status: 'pending_payment',
+  toPlan: { code: 'professional', name: 'Profesional' }, quote: { amountMinor: 100000, currency: 'COP', expiresAt: '2035-01-01T00:00:00.000Z' },
   effectiveAt: '2030-02-01T00:00:00Z', nextAction: 'checkout' });
 
 test('either deferred refresh GET disables and guards renewal, SSO, SDK and plan actions without hiding them', async () => {
@@ -1298,11 +1300,12 @@ test('plan quote and checkout exclude refresh, and quote retry cannot start whil
     const before = h.calls.length; await recoveryClick(h, 'refresh-recovery'); assert.equal(h.calls.length, before);
     response.resolve(reply({ error: { message: 'Synthetic temporary plan failure' } }, 503)); await pending;
     assert.equal(recoveryControl(h, 'refresh-recovery').disabled, false);
+    if (phase === 'checkout') h.setSubscription({ pendingChange: { ...planChangeFixture(), orderId: null, checkoutSessionId: null, orderStatus: null } });
     holdRead = true; await recoveryClick(h, 'refresh-recovery'); const during = h.calls.length;
     await accountAction(h, 'change-plan').dispatch('click'); await h.get('#confirm-plan-change').dispatch('click');
     assert.equal(h.calls.length, during);
     holdRead = false; read.resolve(reply(view)); await flush();
-    assert.equal(accountAction(h, 'change-plan').disabled, false); assert.equal(h.get('#confirm-plan-change').disabled, false);
+    assert.equal(accountAction(h, 'change-plan').disabled, false); assert.equal(h.get('#confirm-plan-change').disabled, phase === 'checkout');
     h.get('#target-plan').value = 'professional'; await accountAction(h, 'change-plan').dispatch('click');
     if (phase === 'quote') await h.get('#confirm-plan-change').dispatch('click');
     assert.equal(h.calls.length, during + 3, 'tenant read, fresh public catalogue and one explicit plan retry must resume');

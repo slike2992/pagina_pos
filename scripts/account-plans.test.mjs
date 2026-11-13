@@ -4,6 +4,7 @@ import test from 'node:test';
 import vm from 'node:vm';
 import ts from 'typescript';
 import { readAccountPlans, loadAccountPlans, selectAccountPlan, accountPlanLabel } from '../src/lib/account-plans.ts';
+import { readPendingPlanChange, readUpgradeCheckout } from '../src/lib/subscription-upgrade.ts';
 
 const codes = ['basic', 'professional', 'enterprise', 'basic-fe', 'professional-fe', 'enterprise-fe'];
 const published = () => ({ country: 'CO', currency: 'COP', plans: codes.map((code, index) => ({
@@ -66,6 +67,7 @@ const accountCode = compile(page.match(/<script>([\s\S]*?)<\/script>/)[1]);
 const plansCode = compile(await readFile(new URL('../src/lib/account-plans.ts', import.meta.url), 'utf8'));
 const recoveryCode = compile(await readFile(new URL('../src/lib/subscription-recovery.ts', import.meta.url), 'utf8'));
 const returnCode = compile(await readFile(new URL('../src/lib/checkout-return.ts', import.meta.url), 'utf8'));
+const upgradeCode = compile(await readFile(new URL('../src/lib/subscription-upgrade.ts', import.meta.url), 'utf8'));
 
 function browser(options = {}) {
   const elements = new Map(), calls = [], navigations = [];
@@ -88,12 +90,13 @@ function browser(options = {}) {
   let loginCount = 0, key = 0;
   const model = { subscriptionId: '11111111-1111-4111-8111-111111111111', status: 'active', plan: { code: options.planCode || 'professional-fe', name: 'Suscripción confirmada FE' },
     price: { amountMinor: 123451, currency: 'COP', billingInterval: options.period || 'monthly' },
-    currentPeriodStart: '2020-01-01T00:00:00Z', currentPeriodEnd: '2099-01-01T00:00:00Z', cancelAtPeriodEnd: false };
+    currentPeriodStart: '2020-01-01T00:00:00Z', currentPeriodEnd: '2099-01-01T00:00:00Z', cancelAtPeriodEnd: false,
+    ...(options.pendingChange !== undefined ? { pendingChange: options.pendingChange } : {}) };
   let tenant;
   const sandbox = { URL, URLSearchParams, Intl, Error, Date, console,
     document: { querySelector: get, createElement: element },
     window: { location: { origin: 'https://web.example.invalid', search: '?targetPlanCode=basic', assign: url => navigations.push(url) } },
-    sessionStorage: { setItem() {}, getItem() { return null; } },
+    sessionStorage: { setItem() { assert.fail('Upgrade must not persist hidden checkout data'); }, getItem() { return null; } },
     crypto: { randomUUID: () => `synthetic-${++key}` },
     Option: class { constructor(text, value) { this.text = text; this.value = value; } },
     FormData: class { get(name) { return name === 'email' ? 'qa@example.invalid' : name === 'password' ? 'synthetic' : null; } },
@@ -102,7 +105,7 @@ function browser(options = {}) {
       const route = new URL(url).pathname;
       if (route === '/v1/auth/login') { loginCount++; tenant = { tenantId: `tenant-${loginCount}`, tenantKey: `qa-${loginCount}`, name: `Empresa ${loginCount}`, role: options.role || 'owner', status: 'active' };
         return reply({ accessToken: `synthetic-${loginCount}`, principal: { displayName: 'QA' }, tenant }); }
-      if (route === '/v1/me/subscription') return reply(structuredClone(model));
+      if (route === '/v1/me/subscription') return options.readSubscription ? options.readSubscription(call, model, loginCount) : reply(structuredClone(model));
       if (route === '/v1/me/tenants') return reply({ activeTenantId: tenant.tenantId, tenants: [tenant] });
       if (route === '/v1/public/plans') return options.catalog ? options.catalog(call, loginCount) : reply(published());
       if (route === '/v1/me/billing/payment-sources') return reply({ paymentSource: null });
@@ -110,11 +113,13 @@ function browser(options = {}) {
       if (route === '/v1/auth/pos-sso') return reply({ redirectUrl: 'https://pos.example.invalid/auth/sso?ticket=synthetic' });
       if (route === '/v1/me/subscription/cancel') { model.cancelAtPeriodEnd = true; return reply(structuredClone(model)); }
       if (route === '/v1/me/subscription/reactivate') { model.cancelAtPeriodEnd = false; return reply(structuredClone(model)); }
-      if (route === '/v1/me/subscription/change') return reply({ subscriptionChangeId: 'change-test', changeType: 'downgrade', status: 'scheduled',
-        toPlan: { name: 'Plan publicado' }, quote: { amountMinor: 0, currency: 'COP' }, effectiveAt: model.currentPeriodEnd, nextAction: 'wait_for_period_end' });
+      if (route === '/v1/me/subscription/change') return options.change ? options.change(call) : reply({ subscriptionChangeId: '33333333-3333-4333-8333-333333333333', changeType: 'downgrade', status: 'scheduled',
+        toPlan: { code: 'enterprise-fe', name: 'Plan publicado' }, quote: { amountMinor: 0, currency: 'COP', expiresAt: null }, effectiveAt: model.currentPeriodEnd, nextAction: 'wait_for_period_end' });
+      if (route === '/v1/me/billing/checkout-sessions') return options.checkout ? options.checkout(call) : assert.fail('Unexpected checkout');
       assert.fail(`unexpected request ${route}`);
     },
   };
+  sandbox.location = sandbox.window.location;
   const context = vm.createContext(sandbox);
   const run = (code, require = name => assert.fail(`Unexpected import ${name}`)) => {
     const exports = {}; vm.runInContext(`(function(exports,require){${code}\n})`, context)(exports, require); return exports;
@@ -123,6 +128,7 @@ function browser(options = {}) {
   const recovery = run(recoveryCode, name => name === './checkout-return' ? checkoutReturn : assert.fail(name));
   run(accountCode, name => {
     if (name === '../lib/account-plans') return run(plansCode);
+    if (name === '../lib/subscription-upgrade') return run(upgradeCode);
     if (name === '../lib/subscription-recovery') return recovery;
     if (name === '../scripts/client-idempotency') return { createIdempotencyKey: () => `key-${++key}` };
     if (name === '../lib/wompi-client') return { prepareWompiSession() { assert.fail('No provider calls allowed'); } };
@@ -206,4 +212,180 @@ test('member cannot acquire plan-management controls or send a change through pr
   h.get('#target-plan').value = 'enterprise-fe'; await h.click('change-plan'); await h.confirm();
   assert.equal(changes(h).length, 0);
   assert.equal(h.calls.some(call => new URL(call.url).pathname === '/v1/public/plans'), false);
+});
+
+const pendingFixture = (nextAction = 'checkout') => ({
+  subscriptionChangeId: '33333333-3333-4333-8333-333333333333', changeType: 'upgrade', status: 'pending_payment',
+  toPlan: { code: 'basic-fe', name: 'Básico FE publicado' },
+  quote: { amountMinor: 1230017, currency: 'COP', expiresAt: '2099-01-01T00:00:00.000Z' },
+  effectiveAt: '2026-11-13T00:00:00.000Z',
+  orderId: '44444444-4444-4444-8444-444444444444', checkoutSessionId: '55555555-5555-4555-8555-555555555555',
+  orderStatus: 'pending_payment', nextAction,
+});
+const upgradeCheckout = (change = pendingFixture()) => ({ orderId: change.orderId, checkoutSessionId: change.checkoutSessionId,
+  amountInCents: change.quote.amountMinor, currency: 'COP', expirationTime: '2099-01-01T00:00:00.000Z',
+  checkoutUrl: `https://checkout.wompi.co/p/?reference=QA-SAME-ORDER&redirect-url=${encodeURIComponent(`https://web.example.invalid/pago/resultado?checkoutSessionId=${change.checkoutSessionId}`)}` });
+const checkoutCalls = h => h.calls.filter(call => new URL(call.url).pathname === '/v1/me/billing/checkout-sessions');
+
+test('fresh login discovers pending upgrade, keeps Basic, and explicitly resumes the same server checkout without another change', async () => {
+  const expected = upgradeCheckout();
+  const h = browser({ planCode: 'basic', pendingChange: pendingFixture(), checkout: () => reply(expected) });
+  await h.login();
+  assert.equal(h.get("[data-field='plan']").textContent, 'Publicado basic');
+  assert.equal(h.get('#target-plan').value, 'basic'); assert.equal(h.get('#target-plan').disabled, true);
+  assert.match(h.get("[data-field='pending-plan-summary']").textContent, /Básico FE.*misma orden vigente/);
+  assert.equal(checkoutCalls(h).length, 0);
+  await h.click('change-plan');
+  assert.equal(checkoutCalls(h).length, 1); assert.equal(changes(h).length, 0);
+  assert.deepEqual(JSON.parse(checkoutCalls(h)[0].body), { subscriptionChangeId: pendingFixture().subscriptionChangeId });
+  assert.equal(h.navigations[0], expected.checkoutUrl);
+  assert.equal(h.get("[data-field='plan']").textContent, 'Publicado basic');
+});
+
+for (const nextAction of ['wait_for_payment', 'wait_for_activation', 'wait_for_period_end', 'review']) test(`pending ${nextAction} never offers or submits another payment`, async () => {
+  const change = pendingFixture(nextAction);
+  if (nextAction === 'wait_for_period_end') { change.changeType = 'downgrade'; change.status = 'scheduled'; }
+  const h = browser({ planCode: 'basic', pendingChange: change }); await h.login();
+  assert.equal(h.get("[data-action='change-plan']").disabled, true);
+  assert.equal(h.get("[data-section='pending-plan-change']").hidden, false);
+  await h.click('change-plan'); await h.confirm();
+  assert.equal(checkoutCalls(h).length, 0); assert.equal(changes(h).length, 0);
+  assert.equal(h.get("[data-action='open-pos']").getAttribute('aria-disabled'), null);
+});
+
+test('expired quote requires explicit review and server requote, then uses the returned change for checkout', async () => {
+  const expired = pendingFixture('requote'); expired.quote.expiresAt = '2020-01-01T00:00:00.000Z'; expired.orderStatus = 'expired';
+  const fresh = { ...pendingFixture(), subscriptionChangeId: '66666666-6666-4666-8666-666666666666', orderId: null, checkoutSessionId: null, orderStatus: null };
+  const h = browser({ planCode: 'basic', pendingChange: expired, change: () => reply(fresh), checkout: () => reply(upgradeCheckout()) });
+  await h.login(); assert.equal(changes(h).length, 0); assert.equal(checkoutCalls(h).length, 0);
+  h.get('#target-plan').value = 'enterprise';
+  await h.click('change-plan'); assert.equal(changes(h).length, 0);
+  assert.match(h.get("[data-field='plan-change-copy']").textContent, /cotización anterior venció/);
+  await h.confirm();
+  assert.equal(changes(h).length, 1); assert.deepEqual(JSON.parse(changes(h)[0].body), { targetPlanCode: 'basic-fe' });
+  assert.ok(changes(h)[0].headers['idempotency-key']);
+  assert.deepEqual(JSON.parse(checkoutCalls(h)[0].body), { subscriptionChangeId: fresh.subscriptionChangeId });
+  assert.equal(h.navigations[0], upgradeCheckout().checkoutUrl);
+  assert.equal(h.get("[data-field='plan']").textContent, 'Publicado basic');
+});
+
+test('resume synchronous guard blocks double click and fast confirmation; transport failure allows retry with same key', async () => {
+  const first = deferred(); let calls = 0;
+  const h = browser({ planCode: 'basic', pendingChange: pendingFixture(), checkout: () => ++calls === 1 ? first.promise : reply(upgradeCheckout()) });
+  await h.login();
+  const opening = h.click('change-plan'); await flush();
+  await h.click('change-plan'); await h.confirm(); await h.click('refresh-plan-change');
+  assert.equal(checkoutCalls(h).length, 1);
+  first.reject(new Error('Synthetic transport failure')); await opening;
+  assert.equal(h.navigations.length, 0); assert.equal(h.get("[data-action='change-plan']").disabled, false);
+  await h.click('change-plan');
+  assert.equal(checkoutCalls(h).length, 2);
+  assert.equal(checkoutCalls(h)[0].headers['idempotency-key'], checkoutCalls(h)[1].headers['idempotency-key']);
+  assert.equal(h.navigations.length, 1);
+  await h.click('change-plan');
+  assert.equal(checkoutCalls(h).length, 2, 'navigation locks the current view against another checkout POST');
+});
+
+test('late checkout after logout/new login cannot navigate or replace the new tenant', async () => {
+  const first = deferred();
+  const h = browser({ pendingChange: pendingFixture(), checkout: () => first.promise });
+  await h.login(); const opening = h.click('change-plan'); await flush();
+  await h.click('logout'); delete h.model.pendingChange; await h.login();
+  first.resolve(reply(upgradeCheckout())); await opening;
+  assert.equal(h.navigations.length, 0);
+  assert.equal(h.get("[data-field='tenant-name']").textContent, 'Empresa 2');
+  assert.equal(h.get("[data-section='pending-plan-change']").hidden, true);
+});
+
+test('refresh confirms applied plan and clears pending UI only from the new server subscription', async () => {
+  const h = browser({ planCode: 'basic', pendingChange: pendingFixture('wait_for_activation') }); await h.login();
+  assert.equal(h.get('#target-plan').value, 'basic');
+  h.model.pendingChange = null; h.model.plan = { code: 'basic-fe', name: 'Básico FE servidor' };
+  await h.click('refresh-plan-change');
+  assert.equal(h.get('#target-plan').value, 'basic-fe');
+  assert.equal(h.get("[data-section='pending-plan-change']").hidden, true);
+  assert.equal(h.get("[data-field='plan']").textContent, 'Publicado basic-fe');
+  assert.equal(checkoutCalls(h).length, 0); assert.equal(changes(h).length, 0);
+});
+
+test('malformed pending metadata blocks only plan writes and preserves SSO/renewal', async () => {
+  for (const extra of [{ nextAction: 'forged' }, { orderId: null }, { quote: { amountMinor: -1, currency: 'COP', expiresAt: null } }]) {
+    const h = browser({ planCode: 'basic', pendingChange: { ...pendingFixture(), ...extra } }); await h.login();
+    assert.equal(h.get("[data-action='change-plan']").disabled, true);
+    assert.equal(h.get("[data-action='cancel']").disabled, false);
+    assert.equal(h.get("[data-action='open-pos']").getAttribute('aria-disabled'), null);
+    await h.click('change-plan'); await h.confirm(); assert.equal(changes(h).length, 0); assert.equal(checkoutCalls(h).length, 0);
+  }
+});
+
+test('member cannot consume hidden pending metadata or execute its checkout/requote', async () => {
+  const h = browser({ role: 'member', pendingChange: pendingFixture() }); await h.login();
+  assert.equal(h.get("[data-section='pending-plan-change']").hidden, true);
+  await h.click('change-plan'); await h.confirm();
+  assert.equal(changes(h).length, 0); assert.equal(checkoutCalls(h).length, 0);
+});
+
+test('checkout validation preserves signed URL and rejects foreign URLs, expired receipts or a different order', () => {
+  const change = readPendingPlanChange(pendingFixture()), valid = upgradeCheckout();
+  assert.equal(readUpgradeCheckout(valid, change, 'https://web.example.invalid').checkoutUrl, valid.checkoutUrl);
+  for (const extra of [{ orderId: '77777777-7777-4777-8777-777777777777' },
+    { checkoutSessionId: '77777777-7777-4777-8777-777777777777' }, { expirationTime: '2020-01-01T00:00:00.000Z' },
+    { amountInCents: 1 }, { currency: 'USD' }, { checkoutUrl: 'https://foreign.example.invalid/p/' },
+    { checkoutUrl: valid.checkoutUrl.replace('web.example.invalid', 'other.example.invalid') }]) {
+    assert.throws(() => readUpgradeCheckout({ ...valid, ...extra }, change, 'https://web.example.invalid'));
+  }
+});
+
+test('requote response requesting payment wait cannot trigger checkout automatically', async () => {
+  const h = browser({ pendingChange: pendingFixture('requote'), change: () => reply(pendingFixture('wait_for_payment')) });
+  await h.login(); await h.click('change-plan'); await h.confirm();
+  assert.equal(changes(h).length, 1); assert.equal(checkoutCalls(h).length, 0);
+  assert.match(h.get("[data-field='pending-plan-summary']").textContent, /pago pendiente de confirmación/);
+  assert.equal(h.get("[data-action='change-plan']").disabled, true);
+});
+
+test('requote returning another plan never opens a checkout for the unreviewed target', async () => {
+  const other = pendingFixture(); other.toPlan = { code: 'enterprise', name: 'Otro plan' };
+  const h = browser({ pendingChange: pendingFixture('requote'), change: () => reply(other) });
+  await h.login(); await h.click('change-plan'); await h.confirm();
+  assert.equal(checkoutCalls(h).length, 0); assert.equal(h.navigations.length, 0);
+  assert.match(h.get('.account-status').textContent, /otro plan/);
+});
+
+test('requote double confirmation is single flight and a failed request retries the same idempotency key', async () => {
+  const first = deferred(); let count = 0;
+  const h = browser({ pendingChange: pendingFixture('requote'), change: () => ++count === 1 ? first.promise : reply(pendingFixture('review')) });
+  await h.login(); await h.click('change-plan'); const confirming = h.confirm(); await flush();
+  await h.confirm(); await h.click('change-plan');
+  assert.equal(changes(h).length, 1);
+  first.resolve(reply({ error: { message: 'Temporary requote failure' } }, 503)); await confirming;
+  await h.click('change-plan'); await h.confirm();
+  assert.equal(changes(h).length, 2);
+  assert.equal(changes(h)[0].headers['idempotency-key'], changes(h)[1].headers['idempotency-key']);
+  assert.equal(checkoutCalls(h).length, 0);
+});
+
+test('requested and quoted private changes are review-only and cannot enable checkout or requote', async () => {
+  for (const status of ['requested', 'quoted']) {
+    const pending = { ...pendingFixture('review'), status };
+    assert.equal(readPendingPlanChange(pending).status, status);
+    for (const nextAction of ['checkout', 'requote', 'wait_for_payment', 'wait_for_activation']) {
+      assert.throws(() => readPendingPlanChange({ ...pending, nextAction }));
+    }
+    const h = browser({ pendingChange: pending }); await h.login();
+    assert.equal(h.get("[data-action='change-plan']").disabled, true);
+    await h.click('change-plan'); await h.confirm();
+    assert.equal(checkoutCalls(h).length, 0); assert.equal(changes(h).length, 0);
+  }
+});
+
+test('server prorated quote 1989780 keeps 19.897,80 COP in payment status and pending caption', async () => {
+  const first = deferred(), change = pendingFixture(); change.quote.amountMinor = 1989780;
+  const h = browser({ planCode: 'basic', change: () => reply(change), checkout: () => first.promise });
+  await h.login(); h.get('#target-plan').value = 'basic-fe'; await h.click('change-plan');
+  const confirming = h.confirm(); await flush();
+  assert.match(h.get('.account-status').textContent, /Prorrateo confirmado: 19\.897,80 COP/);
+  first.resolve(reply({ error: { message: 'Synthetic payment opening failure' } }, 503)); await confirming;
+  assert.match(h.get("[data-field='pending-plan-summary']").textContent, /Importe cotizado: 19\.897,80 COP/);
+  assert.equal(JSON.parse(checkoutCalls(h)[0].body).amountMinor, undefined, 'the UI sends no calculated amount');
 });

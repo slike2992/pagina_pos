@@ -17,7 +17,7 @@ pruebas de validación, render y concurrencia junto a las del portal existente.
 
 El retorno de Wompi identifica la compra mediante `checkoutSessionId` en la URL,
 independientemente del ID de transacción del proveedor y de la pestaña de origen.
-Una verificación consumida sólo puede reanudar su checkout original pendiente
+En registro, una verificación consumida sólo puede reanudar su checkout original pendiente
 mediante `POST /v1/signup-intents/:id/resume-checkout`, disponible en la API SaaS
 del bloque de recuperación de staging 2026-11-09. El servidor comprueba posesión,
 vigencia y estado; no renueva tokens ni pagos. Una compra pagada o vencida no se
@@ -33,9 +33,49 @@ la oferta del servidor habilita preparar el pago con el POST existente. La API
 debe reutilizar la orden rechazada y bloquear pagos pendientes, ambiguos o ya
 aprobados. Ver [DTO y recorrido](docs/SUBSCRIPTION_RECOVERY.md).
 
+## Cambio de plan pendiente y retorno de pago
+
+Desplegar primero la API compatible y después la web. Este bloque reutiliza las
+rutas existentes, sin endpoints ni CSS nuevos. No guardar el cambio pendiente en
+storage ni descubrirlo desde parámetros de URL: `GET /v1/me/subscription` publica
+`pendingChange?: null | {...}` sólo para `owner`, `admin` y `billing`; los empleados
+no reciben la propiedad ni controles de cobro. El objeto incluye el identificador
+del cambio, estado, plan destino, cotización del servidor, vigencia, orden/checkout
+opcionales y `nextAction`. El plan vigente, por ejemplo Básico, permanece visible
+hasta que una nueva lectura del servidor confirme el cambio aplicado.
+
+| `nextAction` | Acción del portal |
+| --- | --- |
+| `checkout` | Botón explícito para reanudar con `POST /v1/me/billing/checkout-sessions`, enviando sólo `subscriptionChangeId` e `Idempotency-Key`. La API recupera la misma orden/checkout firmado vigente incluso con una clave nueva. La web conserva la URL exacta devuelta. |
+| `wait_for_payment` | Pago pendiente: actualizar lectura; sin otro pago. |
+| `wait_for_activation` | Pago en aplicación: actualizar lectura; sin otro pago. |
+| `requote` | Revisar y confirmar explícitamente una cotización vigente mediante `POST /v1/me/subscription/change` con el código destino del pendiente. La API verifica el historial, cierra lo que corresponda y calcula el nuevo importe; sólo su respuesta habilita checkout. |
+| `wait_for_period_end` | Mostrar el cambio programado al finalizar el período. |
+| `review` | Actualizar o contactar soporte; sin checkout ni recotización. |
+
+Los estados privados admitidos son `requested`, `quoted`, `pending_payment`,
+`scheduled` y `failed`; `requested/quoted` permiten exclusivamente `review`.
+Datos malformados bloquean los cambios de plan sin impedir SSO o renovación.
+Las operaciones de pago/recotización tienen guarda síncrona e idempotencia para
+reintentos; logout u otra sesión invalidan respuestas tardías. La UI no decide
+si un pago vencido, ambiguo o aprobado admite otro intento: lo determina la API.
+Los importes cotizados conservan centavos mediante `recoveryAmount`, sin recalcular
+el prorrateo ni modificar los precios del catálogo.
+
+El GET público de checkout añade `purpose: 'signup' | 'plan_change' | 'renewal' |
+'unknown'`; para `plan_change`, `planChange.status` usa `requested`, `quoted`,
+`pending_payment`, `scheduled`, `applied`, `cancelled` o `failed`. No agrega datos
+personales, tokens ni contexto de tenant. El estado del pago y la aplicación son
+distintos: `approved` no acredita un cambio aplicado; sólo `fulfilled` junto con
+`planChange.status='applied'` lo muestra como aplicado. Esto tampoco acredita la
+configuración o activación fiscal. Un upgrade rechazado dirige a Mi cuenta, sin
+mensajes de alta ni correo de verificación de registro. Sólo `purpose='signup'`
+habilita esa guía; ausencia de contexto permanece neutra y la recuperación de
+períodos conserva su contrato. El retorno nunca autentica ni habilita acceso.
+
 ## Desarrollo
 
-Requiere Node >=22.12; esta revisión utiliza Node 24.19. No usar el Node 18
+Requiere Node >=22.12; esta revisión utiliza Node 24.22.1. No usar el Node 18
 global que existe en algunos equipos. Instalar con `pnpm install` en un clon
 nuevo. Copiar `.env.example` a `.env.local` y configurar las URL públicas del
 entorno. Las variables `PUBLIC_*` no son secretos: nunca poner claves en ellas.
@@ -63,6 +103,13 @@ el HTML y el consentimiento. `build:public` activa explícitamente la indexació
 rechaza el preview jurídico, construye y ejecuta las comprobaciones. No despliega
 ni acredita configuración DNS, HTTPS, indexación real o aprobación jurídica.
 La salida pública debe publicarse completa y retirando archivos antiguos.
+
+El bloque de retorno y cambio pendiente validó localmente **204/204 pruebas de
+lógica con Node 24.22.1**: las 203 de la congelación más una regresión de centavos
+del prorrateo. Las pruebas ejecutan los controladores con DOM/HTTP simulados.
+Build Ubuntu aislado, checks de HTML construido y aceptación en navegador siguen
+pendientes del integrador; esta cifra no incluye esos checks ni acredita un pago
+o replay real. Ver [comandos y alcance](scripts/README.md).
 
 ## Configuración
 

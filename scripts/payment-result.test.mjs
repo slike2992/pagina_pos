@@ -10,11 +10,12 @@ assert.ok(script);
 const code = ts.transpileModule(script.replaceAll('import.meta.env.DEV', 'false'), {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
 }).outputText;
-const returnExports = {}, recoveryExports = {};
+const returnExports = {}, recoveryExports = {}, resultExports = {};
 const compile = source => ts.transpileModule(source, {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
 }).outputText;
 vm.runInNewContext(compile(await readFile(new URL('../src/lib/checkout-return.ts', import.meta.url), 'utf8')), { exports: returnExports, URL });
+vm.runInNewContext(compile(await readFile(new URL('../src/lib/payment-result.ts', import.meta.url), 'utf8')), { exports: resultExports });
 vm.runInNewContext(compile(await readFile(new URL('../src/lib/subscription-recovery.ts', import.meta.url), 'utf8')), {
   exports: recoveryExports, URL, Intl, require: name => name === './checkout-return' ? returnExports : assert.fail(`unexpected helper import: ${name}`),
 });
@@ -37,7 +38,8 @@ async function run(responses, { query = '?checkoutSessionId=00000000-0000-4000-8
   }
   const root = { dataset: { apiUrl: 'https://api.staging.example.invalid' }, querySelector: selector => elements.get(selector) };
   const sandbox = {
-    exports: {}, require: name => name === '../../lib/subscription-recovery' ? recoveryExports : assert.fail(`unexpected controller import: ${name}`),
+    exports: {}, require: name => name === '../../lib/subscription-recovery' ? recoveryExports
+      : name === '../../lib/payment-result' ? resultExports : assert.fail(`unexpected controller import: ${name}`),
     document: { querySelector: () => root },
     location: { search: query }, URLSearchParams, Intl,
     sessionStorage: { getItem: key => { if (blockedStorage) throw new Error('storage unavailable'); return key.startsWith('cripton:recovery:') && knownRecovery ? 'true' : null; } },
@@ -56,7 +58,7 @@ async function run(responses, { query = '?checkoutSessionId=00000000-0000-4000-8
       return { ok: httpStatus >= 200 && httpStatus < 300, status: httpStatus, json: async () => {
         if (response.invalidJson) throw new SyntaxError('not JSON');
         return typeof response === 'string'
-          ? { status: response, reference: 'QA-RESULT', currency: 'COP', amountInCents: 7990000 }
+          ? { status: response, purpose: 'signup', reference: 'QA-RESULT', currency: 'COP', amountInCents: 7990000 }
           : response.body ?? { error: { message: 'No disponible' } };
       } };
     },
@@ -351,4 +353,102 @@ test('denying the sessionStorage property itself cannot break a recovery identif
   const h = await run(recoveryResponse('fulfilled'), { storageGetterBlocked: true });
   assert.equal(h.calls.length, 1); assert.match(h.elements.get('#result-heading').textContent, /Período recuperado/);
   assert.equal(h.elements.get('#password-link').href, '/cuenta');
+});
+
+const upgradeResponse = (status, changeStatus = 'pending_payment') => ({ httpStatus: 200,
+  body: { status, purpose: 'plan_change', reference: 'QA-UPGRADE', currency: 'COP', amountInCents: 1230017,
+    planChange: { status: changeStatus } } });
+const noSignup = h => {
+  const text = ['#result-heading', '.status', '[data-detail]'].map(key => h.elements.get(key).textContent).join(' ');
+  assert.doesNotMatch(text, /empresa.*(?:activada|lista)|aprovision|crear.*contraseña|verificación.*registro/i);
+  assert.ok(h.calls.every(url => !/development|password|pos-sso/.test(url)));
+};
+
+test('declined upgrade returns to account without signup guidance, new charges, or false deactivation', async () => {
+  const h = await run(upgradeResponse('declined'), { blockedStorage: true, development: true });
+  noSignup(h);
+  assert.equal(h.elements.get('#result-heading').textContent, 'Pago rechazado');
+  assert.equal(h.elements.get("[data-field='amount']").textContent, '12.300,17 COP');
+  assert.match(h.elements.get('.status').textContent, /no confirma la aplicación del cambio/);
+  assert.match(h.elements.get('[data-detail]').textContent, /cambio pendiente en Mi cuenta/);
+  assert.equal(h.elements.get('#password-link').href, '/cuenta');
+  assert.equal(h.elements.get('#password-link').hidden, false);
+  assert.equal(h.timers.size, 0);
+  await h.clickRetry(); assert.equal(h.calls.length, 2); assert.equal(new Set(h.calls).size, 1);
+  noSignup(h);
+});
+
+test('pending then approved upgrade waits for server application, including a fulfilled order not yet applied', async () => {
+  const h = await run([upgradeResponse('pending'), upgradeResponse('approved'), upgradeResponse('fulfilled'), upgradeResponse('fulfilled', 'applied')]);
+  noSignup(h);
+  await h.advance(3000);
+  assert.match(h.elements.get('#result-heading').textContent, /cambio pendiente de aplicar/);
+  assert.notEqual(h.elements.get('.status').dataset.state, 'success');
+  await h.advance(3000);
+  assert.match(h.elements.get('#result-heading').textContent, /cambio pendiente de aplicar/);
+  assert.equal(h.timers.size, 1);
+  await h.advance(3000);
+  assert.equal(h.elements.get('#result-heading').textContent, 'Cambio de plan aplicado');
+  assert.equal(h.elements.get('.status').dataset.state, 'success');
+  assert.match(h.elements.get('[data-detail]').textContent, /no confirma.*activación de facturación electrónica/);
+  assert.equal(h.timers.size, 0); noSignup(h);
+});
+
+test('approved upgrade stays pending after bounded polling and preserves account recovery', async () => {
+  const h = await run(upgradeResponse('approved')); await h.advance(27000);
+  assert.equal(h.calls.length, 10); assert.equal(h.timers.size, 0);
+  assert.match(h.elements.get('#result-heading').textContent, /pendiente de aplicar/);
+  assert.equal(h.elements.get('#password-link').hidden, false); noSignup(h);
+});
+
+test('failed application after payment requires account review and never claims applied', async () => {
+  for (const state of ['failed', 'cancelled']) {
+    const h = await run(upgradeResponse('approved', state));
+    assert.match(h.elements.get('#result-heading').textContent, /requiere revisión/);
+    assert.equal(h.timers.size, 0); assert.notEqual(h.elements.get('.status').dataset.state, 'success'); noSignup(h);
+  }
+});
+
+test('expired, cancelled and refunded upgrades do not offer signup or pretend to apply the plan', async () => {
+  for (const state of ['expired', 'cancelled', 'refunded']) {
+    const h = await run(upgradeResponse(state));
+    assert.equal(h.elements.get('#password-link').href, '/cuenta');
+    assert.equal(h.elements.get('#password-link').hidden, false);
+    assert.equal(h.timers.size, 0); noSignup(h);
+  }
+});
+
+test('legacy response without purpose stays neutral even with forged signup query and inaccessible storage', async () => {
+  for (const status of ['declined', 'approved', 'fulfilled']) {
+    const h = await run({ httpStatus: 200, body: { status, reference: 'QA-OLD', amountInCents: 1230017, currency: 'COP' } },
+      { storageGetterBlocked: true, development: true, query: '?checkoutSessionId=00000000-0000-4000-8000-000000000001&purpose=signup&status=fulfilled' });
+    noSignup(h);
+    assert.equal(h.elements.get('#password-link').href, '/cuenta');
+    assert.notEqual(h.elements.get('.status').dataset.state, 'success');
+  }
+});
+
+test('malformed or contradictory context cannot fall back to signup', async () => {
+  for (const extra of [{ planChange: null }, { planChange: {} }, { planChange: { status: 'active' } },
+    { purpose: 'forged' }, { purpose: 'signup', planChange: { status: 'applied' } }, { recovery: historicalRecovery }]) {
+    const body = { ...upgradeResponse('fulfilled').body, ...extra };
+    const h = await run({ httpStatus: 200, body }); noSignup(h);
+    assert.equal(h.elements.get('#password-link').hidden, true);
+    assert.equal(h.elements.get('.status').dataset.state, 'error');
+  }
+});
+
+test('upgrade context cannot disappear or become signup on the next poll', async () => {
+  for (const next of ['fulfilled', { httpStatus: 200, body: { status: 'fulfilled', reference: 'QA-OLD', amountInCents: 1, currency: 'COP' } }]) {
+    const h = await run([upgradeResponse('pending'), next]); await h.advance(3000);
+    noSignup(h); assert.equal(h.elements.get('#password-link').hidden, true);
+    assert.equal(h.elements.get('.status').dataset.state, 'error');
+  }
+});
+
+test('invalid public receipt values fail closed rather than rendering an applied upgrade', async () => {
+  for (const extra of [{ amountInCents: -1 }, { amountInCents: 1.5 }, { currency: 'USD' }, { status: 'active' }, { reference: '' }]) {
+    const h = await run({ httpStatus: 200, body: { ...upgradeResponse('fulfilled', 'applied').body, ...extra } });
+    assert.equal(h.elements.get('.status').dataset.state, 'error'); noSignup(h);
+  }
 });
