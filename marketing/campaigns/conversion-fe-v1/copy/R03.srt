@@ -1,0 +1,24 @@
+1
+00:00:00,000 --> 00:00:06,000
+¿Interno significa factura electrónica?
+Son documentos con funciones diferentes.
+
+2
+00:00:06,000 --> 00:00:12,000
+Registra información de la operación.
+No sustituye la factura fiscal exigida.
+
+3
+00:00:12,000 --> 00:00:18,000
+Su emisión tiene requisitos propios.
+Incluye generación, transmisión, validación y entrega según corresponda.
+
+4
+00:00:18,000 --> 00:00:24,000
+Reutiliza la información registrada.
+La función no modifica el momento legal en que se debe facturar.
+
+5
+00:00:24,000 --> 00:00:30,000
+Solicita una demostración.
+Escríbenos DEMO y revisemos el flujo disponible.

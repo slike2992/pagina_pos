@@ -1,0 +1,11 @@
+file '../images/R03-01-story.png'
+duration 6.0
+file '../images/R03-02-story.png'
+duration 6.0
+file '../images/R03-03-story.png'
+duration 6.0
+file '../images/R03-04-story.png'
+duration 6.0
+file '../images/R03-05-story.png'
+duration 6.0
+file '../images/R03-05-story.png'

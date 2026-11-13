@@ -1,0 +1,18 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {createRequire} from 'node:module';
+const [root,dependencyRoot]=process.argv.slice(2);
+const sharp=createRequire(path.join(dependencyRoot,'package.json'))('sharp');
+const manifest=JSON.parse(await fs.readFile(path.join(root,'manifest.json'),'utf8'));
+const report=[];
+for(const item of manifest){
+ const dest=path.join(root,item.images);
+ await sharp(path.join(root,item.vectors)).png().toFile(dest);
+ const meta=await sharp(dest).metadata();report.push({id:item.id,file:item.images,width:meta.width,height:meta.height,bytes:(await fs.stat(dest)).size});
+}
+await fs.writeFile(path.join(root,'qa','exports.json'),JSON.stringify(report,null,2));
+const e=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');
+const cards=manifest.filter(x=>x.format!=='square'&&x.category!=='video-scene').map(x=>`<article><img src="${x.images}" alt="${e(x.alt)}" loading="lazy"><h3>${e(x.id)} · ${e(x.title)}</h3><a href="${x.images}" download>PNG</a> · <a href="${x.sources}">SVG editable</a></article>`).join('');
+const videos=['R01','R02','R03'].map(id=>`<article><video controls preload="metadata" poster="images/${id}-cover-feed.png" src="videos/${id}.mp4"></video><h3>${id}</h3><a href="videos/${id}.mp4" download>Descargar MP4</a> · <a href="copy/${id}.srt">Subtítulos</a></article>`).join('');
+await fs.writeFile(path.join(root,'index.html'),`<!doctype html><html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cripton · Campaña documental</title><style>@font-face{font-family:Inter;src:url(assets/fonts/Inter-Regular.ttf)}*{box-sizing:border-box}body{margin:0;background:#f0f6f7;color:#051828;font-family:Inter,Arial}header{background:#051828;color:white;padding:40px max(24px,5vw)}header img{width:330px;max-width:85%}h1{font-size:clamp(28px,4vw,48px);max-width:900px}header p{max-width:900px;line-height:1.6}main{padding:30px max(24px,5vw)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px}article{background:white;border-radius:12px;padding:12px;min-width:0}article img,video{display:block;width:100%;height:auto}h3{font-size:16px}a{color:#056877}.notice{border-left:5px solid #056877;background:white;padding:20px;line-height:1.6}section{margin:36px 0}.links{display:flex;gap:20px;flex-wrap:wrap}.links a,header a{color:#31ccd4}video{max-height:560px;background:#051828}</style><header><img src="assets/cripton_horizontal_reverso_v1.0.svg" alt="Cripton"><h1>La información que registras puede seguir su camino.</h1><p>Campaña de conversión documental · versión 1.0 · preparada para aprobación. Tres videos editoriales, carrusel, publicaciones e historias. Sin publicación ni pauta activada.</p><div class="links"><a href="#videos">Videos</a><a href="#piezas">Piezas</a><a href="copy/textos.txt">Textos para copiar</a><a href="README.md">Alcance y orden de publicación</a></div></header><main><p class="notice"><strong>Alcance real:</strong> los videos son explicaciones gráficas, no grabaciones de una conversión. La captura de catálogo es real, con datos QA. No acredita emisión productiva ni cumplimiento tributario certificado. Función sujeta a configuración fiscal y plan con electrónica; el documento interno no sustituye la factura fiscal exigida ni modifica el momento legal de emisión.</p><section id="videos"><h2>Tres videos verticales · sin voz ni música</h2><div class="grid">${videos}</div></section><section id="piezas"><h2>Carrusel, publicaciones e historias</h2><div class="grid">${cards}</div></section></main></html>`);
+console.log(JSON.stringify({images:report.length,gallery:path.join(root,'index.html')}));

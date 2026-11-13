@@ -1,0 +1,261 @@
+[
+  {
+    "id": "C01-01",
+    "file": "images/C01-01-feed.png",
+    "width": 1080,
+    "height": 1350,
+    "bytes": 127022
+  },
+  {
+    "id": "C01-01",
+    "file": "images/C01-01-square.png",
+    "width": 1080,
+    "height": 1080,
+    "bytes": 114443
+  },
+  {
+    "id": "C01-02",
+    "file": "images/C01-02-feed.png",
+    "width": 1080,
+    "height": 1350,
+    "bytes": 111707
+  },
+  {
+    "id": "C01-02",
+    "file": "images/C01-02-square.png",
+    "width": 1080,
+    "height": 1080,
+    "bytes": 101700
+  },
+  {
+    "id": "C01-03",
+    "file": "images/C01-03-feed.png",
+    "width": 1080,
+    "height": 1350,
+    "bytes": 120255
+  },
+  {
+    "id": "C01-03",
+    "file": "images/C01-03-square.png",
+    "width": 1080,
+    "height": 1080,
+    "bytes": 105876
+  },
+  {
+    "id": "C01-04",
+    "file": "images/C01-04-feed.png",
+    "width": 1080,
+    "height": 1350,
+    "bytes": 115690
+  },
+  {
+    "id": "C01-04",
+    "file": "images/C01-04-square.png",
+    "width": 1080,
+    "height": 1080,
+    "bytes": 105473
+  },
+  {
+    "id": "C01-05",
+    "file": "images/C01-05-feed.png",
+    "width": 1080,
+    "height": 1350,
+    "bytes": 125493
+  },
+  {
+    "id": "C01-05",
+    "file": "images/C01-05-square.png",
+    "width": 1080,
+    "height": 1080,
+    "bytes": 112581
+  },
+  {
+    "id": "P01",
+    "file": "images/P01-feed.png",
+    "width": 1080,
+    "height": 1350,
+    "bytes": 133393
+  },
+  {
+    "id": "P01",
+    "file": "images/P01-square.png",
+    "width": 1080,
+    "height": 1080,
+    "bytes": 120534
+  },
+  {
+    "id": "P02",
+    "file": "images/P02-feed.png",
+    "width": 1080,
+    "height": 1350,
+    "bytes": 105442
+  },
+  {
+    "id": "P02",
+    "file": "images/P02-square.png",
+    "width": 1080,
+    "height": 1080,
+    "bytes": 96272
+  },
+  {
+    "id": "P03",
+    "file": "images/P03-feed.png",
+    "width": 1080,
+    "height": 1350,
+    "bytes": 325571
+  },
+  {
+    "id": "P03",
+    "file": "images/P03-square.png",
+    "width": 1080,
+    "height": 1080,
+    "bytes": 181770
+  },
+  {
+    "id": "S01",
+    "file": "images/S01-story.png",
+    "width": 1080,
+    "height": 1920,
+    "bytes": 136834
+  },
+  {
+    "id": "S02",
+    "file": "images/S02-story.png",
+    "width": 1080,
+    "height": 1920,
+    "bytes": 119645
+  },
+  {
+    "id": "S03",
+    "file": "images/S03-story.png",
+    "width": 1080,
+    "height": 1920,
+    "bytes": 123509
+  },
+  {
+    "id": "S04",
+    "file": "images/S04-story.png",
+    "width": 1080,
+    "height": 1920,
+    "bytes": 143602
+  },
+  {
+    "id": "R01-01",
+    "file": "images/R01-01-story.png",
+    "width": 1080,
+    "height": 1920,
+    "bytes": 138245
+  },
+  {
+    "id": "R01-02",
+    "file": "images/R01-02-story.png",
+    "width": 1080,
+    "height": 1920,
+    "bytes": 111547
+  },
+  {
+    "id": "R01-03",
+    "file": "images/R01-03-story.png",
+    "width": 1080,
+    "height": 1920,
+    "bytes": 116317
+  },
+  {
+    "id": "R01-04",
+    "file": "images/R01-04-story.png",
+    "width": 1080,
+    "height": 1920,
+    "bytes": 116379
+  },
+  {
+    "id": "R01-05",
+    "file": "images/R01-05-story.png",
+    "width": 1080,
+    "height": 1920,
+    "bytes": 132728
+  },
+  {
+    "id": "R01-cover",
+    "file": "images/R01-cover-feed.png",
+    "width": 1080,
+    "height": 1350,
+    "bytes": 124055
+  },
+  {
+    "id": "R02-01",
+    "file": "images/R02-01-story.png",
+    "width": 1080,
+    "height": 1920,
+    "bytes": 128204
+  },
+  {
+    "id": "R02-02",
+    "file": "images/R02-02-story.png",
+    "width": 1080,
+    "height": 1920,
+    "bytes": 116988
+  },
+  {
+    "id": "R02-03",
+    "file": "images/R02-03-story.png",
+    "width": 1080,
+    "height": 1920,
+    "bytes": 334230
+  },
+  {
+    "id": "R02-04",
+    "file": "images/R02-04-story.png",
+    "width": 1080,
+    "height": 1920,
+    "bytes": 132223
+  },
+  {
+    "id": "R02-cover",
+    "file": "images/R02-cover-feed.png",
+    "width": 1080,
+    "height": 1350,
+    "bytes": 113343
+  },
+  {
+    "id": "R03-01",
+    "file": "images/R03-01-story.png",
+    "width": 1080,
+    "height": 1920,
+    "bytes": 135969
+  },
+  {
+    "id": "R03-02",
+    "file": "images/R03-02-story.png",
+    "width": 1080,
+    "height": 1920,
+    "bytes": 110663
+  },
+  {
+    "id": "R03-03",
+    "file": "images/R03-03-story.png",
+    "width": 1080,
+    "height": 1920,
+    "bytes": 115988
+  },
+  {
+    "id": "R03-04",
+    "file": "images/R03-04-story.png",
+    "width": 1080,
+    "height": 1920,
+    "bytes": 116137
+  },
+  {
+    "id": "R03-05",
+    "file": "images/R03-05-story.png",
+    "width": 1080,
+    "height": 1920,
+    "bytes": 133673
+  },
+  {
+    "id": "R03-cover",
+    "file": "images/R03-cover-feed.png",
+    "width": 1080,
+    "height": 1350,
+    "bytes": 121667
+  }
+]

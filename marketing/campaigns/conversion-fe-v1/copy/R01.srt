@@ -1,0 +1,24 @@
+1
+00:00:00,000 --> 00:00:06,000
+¿Volver a digitar los mismos productos?
+Conoce la función de conversión de Cripton POS.
+
+2
+00:00:06,000 --> 00:00:12,000
+La información ya está registrada.
+Un documento interno conserva el detalle de los productos.
+
+3
+00:00:12,000 --> 00:00:18,000
+Aprovéchala en la factura electrónica.
+Genera la factura desde la información del documento de origen.
+
+4
+00:00:18,000 --> 00:00:24,000
+Configuración y validación fiscal.
+Requiere plan con electrónica y configuración fiscal. Consulta el resultado del proceso.
+
+5
+00:00:24,000 --> 00:00:30,000
+Veámoslo con tu negocio.
+Escríbenos DEMO por mensaje privado.

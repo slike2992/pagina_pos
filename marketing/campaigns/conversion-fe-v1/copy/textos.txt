@@ -1,0 +1,32 @@
+C01
+¿Ya registraste los productos? Cripton POS permite aprovechar la información de un documento interno para generar la factura electrónica. Conoce el flujo y sus requisitos en una demostración. Escríbenos DEMO por mensaje privado. Requiere plan con electrónica y configuración fiscal. El documento interno no sustituye la factura fiscal exigida ni modifica el momento legal de emisión.
+
+P01
+Volver a digitar los mismos productos puede ser trabajo repetido. Conoce la función de conversión de documentos de Cripton POS. Escríbenos DEMO. Requiere plan con electrónica y configuración fiscal; los documentos internos no sustituyen la factura fiscal exigida.
+
+P02
+¿Tienes una papelería? Conoce Cripton POS y su función para aprovechar la información registrada al generar una factura electrónica. Escríbenos PAPELERÍA por mensaje privado. Función sujeta a configuración fiscal y plan con electrónica; emisión en el momento legal correspondiente.
+
+P03
+Así se ve el catálogo de Cripton POS. La captura usa datos QA, no resultados de un cliente. ¿Quieres conocer el sistema aplicado a tu negocio? Escríbenos DEMO.
+
+S01
+¿Tienes una papelería? Escríbenos PAPELERÍA y conoce el proceso.
+
+S02
+Conoce la función de conversión de Cripton POS. Escríbenos DEMO.
+
+S03
+Documento interno y factura electrónica tienen funciones distintas. Conoce el alcance antes de elegir tu sistema.
+
+S04
+Escríbenos DEMO por mensaje privado y cuéntanos qué vendes.
+
+R01
+Conoce cómo Cripton POS aprovecha la información de un documento interno para generar la factura electrónica. Video explicativo, no grabación de una emisión. Requiere plan con electrónica y configuración fiscal. El documento interno no sustituye la factura exigida ni permite aplazar su emisión. Escríbenos DEMO.
+
+R02
+¿Tienes una papelería? Conoce el flujo documental de Cripton POS. Video explicativo con una captura real del catálogo y datos QA; no representa una venta real ni una emisión productiva. Escríbenos PAPELERÍA. Requiere plan con electrónica y configuración fiscal; emisión en el momento legal correspondiente.
+
+R03
+¿Un documento interno es una factura electrónica? No. Te explicamos la diferencia y qué aporta la conversión en Cripton POS. Contenido informativo general; no sustituye asesoría tributaria. Escríbenos DEMO para conocer el sistema.

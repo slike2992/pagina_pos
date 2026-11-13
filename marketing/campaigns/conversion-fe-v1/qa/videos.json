@@ -1,0 +1,41 @@
+[
+  {
+    "id": "R01",
+    "seconds": 30,
+    "size": [
+      1080,
+      1920
+    ],
+    "fps": 30,
+    "audio": false,
+    "bytes": 390147,
+    "decode": "passed",
+    "visual": "Editorial cards, not a screen recording"
+  },
+  {
+    "id": "R02",
+    "seconds": 24,
+    "size": [
+      1080,
+      1920
+    ],
+    "fps": 30,
+    "audio": false,
+    "bytes": 317817,
+    "decode": "passed",
+    "visual": "Editorial cards, not a screen recording"
+  },
+  {
+    "id": "R03",
+    "seconds": 30,
+    "size": [
+      1080,
+      1920
+    ],
+    "fps": 30,
+    "audio": false,
+    "bytes": 383516,
+    "decode": "passed",
+    "visual": "Editorial cards, not a screen recording"
+  }
+]

@@ -1,0 +1,19 @@
+1
+00:00:00,000 --> 00:00:06,000
+Cuadernos, carpetas y lapiceros.
+Tu negocio maneja muchas referencias.
+
+2
+00:00:06,000 --> 00:00:12,000
+Aprovecha el detalle de tus productos.
+Conoce cómo se utiliza en la generación de la factura electrónica.
+
+3
+00:00:12,000 --> 00:00:18,000
+Conoce el catálogo del sistema.
+Captura de la interfaz con productos QA; no representa un catálogo de papelería.
+
+4
+00:00:18,000 --> 00:00:24,000
+Te mostramos el proceso.
+Escríbenos PAPELERÍA por mensaje privado.

@@ -1,0 +1,372 @@
+[
+  {
+    "id": "C01-01",
+    "category": "carousel",
+    "format": "feed",
+    "title": "Ya registraste los productos.",
+    "alt": "Ya registraste los productos. Aprovecha esa información para generar tu factura electrónica con Cripton POS.",
+    "sources": "sources/C01-01-feed.svg",
+    "vectors": "vectors/C01-01-feed.svg",
+    "images": "images/C01-01-feed.png"
+  },
+  {
+    "id": "C01-01",
+    "category": "carousel",
+    "format": "square",
+    "title": "Ya registraste los productos.",
+    "alt": "Ya registraste los productos. Aprovecha esa información para generar tu factura electrónica con Cripton POS.",
+    "sources": "sources/C01-01-square.svg",
+    "vectors": "vectors/C01-01-square.svg",
+    "images": "images/C01-01-square.png"
+  },
+  {
+    "id": "C01-02",
+    "category": "carousel",
+    "format": "feed",
+    "title": "Parte de la información registrada.",
+    "alt": "Parte de la información registrada. El documento interno es el origen de los datos. No sustituye la factura fiscal exigida.",
+    "sources": "sources/C01-02-feed.svg",
+    "vectors": "vectors/C01-02-feed.svg",
+    "images": "images/C01-02-feed.png"
+  },
+  {
+    "id": "C01-02",
+    "category": "carousel",
+    "format": "square",
+    "title": "Parte de la información registrada.",
+    "alt": "Parte de la información registrada. El documento interno es el origen de los datos. No sustituye la factura fiscal exigida.",
+    "sources": "sources/C01-02-square.svg",
+    "vectors": "vectors/C01-02-square.svg",
+    "images": "images/C01-02-square.png"
+  },
+  {
+    "id": "C01-03",
+    "category": "carousel",
+    "format": "feed",
+    "title": "Genera la factura electrónica.",
+    "alt": "Genera la factura electrónica. La función de conversión utiliza la información del documento de origen. Requiere configuración fiscal y un plan con electrónica.",
+    "sources": "sources/C01-03-feed.svg",
+    "vectors": "vectors/C01-03-feed.svg",
+    "images": "images/C01-03-feed.png"
+  },
+  {
+    "id": "C01-03",
+    "category": "carousel",
+    "format": "square",
+    "title": "Genera la factura electrónica.",
+    "alt": "Genera la factura electrónica. La función de conversión utiliza la información del documento de origen. Requiere configuración fiscal y un plan con electrónica.",
+    "sources": "sources/C01-03-square.svg",
+    "vectors": "vectors/C01-03-square.svg",
+    "images": "images/C01-03-square.png"
+  },
+  {
+    "id": "C01-04",
+    "category": "carousel",
+    "format": "feed",
+    "title": "Consulta el resultado del proceso.",
+    "alt": "Consulta el resultado del proceso. Revisa el estado y la relación documental desde el POS. La validación y entrega forman parte de la emisión.",
+    "sources": "sources/C01-04-feed.svg",
+    "vectors": "vectors/C01-04-feed.svg",
+    "images": "images/C01-04-feed.png"
+  },
+  {
+    "id": "C01-04",
+    "category": "carousel",
+    "format": "square",
+    "title": "Consulta el resultado del proceso.",
+    "alt": "Consulta el resultado del proceso. Revisa el estado y la relación documental desde el POS. La validación y entrega forman parte de la emisión.",
+    "sources": "sources/C01-04-square.svg",
+    "vectors": "vectors/C01-04-square.svg",
+    "images": "images/C01-04-square.png"
+  },
+  {
+    "id": "C01-05",
+    "category": "carousel",
+    "format": "feed",
+    "title": "Conoce el flujo completo.",
+    "alt": "Conoce el flujo completo. Pide una demostración de Cripton POS y revisa cómo se adapta a tu operación.",
+    "sources": "sources/C01-05-feed.svg",
+    "vectors": "vectors/C01-05-feed.svg",
+    "images": "images/C01-05-feed.png"
+  },
+  {
+    "id": "C01-05",
+    "category": "carousel",
+    "format": "square",
+    "title": "Conoce el flujo completo.",
+    "alt": "Conoce el flujo completo. Pide una demostración de Cripton POS y revisa cómo se adapta a tu operación.",
+    "sources": "sources/C01-05-square.svg",
+    "vectors": "vectors/C01-05-square.svg",
+    "images": "images/C01-05-square.png"
+  },
+  {
+    "id": "P01",
+    "category": "post",
+    "format": "feed",
+    "title": "¿Digitar los mismos productos otra vez?",
+    "alt": "¿Digitar los mismos productos otra vez? Del documento interno a la factura electrónica, aprovechando la información que ya registraste.",
+    "sources": "sources/P01-feed.svg",
+    "vectors": "vectors/P01-feed.svg",
+    "images": "images/P01-feed.png"
+  },
+  {
+    "id": "P01",
+    "category": "post",
+    "format": "square",
+    "title": "¿Digitar los mismos productos otra vez?",
+    "alt": "¿Digitar los mismos productos otra vez? Del documento interno a la factura electrónica, aprovechando la información que ya registraste.",
+    "sources": "sources/P01-square.svg",
+    "vectors": "vectors/P01-square.svg",
+    "images": "images/P01-square.png"
+  },
+  {
+    "id": "P02",
+    "category": "post",
+    "format": "feed",
+    "title": "Cuadernos. Carpetas. Lapiceros.",
+    "alt": "Cuadernos. Carpetas. Lapiceros. Conoce una forma de conectar la información de tus documentos con la emisión electrónica.",
+    "sources": "sources/P02-feed.svg",
+    "vectors": "vectors/P02-feed.svg",
+    "images": "images/P02-feed.png"
+  },
+  {
+    "id": "P02",
+    "category": "post",
+    "format": "square",
+    "title": "Cuadernos. Carpetas. Lapiceros.",
+    "alt": "Cuadernos. Carpetas. Lapiceros. Conoce una forma de conectar la información de tus documentos con la emisión electrónica.",
+    "sources": "sources/P02-square.svg",
+    "vectors": "vectors/P02-square.svg",
+    "images": "images/P02-square.png"
+  },
+  {
+    "id": "P03",
+    "category": "post",
+    "format": "feed",
+    "title": "Mira el sistema por dentro.",
+    "alt": "Mira el sistema por dentro. Catálogo, ventas e inventario: solicita una demostración aplicada a tu negocio.",
+    "sources": "sources/P03-feed.svg",
+    "vectors": "vectors/P03-feed.svg",
+    "images": "images/P03-feed.png"
+  },
+  {
+    "id": "P03",
+    "category": "post",
+    "format": "square",
+    "title": "Mira el sistema por dentro.",
+    "alt": "Mira el sistema por dentro. Catálogo, ventas e inventario: solicita una demostración aplicada a tu negocio.",
+    "sources": "sources/P03-square.svg",
+    "vectors": "vectors/P03-square.svg",
+    "images": "images/P03-square.png"
+  },
+  {
+    "id": "S01",
+    "category": "story",
+    "format": "story",
+    "title": "Tus productos, ya registrados.",
+    "alt": "Tus productos, ya registrados. Conoce el proceso para aprovechar esa información al generar una factura electrónica.",
+    "sources": "sources/S01-story.svg",
+    "vectors": "vectors/S01-story.svg",
+    "images": "images/S01-story.png"
+  },
+  {
+    "id": "S02",
+    "category": "story",
+    "format": "story",
+    "title": "Del origen a la electrónica.",
+    "alt": "Del origen a la electrónica. Cripton POS permite generar una factura electrónica desde la información del documento interno.",
+    "sources": "sources/S02-story.svg",
+    "vectors": "vectors/S02-story.svg",
+    "images": "images/S02-story.png"
+  },
+  {
+    "id": "S03",
+    "category": "story",
+    "format": "story",
+    "title": "Interno y electrónico no son lo mismo.",
+    "alt": "Interno y electrónico no son lo mismo. El documento interno no reemplaza la factura fiscal. La emisión debe realizarse en el momento legal que corresponda.",
+    "sources": "sources/S03-story.svg",
+    "vectors": "vectors/S03-story.svg",
+    "images": "images/S03-story.png"
+  },
+  {
+    "id": "S04",
+    "category": "story",
+    "format": "story",
+    "title": "¿Quieres verlo en tu negocio?",
+    "alt": "¿Quieres verlo en tu negocio? Escríbenos DEMO por mensaje privado. Cuéntanos qué vendes y cómo manejas tus documentos.",
+    "sources": "sources/S04-story.svg",
+    "vectors": "vectors/S04-story.svg",
+    "images": "images/S04-story.png"
+  },
+  {
+    "id": "R01-01",
+    "category": "video-scene",
+    "format": "story",
+    "title": "¿Volver a digitar los mismos productos?",
+    "alt": "¿Volver a digitar los mismos productos? Conoce la función de conversión de Cripton POS.",
+    "sources": "sources/R01-01-story.svg",
+    "vectors": "vectors/R01-01-story.svg",
+    "images": "images/R01-01-story.png"
+  },
+  {
+    "id": "R01-02",
+    "category": "video-scene",
+    "format": "story",
+    "title": "La información ya está registrada.",
+    "alt": "La información ya está registrada. Un documento interno conserva el detalle de los productos.",
+    "sources": "sources/R01-02-story.svg",
+    "vectors": "vectors/R01-02-story.svg",
+    "images": "images/R01-02-story.png"
+  },
+  {
+    "id": "R01-03",
+    "category": "video-scene",
+    "format": "story",
+    "title": "Aprovéchala en la factura electrónica.",
+    "alt": "Aprovéchala en la factura electrónica. Genera la factura desde la información del documento de origen.",
+    "sources": "sources/R01-03-story.svg",
+    "vectors": "vectors/R01-03-story.svg",
+    "images": "images/R01-03-story.png"
+  },
+  {
+    "id": "R01-04",
+    "category": "video-scene",
+    "format": "story",
+    "title": "Configuración y validación fiscal.",
+    "alt": "Configuración y validación fiscal. Requiere plan con electrónica y configuración fiscal. Consulta el resultado del proceso.",
+    "sources": "sources/R01-04-story.svg",
+    "vectors": "vectors/R01-04-story.svg",
+    "images": "images/R01-04-story.png"
+  },
+  {
+    "id": "R01-05",
+    "category": "video-scene",
+    "format": "story",
+    "title": "Veámoslo con tu negocio.",
+    "alt": "Veámoslo con tu negocio. Escríbenos DEMO por mensaje privado.",
+    "sources": "sources/R01-05-story.svg",
+    "vectors": "vectors/R01-05-story.svg",
+    "images": "images/R01-05-story.png"
+  },
+  {
+    "id": "R01-cover",
+    "category": "video-cover",
+    "format": "feed",
+    "title": "¿Volver a digitar los mismos productos?",
+    "alt": "¿Volver a digitar los mismos productos? Conoce la función de conversión de Cripton POS.",
+    "sources": "sources/R01-cover-feed.svg",
+    "vectors": "vectors/R01-cover-feed.svg",
+    "images": "images/R01-cover-feed.png"
+  },
+  {
+    "id": "R02-01",
+    "category": "video-scene",
+    "format": "story",
+    "title": "Cuadernos, carpetas y lapiceros.",
+    "alt": "Cuadernos, carpetas y lapiceros. Tu negocio maneja muchas referencias.",
+    "sources": "sources/R02-01-story.svg",
+    "vectors": "vectors/R02-01-story.svg",
+    "images": "images/R02-01-story.png"
+  },
+  {
+    "id": "R02-02",
+    "category": "video-scene",
+    "format": "story",
+    "title": "Aprovecha el detalle de tus productos.",
+    "alt": "Aprovecha el detalle de tus productos. Conoce cómo se utiliza en la generación de la factura electrónica.",
+    "sources": "sources/R02-02-story.svg",
+    "vectors": "vectors/R02-02-story.svg",
+    "images": "images/R02-02-story.png"
+  },
+  {
+    "id": "R02-03",
+    "category": "video-scene",
+    "format": "story",
+    "title": "Conoce el catálogo del sistema.",
+    "alt": "Conoce el catálogo del sistema. Captura de la interfaz con productos QA; no representa un catálogo de papelería.",
+    "sources": "sources/R02-03-story.svg",
+    "vectors": "vectors/R02-03-story.svg",
+    "images": "images/R02-03-story.png"
+  },
+  {
+    "id": "R02-04",
+    "category": "video-scene",
+    "format": "story",
+    "title": "Te mostramos el proceso.",
+    "alt": "Te mostramos el proceso. Escríbenos PAPELERÍA por mensaje privado.",
+    "sources": "sources/R02-04-story.svg",
+    "vectors": "vectors/R02-04-story.svg",
+    "images": "images/R02-04-story.png"
+  },
+  {
+    "id": "R02-cover",
+    "category": "video-cover",
+    "format": "feed",
+    "title": "Cuadernos, carpetas y lapiceros.",
+    "alt": "Cuadernos, carpetas y lapiceros. Tu negocio maneja muchas referencias.",
+    "sources": "sources/R02-cover-feed.svg",
+    "vectors": "vectors/R02-cover-feed.svg",
+    "images": "images/R02-cover-feed.png"
+  },
+  {
+    "id": "R03-01",
+    "category": "video-scene",
+    "format": "story",
+    "title": "¿Interno significa factura electrónica?",
+    "alt": "¿Interno significa factura electrónica? Son documentos con funciones diferentes.",
+    "sources": "sources/R03-01-story.svg",
+    "vectors": "vectors/R03-01-story.svg",
+    "images": "images/R03-01-story.png"
+  },
+  {
+    "id": "R03-02",
+    "category": "video-scene",
+    "format": "story",
+    "title": "Registra información de la operación.",
+    "alt": "Registra información de la operación. No sustituye la factura fiscal exigida.",
+    "sources": "sources/R03-02-story.svg",
+    "vectors": "vectors/R03-02-story.svg",
+    "images": "images/R03-02-story.png"
+  },
+  {
+    "id": "R03-03",
+    "category": "video-scene",
+    "format": "story",
+    "title": "Su emisión tiene requisitos propios.",
+    "alt": "Su emisión tiene requisitos propios. Incluye generación, transmisión, validación y entrega según corresponda.",
+    "sources": "sources/R03-03-story.svg",
+    "vectors": "vectors/R03-03-story.svg",
+    "images": "images/R03-03-story.png"
+  },
+  {
+    "id": "R03-04",
+    "category": "video-scene",
+    "format": "story",
+    "title": "Reutiliza la información registrada.",
+    "alt": "Reutiliza la información registrada. La función no modifica el momento legal en que se debe facturar.",
+    "sources": "sources/R03-04-story.svg",
+    "vectors": "vectors/R03-04-story.svg",
+    "images": "images/R03-04-story.png"
+  },
+  {
+    "id": "R03-05",
+    "category": "video-scene",
+    "format": "story",
+    "title": "Solicita una demostración.",
+    "alt": "Solicita una demostración. Escríbenos DEMO y revisemos el flujo disponible.",
+    "sources": "sources/R03-05-story.svg",
+    "vectors": "vectors/R03-05-story.svg",
+    "images": "images/R03-05-story.png"
+  },
+  {
+    "id": "R03-cover",
+    "category": "video-cover",
+    "format": "feed",
+    "title": "¿Interno significa factura electrónica?",
+    "alt": "¿Interno significa factura electrónica? Son documentos con funciones diferentes.",
+    "sources": "sources/R03-cover-feed.svg",
+    "vectors": "vectors/R03-cover-feed.svg",
+    "images": "images/R03-cover-feed.png"
+  }
+]
