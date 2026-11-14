@@ -149,6 +149,7 @@ function prepared(initialize = callback => callback({ sessionId }, null)) {
 async function account(options = {}) {
   const h = browser();
   const selectors = ['#login-form', '.status', '#tenant-field', '#tenant', '.account-panel', '.account-status',
+    "[data-section='fiscal-onboarding']", "[data-action='configure-fiscal']", "[data-field='fiscal-plan-guidance']", "[data-field='fiscal-setup-steps']",
     "[data-action='open-pos']", "[data-action='cancel']", "[data-action='reactivate']", '#cancel-dialog',
     '#confirm-cancel', "[data-section='plan-management']", '#target-plan', "[data-action='change-plan']",
     '#plan-dialog', '#confirm-plan-change', '#plan-catalog-status', "[data-action='retry-plans']", "[data-section='pending-plan-change']", "[data-action='refresh-plan-change']", "[data-field='pending-plan-summary']", "[data-section='payment-source']", "[data-action='add-payment-source']",
