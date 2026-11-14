@@ -1,0 +1,34 @@
+{
+  "date": "2026-11-14",
+  "engine": "Remotion 4.0.543",
+  "duration": 22.0,
+  "dimensions": [
+    1080,
+    1920
+  ],
+  "fps": 30.0,
+  "codec": "h264",
+  "audio_codec": "aac",
+  "full_decode": true,
+  "bytes": 7390099,
+  "sha256": "27fac459e3b466e7a25bde27b73d4ea4458c3dabd5296aa575c0ce8243d00209",
+  "audio_packets_original_sha256": "SHA256=e2c0136fb14aa1530788f4fb068b986faa68af0fab09919223835f025dd1aa68",
+  "audio_packets_new_sha256": "SHA256=e2c0136fb14aa1530788f4fb068b986faa68af0fab09919223835f025dd1aa68",
+  "audio_unchanged": true,
+  "visual_review_seconds": [
+    1,
+    5,
+    7.2,
+    8.5,
+    10,
+    12.5,
+    15,
+    17,
+    20
+  ],
+  "source": "same OBS recording and QA sale28 / POS3 to QABF5 as pilot v1",
+  "generation": "Remotion/React frame-based title reveals, camera paths, annotations and progress; FFmpeg source preparation/mux only",
+  "environment": "Sandbox",
+  "owner_creative_approval": "pending",
+  "external_publication": false
+}

@@ -1,0 +1,24 @@
+{
+  "date": "2026-11-14",
+  "browser": "Codex in-app browser",
+  "preview": "http://127.0.0.1:4339/",
+  "new_video": {
+    "source": "http://127.0.0.1:4339/exports/cripton-piloto-remotion-v2.mp4",
+    "duration": 22,
+    "observed_playing_at_seconds": [1.167, 10.553],
+    "observed_end_current_time": 22,
+    "observed_ended": true,
+    "ready_state": 4,
+    "media_error": null,
+    "muted": false
+  },
+  "comparison_control": {
+    "original_source_observed": "http://127.0.0.1:4339/render/original.mp4",
+    "original_metadata_duration": 22,
+    "original_media_error": null,
+    "returned_to_remotion": true
+  },
+  "deliverable_tab_left_open": true,
+  "publication": false,
+  "creative_owner_approval": "pending"
+}

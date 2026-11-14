@@ -1,0 +1,43 @@
+{
+  "source": "same OBS recording as v1",
+  "raw_sha256": "618d37fa03ac130ae805016a753fa70766ed8f6ef0410edf838e62dfb1a89b5b",
+  "clips": [
+    {
+      "name": "products",
+      "start": 76,
+      "seconds": 3.4,
+      "speed": 1,
+      "crop": "1314:828:602:200"
+    },
+    {
+      "name": "cart",
+      "start": 103,
+      "seconds": 2.8,
+      "speed": 1,
+      "crop": "1314:828:602:200"
+    },
+    {
+      "name": "open",
+      "start": 222.5,
+      "seconds": 2.6,
+      "speed": 2,
+      "crop": "1314:828:602:200"
+    },
+    {
+      "name": "convert",
+      "start": 245.5,
+      "seconds": 3.9,
+      "speed": 1.6,
+      "crop": "630:876:940:146"
+    },
+    {
+      "name": "accepted",
+      "start": 252,
+      "seconds": 5.5,
+      "speed": 1,
+      "crop": "1314:828:602:200"
+    }
+  ],
+  "audio": "AAC stream copied from v1; do not synthesize, remix or change voice",
+  "source_v1_sha256": "91f6fdf2fbde4d6dabaa7b4dae950432abf91134af0fe691d376552458310e49"
+}
