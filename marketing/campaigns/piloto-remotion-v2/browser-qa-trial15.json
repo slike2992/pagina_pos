@@ -1,0 +1,18 @@
+{
+  "date": "2026-11-14",
+  "browser": "Codex in-app browser",
+  "preview": "http://127.0.0.1:4339/",
+  "source": "http://127.0.0.1:4339/exports/cripton-prueba-gratis-15-dias.mp4",
+  "duration": 22,
+  "observed_playing_seconds": [0.311, 11.203],
+  "observed_end_current_time": 22,
+  "observed_ended": true,
+  "muted": false,
+  "media_error": null,
+  "page_heading": "Regístrate. Pruébalo 15 días gratis.",
+  "closing_visual_reviewed": true,
+  "new_voice_generated": false,
+  "old_demo_voice_cta_removed": true,
+  "new_signup_flow_tested": false,
+  "publication": false
+}

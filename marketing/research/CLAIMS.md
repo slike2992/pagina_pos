@@ -9,13 +9,14 @@ Fecha: 2026-10-26. Web fuente revisada: `645be14` de `codex/pagina-pos-landing`.
 | C03 | Historial con documento, importe y estado | Vista real `/ventas_historial` | Se excluyó la columna con nombre del operador; no se publican sus datos |
 | C04 | Módulo de caja con apertura, movimientos y cierre | Web y módulo `caja_turno`; captura real de controles de apertura | La captura muestra caja sin turno abierto, no una caja cerrada exitosamente por esta sesión |
 | C05 | Catálogo con imagen, nombre, referencia y precio | Vista real `/inventarios/productos` | Productos QA e imágenes ya presentes en el entorno; no catálogo comercial del cliente |
-| C06 | Solicitar demostración | CTA web y decisión editorial | No garantiza horario, disponibilidad inmediata o demo gratuita ilimitada |
+| C06 | Solicitar demostración | Decisión editorial histórica, retirada el 14 de noviembre de 2026 | No usar como oferta/CTA vigente: el propietario definió registro y prueba gratuita de 15 días |
 | C07 | Oferta con/sin FE y requisitos | Web y plan SaaS transversal | No acredita emisión productiva, cuenta Factus activa por cliente ni compra que active FE automáticamente |
 | C08 | Kardex con entradas, salidas y saldo | Vista real `/inventarios/kardex` | Dos movimientos QA; no una auditoría fiscal o contable |
 | C09 | Usuarios y permisos según plan | Web y código/módulos documentados del POS | No exhibe usuarios reales ni promete un número no cotejado con el catálogo activo |
 | C10 | Comparar usuarios, cajas, referencias y FE | Catálogo y guía web | Es criterio de evaluación, no consejo fiscal ni catálogo operativo confirmado |
 | C11 | Consulta de existencias y movimientos | Capturas stock y kardex | No promete actualización de integraciones externas en tiempo real |
 | C12 | Conversación sobre operación | Plan editorial | Sin garantía de resultados o fechas de implementación |
+| C13 | Prueba gratuita de 15 días para usuarios nuevos; después pueden elegir y pagar un plan | Definición explícita del propietario,14 de noviembre de 2026 | No implica sin tarjeta, funciones ilimitadas o cobro automático. Verificar el destino público del registro antes de enlazar anuncios; esta definición comercial no certifica una nueva prueba técnica del onboarding |
 
 ## Importes y límites pendientes de promoción
 

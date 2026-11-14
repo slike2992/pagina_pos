@@ -62,10 +62,11 @@ function Camera({name,from,to,tag,highlight}:{name:Scene;from:Cam;to?:Cam;tag:st
  </div>;
 }
 
-function SceneContent({scene}:{scene:typeof data[number]}){
+function SceneContent({scene,trial15=false}:{scene:typeof data[number];trial15?:boolean}){
  const f=useCurrentFrame();
+ const displayedScene=trial15&&scene.name==='end'?{...scene,kicker:'PRUEBA GRATUITA / USUARIOS NUEVOS',title:['Pruébalo.','15 días gratis.']}:scene;
  return <AbsoluteFill>
-  <Heading scene={scene}/>
+  <Heading scene={displayedScene}/>
   {scene.name==='products'&&<Camera name="products" tag="PAPELERÍA / TUS PRODUCTOS" from={{x:72,y:13,w:622,h:580}} to={{x:81,y:24,w:605,h:580}}/>}
   {scene.name==='cart'&&<Camera name="cart" tag="LOS PRODUCTOS YA ESTÁN CARGADOS" from={{x:695,y:15,w:616,h:580}} to={{x:695,y:49,w:616,h:580}}/>}
   {scene.name==='open'&&<Camera name="open" tag="DESDE EL DOCUMENTO REGISTRADO" from={{x:710,y:0,w:600,h:560}} to={{x:330,y:38,w:650,h:600}} highlight={{x:1061,y:8,w:111,h:35,label:'Convertir a FE',at:5}}/>}
@@ -75,26 +76,28 @@ function SceneContent({scene}:{scene:typeof data[number]}){
     <div style={{position:'absolute',inset:'0 0 auto',height:710,overflow:'hidden'}}><Img src={staticFile('hero.png')} style={{position:'absolute',width:1050,left:-28,top:-420,transform:`scale(${lerp(f,0,114,1,1.035)})`,transformOrigin:'50% 70%'}}/></div>
     <div style={{position:'absolute',inset:0,background:'linear-gradient(0deg,#051828 0%,#051828 28%,transparent 58%)'}}/>
     <div style={{position:'absolute',top:27,left:28,fontSize:20,color:W,background:'#051828cc',padding:'8px 16px',borderRadius:30}}>Escena ilustrativa · interfaz QA</div>
-    <div style={{position:'absolute',left:44,right:44,bottom:52,height:110,borderRadius:60,background:C,color:N,fontSize:53,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',gap:28,transform:`translateY(${lerp(f,0,15,40,0)}px)`,opacity:lerp(f,0,12,0,1)}}>Escríbenos DEMO <span style={{fontSize:62,fontWeight:400}}>↗</span></div>
+    {trial15&&<div style={{position:'absolute',left:44,right:44,bottom:206,textAlign:'center',fontSize:34,lineHeight:1.3,fontWeight:700,color:W}}>Regístrate como usuario nuevo.<br/><span style={{color:C}}>Después, elige el plan para tu negocio.</span></div>}
+    <div style={{position:'absolute',left:44,right:44,bottom:52,height:110,borderRadius:60,background:C,color:N,fontSize:53,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',gap:28,transform:`translateY(${lerp(f,0,15,40,0)}px)`,opacity:lerp(f,0,12,0,1)}}>{trial15?'Empieza gratis':'Escríbenos DEMO'} <span style={{fontSize:62,fontWeight:400}}>↗</span></div>
   </div>}
  </AbsoluteFill>;
 }
 
-export function Pilot(){
+export function Pilot({trial15=false}:{trial15?:boolean}){
  const [fontHandle]=useState(()=>delayRender('Loading local Inter fonts'));
  useEffect(()=>{Promise.all([document.fonts.load('700 32px Inter'),document.fonts.load('400 32px Inter')]).then(()=>continueRender(fontHandle)).catch(cancelRender);},[fontHandle]);
  const f=useCurrentFrame();
- const caption=captions.find(c=>f>=c[0]&&f<c[1]);
+ const caption=captions.find(c=>f>=c[0]&&f<c[1]&&(!trial15||c[0]<546));
  return <AbsoluteFill style={{background:N,color:W,fontFamily:'Inter',overflow:'hidden'}}>
   <style>{`@font-face{font-family:Inter;src:url('${staticFile('Inter-Regular.ttf')}') format('truetype');font-weight:400} @font-face{font-family:Inter;src:url('${staticFile('Inter-Bold.ttf')}') format('truetype');font-weight:700} *{box-sizing:border-box}`}</style>
   <AbsoluteFill style={{background:`radial-gradient(ellipse at ${lerp(f,0,660,14,80)}% 51%,#05687735,transparent 68%)`}}/>
   <div style={{position:'absolute',top:67,left:64,width:340}}><Img src={staticFile('logo.png')} style={{width:'100%'}}/></div>
-  <div style={{position:'absolute',top:83,right:64,fontSize:21,fontWeight:700,letterSpacing:1,color:C,padding:'12px 20px',border:'1px solid #2c6470',borderRadius:32}}>DEMO · SANDBOX</div>
-  {data.map(s=><Sequence key={s.name} from={s.start} durationInFrames={s.end-s.start} name={s.name}><SceneContent scene={s}/></Sequence>)}
+  <div style={{position:'absolute',top:83,right:64,fontSize:21,fontWeight:700,letterSpacing:1,color:C,padding:'12px 20px',border:'1px solid #2c6470',borderRadius:32}}>{trial15?'QA · SANDBOX':'DEMO · SANDBOX'}</div>
+  {data.map(s=><Sequence key={s.name} from={s.start} durationInFrames={s.end-s.start} name={s.name}><SceneContent scene={s} trial15={trial15}/></Sequence>)}
   <div style={{position:'absolute',left:64,right:64,top:1541,height:7,display:'flex',gap:11}}>
    {data.slice(0,5).map((s,i)=><div key={i} style={{height:4,flex:1,background:'#21434e',overflow:'hidden',borderRadius:3}}><div style={{height:'100%',width:`${interpolate(f,[s.start,s.end],[0,100],clamp)}%`,background:C}}/></div>)}
   </div>
   {caption&&<div style={{position:'absolute',left:62,right:62,top:1580,textAlign:'center',fontSize:41,lineHeight:1.3,fontWeight:700,letterSpacing:-.7,opacity:lerp(f,caption[0],caption[0]+4,0,1),transform:`translateY(${lerp(f,caption[0],caption[0]+5,9,0)}px)`}}>{caption[2].map((line,i)=><div key={line} style={{color:i===caption[2].length-1?C:W}}>{line}</div>)}</div>}
+  {trial15&&f>=546&&<div style={{position:'absolute',left:64,right:64,top:1590,textAlign:'center',fontSize:40,fontWeight:700,color:C}}>Regístrate y empieza tu prueba.</div>}
   <div style={{position:'absolute',left:64,right:64,top:1746,fontSize:25,lineHeight:1.42,color:'#cadce2'}}>
    Requiere plan con electrónica y configuración fiscal.<br/>El documento interno no sustituye la factura exigida.
   </div>

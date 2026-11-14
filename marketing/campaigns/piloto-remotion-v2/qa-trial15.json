@@ -1,0 +1,42 @@
+{
+  "date": "2026-11-14",
+  "composition": "CriptonTrial15",
+  "engine": "Remotion 4.0.543",
+  "duration": 22,
+  "dimensions": [
+    1080,
+    1920
+  ],
+  "fps": 30,
+  "full_decode": true,
+  "bytes": 7397099,
+  "sha256": "2ce666781f102240317f7f0d9bdf59c809664bfbd9b4a0e15b5edbc20148a7df",
+  "commercial_offer": {
+    "source": "explicit owner definition 2026-11-14",
+    "trial_days": 15,
+    "eligibility": "new users",
+    "flow": [
+      "register",
+      "use free trial",
+      "choose and pay a suitable plan"
+    ],
+    "cta": "Regístrate y empieza tu prueba"
+  },
+  "audio": {
+    "new_voice_generated": false,
+    "voice_cloned": false,
+    "retained": "original mixed narration through18.15s; last retained speech ends17.94s",
+    "removed": "demo invitation at18.39–20.947s",
+    "music": "same Chill Wave excerpt, musical tail restored at the same position with a0.15s crossfade",
+    "note": "The audio is intentionally edited, not bit-identical to v2"
+  },
+  "visual_review_seconds": [
+    1,
+    18.5,
+    20.2,
+    21.5
+  ],
+  "technical_onboarding_retested": false,
+  "public_signup_url_added": false,
+  "publication": false
+}

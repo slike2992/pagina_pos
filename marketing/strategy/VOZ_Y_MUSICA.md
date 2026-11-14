@@ -1,5 +1,7 @@
 # Voz y música · dirección propuesta
 
+Actualización comercial del 14 de noviembre de 2026: los próximos guiones deben cerrar con registro y prueba gratuita de15 días para usuarios nuevos, seguido de elección de plan. No invitar a pedir una demo ni enviar la palabra DEMO. En el video Remotion vigente se conservó la locución existente hasta la frase «Más claridad para tu negocio», se retiró la invitación antigua y el cierre de15 días gratis queda como texto con música; no se generó una nueva voz.
+
 ## Voz de marca
 
 Español colombiano claro y cercano, tuteo respetuoso, frases concretas. Explicar un proceso del negocio y hacer una pregunta útil. Evitar locución de estadio, tono de videojuego, superioridad absoluta y tecnicismos sin explicar. Pronunciar Cripton con naturalidad; no cambiar la grafía del nombre. La expresión «Tu negocio, con más claridad» es un concepto de esta campaña, sujeto a aprobación.

@@ -1,5 +1,17 @@
 # Piloto Remotion v2 · mejora visual del mismo video
 
+## Versión comercial vigente: prueba gratuita de 15 días
+
+El propietario corrigió la oferta el 14 de noviembre de 2026: registro de usuario nuevo → prueba gratuita de 15 días → elección y pago del plan adecuado. **No se ofrece una demo comercial.** Archivo vigente: [cripton-prueba-gratis-15-dias.mp4](exports/cripton-prueba-gratis-15-dias.mp4), [portada](exports/portada-prueba-15-dias.jpg), [texto de publicación](texto-publicacion-prueba15.txt), [QA](qa-trial15.json). El reproductor abre esta versión por defecto; los MP4 anteriores se conservan como archivos históricos y no son candidatos de publicación con su CTA antiguo.
+
+Composición `CriptonTrial15`, reutilizando el mismo montaje y fuentes sin duplicar un proyecto. Nuevo cierre: **«Pruébalo. 15 días gratis»**, **«Regístrate como usuario nuevo»**, **«Después, elige el plan para tu negocio»** y **«Empieza gratis»**. Se sustituyó el distintivo «DEMO·SANDBOX» por «QA·SANDBOX»: Sandbox describe la grabación fiscal de pruebas, no una oferta de demo al cliente. No se añadieron promesas sobre tarjeta, límites de funciones o cobros automáticos.
+
+No se generó ni clonó una voz. Se conserva la locución del original hasta18,15s (última frase válida termina17,94s), y se elimina la invitación a pedir DEMO que empezaba18,39s. El cierre queda con la misma pista musical y un fundido de0,15s en la misma posición. **Esta variante tiene edición de audio y no es idéntica bit a bit al MP4 v2**; la comprobación de identidad del audio de la sección histórica siguiente corresponde sólo al primer export Remotion.
+
+Reproducir: `node render-review.mjs --video-only --trial`, luego `python finalize-trial.py`. El script comprueba medidas/duración, decodifica el archivo completo y genera portada y evidencia. Se revisó el cierre y el navegador reprodujo los22 segundos hasta `ended=true`, sin errores: [evidencia de navegador](browser-qa-trial15.json). El diseño comercial procede de la definición del propietario; este cambio de marketing no certifica otra prueba del backend o del registro público ni modifica la web. Validar el destino productivo antes de publicar enlaces.
+
+## Archivo histórico: primer export Remotion
+
 [Ver el reproductor y comparar](index.html) · [Descargar MP4](exports/cripton-piloto-remotion-v2.mp4) · [Comprobación técnica](qa.json).
 
 Petición del 14 de noviembre de 2026: mejorar únicamente el video con Remotion, manteniendo la voz actual. Se preserva [el primer piloto](../piloto-pos-real-v1/README.md). Esta entrega no modifica el POS, la web, la administración, los maestros de marca ni las configuraciones de correo/pagos. No se ha publicado ni programado en redes.
