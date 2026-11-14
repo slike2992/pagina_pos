@@ -32,3 +32,5 @@ La captura contiene únicamente datos sintéticos del cliente QA, incluido el no
 La publicidad no acredita una emisión productiva, certificación DIAN ni un cliente real. El documento interno no sustituye la factura fiscal exigida. No se ha publicado ni programado el anuncio en redes.
 
 Resultado: [anuncio táctil v2](exports/anuncio-papeleria-tactil-v2.png). Se revisó visualmente: equipo sobre pedestal, sin base de portátil, persona usando la pantalla, seis artículos y las cuatro líneas del documento visibles; total31.500. Texto y composición comercial conservados. La imagen final es un montaje generado con imagegen; no se certifica identidad píxel a píxel de la pantalla transformada. La captura original, sin reconstrucción, se conserva por separado.
+
+Revisión vigente solicitada por el propietario: [anuncio táctil v3 con Usuario](exports/anuncio-papeleria-tactil-v3-usuario.png). Sustituye el nombre del operador en la composición por «Usuario». Se conserva la captura original como evidencia; no se cambió el usuario real del POS. Edición realizada con imagegen integrado y comprobada visualmente.

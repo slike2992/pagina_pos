@@ -2,7 +2,9 @@
 
 ## Campaña documental — 2026-11-13
 
-Revisión fotográfica aprobada como dirección y actualizada a solicitud del propietario: [papelería con todo en uno táctil](campaigns/papeleria-v2/exports/anuncio-papeleria-tactil-v2.png). Incluye seis productos creados desde el navegador en QA, imágenes individuales y [captura real de Facturar](campaigns/papeleria-v2/captures/facturar-papeleria-real.jpg) con cuatro líneas y total31.500 de demostración. [Procedencia y alcance](campaigns/papeleria-v2/README.md). Preparado para revisión; sin publicación en redes.
+Continuación fotográfica: [serie de preguntas del comerciante](campaigns/preguntas-pos-v1/README.md), con tres anuncios sobre inventario al convertir, tipo/estado y relación documental. El ejemplo se ejecutó realmente en el navegador Codex: POS2→QABF4 aceptada en Factus Sandbox, con las existencias de los cuatro productos vendidas en49 antes y después de convertir. Evidencia y límites en su README. Sin publicación en redes.
+
+Revisión fotográfica aprobada como dirección y actualizada a solicitud del propietario: [papelería con todo en uno táctil y Usuario](campaigns/papeleria-v2/exports/anuncio-papeleria-tactil-v3-usuario.png). Incluye seis productos creados desde el navegador en QA, imágenes individuales y [captura real de Facturar](campaigns/papeleria-v2/captures/facturar-papeleria-real.jpg) con cuatro líneas y total31.500 de demostración. [Procedencia y alcance](campaigns/papeleria-v2/README.md). Preparado para revisión; sin publicación en redes.
 
 Nuevo paquete acotado en [campaigns/conversion-fe-v1/index.html](campaigns/conversion-fe-v1/index.html): tres videos editoriales verticales, un carrusel de cinco láminas, tres publicaciones y cuatro historias, con editables, textos y exportaciones. [Alcance y orden de publicación](campaigns/conversion-fe-v1/README.md), [revisión](campaigns/conversion-fe-v1/qa/REVISION.md). Sin publicación ni pauta. Los videos explican la función; no son grabaciones de una emisión electrónica. Preserva la campaña inicial, sus aprobaciones y el baseline global.
 

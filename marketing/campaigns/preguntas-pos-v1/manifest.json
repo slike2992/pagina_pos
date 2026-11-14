@@ -1,0 +1,41 @@
+[
+  {
+    "id": "P03-inventario",
+    "headline": "¿Tu inventario se descuenta dos veces?",
+    "copy": "Al convertir a electrónica, Cripton conserva la salida de la venta original.",
+    "featureTag": "Una venta. Una salida de inventario.",
+    "image": "exports/P03-inventario.png",
+    "screenshot": "captures/stock-despues-conversion.jpg",
+    "prompt": "sources/P03-inventario-prompt.txt",
+    "status": "draft-owner-review",
+    "tool": "imagegen built-in",
+    "environment": "Sandbox",
+    "published": false
+  },
+  {
+    "id": "P04-estados",
+    "headline": "¿Cuáles documentos ya son electrónicos?",
+    "copy": "Consulta el tipo y el estado de tus documentos desde el POS.",
+    "featureTag": "Documento interno y factura electrónica, identificados.",
+    "image": "exports/P04-estados.png",
+    "screenshot": "captures/documentos-interno-electronico.jpg",
+    "prompt": "sources/P04-estados-prompt.txt",
+    "status": "draft-owner-review",
+    "tool": "imagegen built-in",
+    "environment": "Sandbox",
+    "published": false
+  },
+  {
+    "id": "P07-origen",
+    "headline": "¿De dónde salió esta factura?",
+    "copy": "Consulta el origen y la relación entre tus documentos.",
+    "featureTag": "Sigue la relación documental en Cripton POS.",
+    "image": "exports/P07-origen.png",
+    "screenshot": "captures/relacion-documentos-nota-interna.jpg",
+    "prompt": "sources/P07-origen-prompt.txt",
+    "status": "draft-owner-review",
+    "tool": "imagegen built-in",
+    "environment": "Sandbox",
+    "published": false
+  }
+]

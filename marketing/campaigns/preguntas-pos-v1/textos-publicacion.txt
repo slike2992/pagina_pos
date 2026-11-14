@@ -1,0 +1,29 @@
+P03 · INVENTARIO AL CONVERTIR
+
+¿Tu inventario se descuenta dos veces?
+
+Al convertir un documento interno a factura electrónica, Cripton conserva la salida de inventario de la venta original. En esta demostración Sandbox revisamos las cantidades antes y después de convertir: los cuatro productos vendidos permanecieron en 49 unidades.
+
+¿Quieres conocer este flujo con los productos de tu negocio? Escríbenos DEMO por mensaje privado.
+
+Escena ilustrativa e interfaz con datos de prueba. Función sujeta a plan con electrónica y configuración fiscal. El documento interno no sustituye la factura fiscal exigida ni modifica el momento legal de expedición. La demostración corresponde al caso probado; no constituye garantía de ausencia de errores en cualquier operación.
+
+P04 · IDENTIFICAR LOS DOCUMENTOS
+
+¿Cuáles documentos ya son electrónicos?
+
+Consulta el tipo y el estado de tus documentos desde Cripton POS. En la pantalla del ejemplo se distinguen el documento interno y la factura electrónica que se generó a partir de él, conservando su relación con la venta.
+
+Pide una demostración: escríbenos DEMO por mensaje privado.
+
+Escena ilustrativa e interfaz con datos de prueba. La aceptación mostrada corresponde a Factus Sandbox; no es una factura productiva de un cliente real. Requiere plan con electrónica y configuración fiscal. El documento interno no sustituye la factura fiscal exigida.
+
+P07 · ORIGEN Y RELACIÓN
+
+¿De dónde salió esta factura?
+
+Con Cripton POS puedes consultar el origen y la relación entre tus documentos. En este ejemplo de pruebas, la venta, el documento interno, la electrónica y la nota interna de reversión permanecen relacionados.
+
+Conoce el recorrido en una demostración. Escríbenos DEMO por mensaje privado.
+
+Escena ilustrativa e interfaz con datos de prueba. No acredita una auditoría contable o certificación tributaria. Requiere plan con electrónica y configuración fiscal. El documento interno no sustituye la factura fiscal exigida ni permite aplazar su emisión.
