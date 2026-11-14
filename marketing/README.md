@@ -2,6 +2,8 @@
 
 ## Campaña documental — 2026-11-13
 
+**Marca publicitaria:** sólo Cripton. Retirar nombres y marcas de proveedores técnicos también del texto incrustado en videos/capturas y tablas. La versión vigente del piloto tiene rótulos neutros de procesamiento y estado electrónico; conservar la evidencia técnica interna sin convertirla en publicidad.
+
 **Oferta vigente definida el 14 de noviembre de 2026:** prueba gratuita de 15 días para usuarios nuevos, mediante registro; después el usuario elige y paga su plan. CTA: **«Regístrate y prueba Cripton gratis por 15 días»**. No ofrecer demos ni pedir la palabra DEMO. [Video corregido](campaigns/piloto-remotion-v2/exports/cripton-prueba-gratis-15-dias.mp4) y [texto actualizado](campaigns/piloto-remotion-v2/texto-publicacion-prueba15.txt). Las piezas anteriores con CTA de demo son históricas y deben adaptarse antes de reutilizarlas. Criterio canónico en [plan editorial](strategy/PLAN_30_DIAS.md) y [afirmaciones C13](research/CLAIMS.md).
 
 [Mejora visual con Remotion del mismo piloto](campaigns/piloto-remotion-v2/README.md), 14 de noviembre: títulos animados, movimientos de cámara y resaltado de la factura aceptada; voz y música conservadas por copia exacta del audio. Proyecto de video independiente de Astro, con reproductor para comparar ambas versiones. Preparado para revisión, sin publicación.

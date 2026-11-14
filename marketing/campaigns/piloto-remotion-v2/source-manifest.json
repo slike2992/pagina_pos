@@ -38,6 +38,36 @@
       "crop": "1314:828:602:200"
     }
   ],
-  "audio": "AAC stream copied from v1; do not synthesize, remix or change voice",
+  "editorial_brand_redactions": [
+    {
+      "clip": "open",
+      "first_frame": 0,
+      "last_frame": 35,
+      "type": "neutral electronic-status heading",
+      "business_values_modified": false
+    },
+    {
+      "clip": "convert",
+      "first_frame": 113,
+      "last_frame": 116,
+      "type": "neutral post-conversion heading",
+      "business_values_modified": false
+    },
+    {
+      "clip": "convert",
+      "first_frame": 43,
+      "last_frame": 112,
+      "type": "neutral processing copy",
+      "business_values_modified": false
+    },
+    {
+      "clip": "accepted",
+      "first_frame": 0,
+      "last_frame": 164,
+      "type": "neutral electronic-status heading",
+      "business_values_modified": false
+    }
+  ],
+  "audio": "AAC stream copied from v1; trial variant omits obsolete final invitation",
   "source_v1_sha256": "91f6fdf2fbde4d6dabaa7b4dae950432abf91134af0fe691d376552458310e49"
 }

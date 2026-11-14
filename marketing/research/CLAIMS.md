@@ -17,6 +17,7 @@ Fecha: 2026-10-26. Web fuente revisada: `645be14` de `codex/pagina-pos-landing`.
 | C11 | Consulta de existencias y movimientos | Capturas stock y kardex | No promete actualización de integraciones externas en tiempo real |
 | C12 | Conversación sobre operación | Plan editorial | Sin garantía de resultados o fechas de implementación |
 | C13 | Prueba gratuita de 15 días para usuarios nuevos; después pueden elegir y pagar un plan | Definición explícita del propietario,14 de noviembre de 2026 | No implica sin tarjeta, funciones ilimitadas o cobro automático. Verificar el destino público del registro antes de enlazar anuncios; esta definición comercial no certifica una nueva prueba técnica del onboarding |
+| C14 | Marca publicitaria Cripton, sin nombres de proveedores técnicos | Definición explícita del propietario,14 de noviembre de 2026 | Revisar también texto incrustado en capturas y videos; no alterar estados o importes para ocultar una marca. Conservar la evidencia técnica privada y las atribuciones de música exigidas |
 
 ## Importes y límites pendientes de promoción
 

@@ -6,6 +6,8 @@ Definición del propietario: **Cripton ofrece una prueba gratuita de 15 días pa
 
 Esta definición reemplaza los CTA de demos de las campañas anteriores. Conservar los archivos históricos, pero actualizar sus cierres y textos antes de reutilizarlos. No añadir «sin tarjeta», «sin límites», «sin compromiso», «todos los módulos incluidos» ni cobro automático: no se definieron esas condiciones. Mostrar el producto con datos QA sigue siendo una demostración visual, diferente de ofrecer una demo como servicio comercial.
 
+Marca visible: únicamente Cripton/Cripton POS. Los nombres, logotipos y etiquetas de proveedores técnicos no deben aparecer en anuncios, videos, capturas, tablas visibles, avisos de procesamiento o publicaciones. Revisar también el texto incrustado en las grabaciones; un cambio de título no basta. Se permiten recortes y rótulos editoriales neutros sin alterar importes, estados ni resultados reales. La evidencia técnica privada conserva la trazabilidad del proveedor y no se usa como pieza publicitaria.
+
 ## Objetivo de este bloque
 
 Dejar un kit completo, editable y revisable para treinta días en Instagram, Facebook, TikTok y YouTube: doce publicaciones con veinte láminas totales, doce historias, seis videos verticales con guion, tres conceptos de anuncio y recursos de perfiles. El criterio de cierre es la existencia de archivos reproducibles, textos por canal, procedencia de capturas, revisión visual y pendientes identificados. La publicación y los resultados de una campaña son una etapa posterior.

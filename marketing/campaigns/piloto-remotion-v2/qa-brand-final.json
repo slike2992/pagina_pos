@@ -1,0 +1,8 @@
+{
+  "kind": "final video OCR",
+  "frames_decoded": 660,
+  "samples": 106,
+  "hits": [],
+  "sampling": "Full frame each second; recording region every third frame during conversion/result",
+  "note": "OCR supplements deterministic source masks and visual inspection; it is not a proof for arbitrary unreviewed sources"
+}

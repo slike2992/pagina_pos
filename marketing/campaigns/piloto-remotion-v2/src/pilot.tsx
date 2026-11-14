@@ -70,7 +70,7 @@ function SceneContent({scene,trial15=false}:{scene:typeof data[number];trial15?:
   {scene.name==='products'&&<Camera name="products" tag="PAPELERÍA / TUS PRODUCTOS" from={{x:72,y:13,w:622,h:580}} to={{x:81,y:24,w:605,h:580}}/>}
   {scene.name==='cart'&&<Camera name="cart" tag="LOS PRODUCTOS YA ESTÁN CARGADOS" from={{x:695,y:15,w:616,h:580}} to={{x:695,y:49,w:616,h:580}}/>}
   {scene.name==='open'&&<Camera name="open" tag="DESDE EL DOCUMENTO REGISTRADO" from={{x:710,y:0,w:600,h:560}} to={{x:330,y:38,w:650,h:600}} highlight={{x:1061,y:8,w:111,h:35,label:'Convertir a FE',at:5}}/>}
-  {scene.name==='convert'&&<Camera name="convert" tag="CONVERSIÓN EN FACTUS SANDBOX" from={{x:0,y:0,w:630,h:600}} to={{x:0,y:155,w:630,h:600}}/>}
+  {scene.name==='convert'&&<Camera name="convert" tag="FACTURACIÓN ELECTRÓNICA / CRIPTON" from={{x:0,y:0,w:630,h:600}} to={{x:0,y:155,w:630,h:600}}/>}
   {scene.name==='accepted'&&<Camera name="accepted" tag="LA MISMA VENTA / DOCUMENTOS VINCULADOS" from={{x:75,y:305,w:760,h:710}} to={{x:72,y:333,w:730,h:680}} highlight={{x:76,y:441,w:355,h:38,label:'Factura electrónica aceptada · Sandbox',at:8}}/>}
   {scene.name==='end'&&<div style={{position:'absolute',left:48,top:530,width:984,height:974,borderRadius:28,overflow:'hidden',border:'1px solid #35606b',boxShadow:'0 24px 80px #0006'}}>
     <div style={{position:'absolute',inset:'0 0 auto',height:710,overflow:'hidden'}}><Img src={staticFile('hero.png')} style={{position:'absolute',width:1050,left:-28,top:-420,transform:`scale(${lerp(f,0,114,1,1.035)})`,transformOrigin:'50% 70%'}}/></div>

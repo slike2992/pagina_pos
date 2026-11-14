@@ -1,0 +1,40 @@
+{
+  "kind": "source-region OCR",
+  "positive_control": true,
+  "regions": {
+    "open": [
+      320,
+      675,
+      440,
+      716
+    ],
+    "convert": [
+      135,
+      430,
+      542,
+      482
+    ],
+    "accepted": [
+      367,
+      724,
+      482,
+      756
+    ]
+  },
+  "clips": [
+    {
+      "clip": "open",
+      "all_frames_checked": 78
+    },
+    {
+      "clip": "convert",
+      "all_frames_checked": 117
+    },
+    {
+      "clip": "accepted",
+      "all_frames_checked": 165
+    }
+  ],
+  "samples": 477,
+  "hits": []
+}

@@ -1,0 +1,18 @@
+{
+  "date": "2026-11-14",
+  "visible_brand": "Cripton",
+  "voice_and_music_unchanged_since_trial_cut": true,
+  "original_trial_audio_hash": "SHA256=fca7fa689b3bf2ffd0f46674d39872c960b2df39eaca5ba5c540a9474eb97572",
+  "brand_clean_audio_hash": "SHA256=fca7fa689b3bf2ffd0f46674d39872c960b2df39eaca5ba5c540a9474eb97572",
+  "browser": {
+    "url": "http://127.0.0.1:4339/",
+    "video_query": "brand2",
+    "duration": 22,
+    "current_time": 22,
+    "ended": true,
+    "error": null
+  },
+  "archive_selector_removed": true,
+  "business_values_and_states_unchanged": true,
+  "publication": false
+}
