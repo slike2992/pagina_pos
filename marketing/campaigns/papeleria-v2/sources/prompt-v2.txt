@@ -1,0 +1,20 @@
+Edit the FIRST reference image, the approved Cripton advertisement. Preserve its overall design, exact Spanish headline and supporting copy, brand logo, navy/cyan palette, stationery shop, same woman, lighting, CTA and legal footer. Make only the requested hardware and screen update.
+
+Reference 1 = edit target, approved full advertisement.
+Reference 2 = supporting insert, REAL screenshot of the actual Cripton POS Facturar page with six stationery products and four selected line items. This is a real screenshot, not inspiration for a new UI.
+
+Replace the laptop COMPLETELY with a contemporary professional ALL-IN-ONE TOUCHSCREEN DESKTOP point-of-sale computer. A wide landscape display on a stable elegant pedestal base on the retail counter. Graphite slim bezel, no manufacturer logo, no separate tower, NO laptop base, NO hinged display, NO keyboard. It must look like a realistic retail touchscreen terminal / large all-in-one computer. Arrange screen almost frontal to camera with only a mild natural perspective so the real interface remains legible. Make it the main photographic product focal point, large enough to show BOTH the product grid at left and the selected-document/cart at right. Fit it naturally in the lower right portion, with its pedestal/base clearly visible. Keep CTA fully unobstructed below.
+
+Insert Reference 2 onto the display as a single intact raster screenshot with the proper perspective, correct aspect ratio, and all four screen corners aligned inside the bezel. Preserve the whole screenshot including its two-column layout, SIX real stationery thumbnails, top navigation bar, cart at right, and Facturar total. Do NOT redraw the interface, do not crop away the right cart or bottom total, do not invent controls or alter numbers. The actual total is '$ 31.500'. The products include 'Cuaderno argollado azul', 'Carpeta legajadora roja', 'Colores escolares x 12', 'Lápiz HB amarillo', 'Bolígrafo tinta azul', 'Resma papel carta 500 hojas'. Do NOT show the previous inventory catalog screenshot or QA beer/product images. It is the live FACTURAR interface, NOT an invented electronic invoice or a tax-validation screen.
+
+Adapt ONLY the woman's hand pose so she is naturally using the touchscreen with one extended index finger close to the left edge of the display. Other hand can rest on the counter. Anatomically plausible fingers/arms, avoid blocking product images, cart, and total. Preserve her face, clothing and identity from the first image.
+
+Preserve verbatim main text:
+'¿Volver a digitar los mismos productos?'
+'Genera tu factura electrónica desde un documento ya registrado.'
+'Documento interno → Factura electrónica'
+'Conoce cómo funciona'
+'Requiere plan con electrónica y configuración fiscal.'
+'El documento interno no sustituye la factura fiscal exigida.'
+Retain the small disclosure 'Escena ilustrativa · interfaz con datos QA'.
+Keep the official Cripton raptor/wordmark from reference 1 exactly unchanged. Retain overall premium commercial advertising quality, credible shop environment and 4:5 portrait framing. Do not add new slogans, price claims, a DIAN seal or discounts. Deliver one final corrected ad, not a comparison or multiple panels.
