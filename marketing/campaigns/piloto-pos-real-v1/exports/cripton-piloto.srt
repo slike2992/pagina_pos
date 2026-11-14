@@ -1,0 +1,36 @@
+1
+00:00:00,450 --> 00:00:03,040
+¿Volver a digitar
+los mismos productos?
+
+2
+00:00:03,490 --> 00:00:05,400
+Con Cripton, aprovecha
+la información
+
+3
+00:00:05,400 --> 00:00:08,510
+que ya registraste
+en tu documento interno.
+
+4
+00:00:08,960 --> 00:00:11,150
+Genera la factura electrónica
+
+5
+00:00:11,150 --> 00:00:13,610
+y consulta su estado
+desde el mismo sistema.
+
+6
+00:00:14,060 --> 00:00:15,850
+Menos trabajo repetido.
+
+7
+00:00:15,850 --> 00:00:17,940
+Más claridad para tu negocio.
+
+8
+00:00:18,390 --> 00:00:20,950
+Escríbenos DEMO
+y conoce Cripton.

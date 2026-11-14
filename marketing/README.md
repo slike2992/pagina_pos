@@ -2,6 +2,8 @@
 
 ## Campaña documental — 2026-11-13
 
+Primer [video piloto con grabación real del POS, voz IA y música con licencia](campaigns/piloto-pos-real-v1/README.md): 22 segundos verticales. Ejecución QA POS3→QABF5 aceptada por Factus Sandbox, montaje de la grabación del navegador Codex, subtítulos y cierre con la escena de papelería aprobada. Es una propuesta para audición y revisión, sin publicar ni producir todavía el resto de la serie.
+
 Continuación fotográfica: [serie de preguntas del comerciante](campaigns/preguntas-pos-v1/README.md), con tres anuncios sobre inventario al convertir, tipo/estado y relación documental. El ejemplo se ejecutó realmente en el navegador Codex: POS2→QABF4 aceptada en Factus Sandbox, con las existencias de los cuatro productos vendidas en49 antes y después de convertir. Evidencia y límites en su README. Sin publicación en redes.
 
 Revisión fotográfica aprobada como dirección y actualizada a solicitud del propietario: [papelería con todo en uno táctil y Usuario](campaigns/papeleria-v2/exports/anuncio-papeleria-tactil-v3-usuario.png). Incluye seis productos creados desde el navegador en QA, imágenes individuales y [captura real de Facturar](campaigns/papeleria-v2/captures/facturar-papeleria-real.jpg) con cuatro líneas y total31.500 de demostración. [Procedencia y alcance](campaigns/papeleria-v2/README.md). Preparado para revisión; sin publicación en redes.

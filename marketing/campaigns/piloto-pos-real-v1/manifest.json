@@ -1,0 +1,73 @@
+{
+  "date": "2026-11-13",
+  "status": "review_only",
+  "seconds": 22,
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": 30,
+  "recording": "OBS window capture of Codex browser; private raw not versioned",
+  "raw_sha256": "618d37fa03ac130ae805016a753fa70766ed8f6ef0410edf838e62dfb1a89b5b",
+  "sale_id": 28,
+  "internal": "POS3",
+  "fe": "QABF5",
+  "factus": "SETP990046480",
+  "environment": "sandbox",
+  "scenes": [
+    {
+      "source_start": 76,
+      "duration": 3.4,
+      "speed": 1,
+      "crop": "612:506:674:207",
+      "step": "01 · TU PAPELERÍA"
+    },
+    {
+      "source_start": 103,
+      "duration": 2.8,
+      "speed": 1,
+      "crop": "606:600:1300:207",
+      "step": "02 · APROVECHA LO REGISTRADO"
+    },
+    {
+      "source_start": 222.5,
+      "duration": 2.6,
+      "speed": 2.0,
+      "crop": "1314:828:602:200",
+      "step": "02 · APROVECHA LO REGISTRADO"
+    },
+    {
+      "source_start": 245.5,
+      "duration": 5.0,
+      "speed": 1.6,
+      "crop": "630:876:940:146",
+      "step": "03 · DOCUMENTO A ELECTRÓNICA"
+    },
+    {
+      "source_start": 296,
+      "duration": 4.4,
+      "speed": 1,
+      "crop": "760:400:675:520",
+      "step": "04 · CONSULTA EL RESULTADO"
+    }
+  ],
+  "voice": {
+    "model": "Kokoro-82M v1.0 ONNX",
+    "voice": "ef_dora",
+    "lang": "es",
+    "speed": 0.94,
+    "license": "Apache-2.0"
+  },
+  "music": {
+    "title": "Chill Wave",
+    "author": "Kevin MacLeod",
+    "isrc": "USUAN1600048",
+    "license": "CC BY 4.0",
+    "excerpt_seconds": [
+      18,
+      40
+    ]
+  },
+  "public_capture_privacy": "All recorded frames are cropped to POS page; application chrome/chat/user header excluded",
+  "external_publication": false
+}

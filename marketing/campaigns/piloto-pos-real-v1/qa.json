@@ -1,0 +1,44 @@
+{
+  "video": {
+    "ffmpeg_version": "9.0.2-essentials_build-www.gyan.dev built with gcc 16.2.0 (Rev3, Built by MSYS2 project)",
+    "codec": "h264",
+    "pix_fmt": "yuv420p(tv, bt709/unknown/unknown, progressive)",
+    "audio_codec": "aac",
+    "fps": 30.0,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "size": [
+      1080,
+      1920
+    ],
+    "rotate": 0,
+    "duration": 22.0
+  },
+  "bytes": 1502043,
+  "sha256": "91f6fdf2fbde4d6dabaa7b4dae950432abf91134af0fe691d376552458310e49",
+  "decode_complete": true,
+  "audio_levels": [
+    "[Parsed_volumedetect_0 @ 000001fa8506cf40] mean_volume: -17.8 dB",
+    "[Parsed_volumedetect_0 @ 000001fa8506cf40] max_volume: -1.4 dB"
+  ],
+  "browser": {
+    "url": "http://127.0.0.1:4338/",
+    "observed_duration": 22,
+    "observed_ended": true,
+    "observed_muted": false,
+    "ready_state": 4,
+    "error": null
+  },
+  "visual_review_seconds": [
+    1,
+    5,
+    8,
+    11,
+    16,
+    20
+  ],
+  "owner_creative_approval": "pending",
+  "publication": false
+}
