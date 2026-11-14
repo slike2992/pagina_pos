@@ -15,6 +15,17 @@ administrar la renovación. Respuestas de otra sesión/empresa no restauran dato
 `src/lib/account-plans.ts` concentra este contrato y `test:web` incluye sus
 pruebas de validación, render y concurrencia junto a las del portal existente.
 
+Mi cuenta concentra la orientación fiscal comercial, consultada del mismo
+catálogo publicado. Un plan sin FE explica el cambio de plan; con FE muestra
+los requisitos generales y permite al owner/admin abrir la configuración real.
+No inventa estados completados ni autoriza emisión desde el catálogo. El botón
+reutiliza el SSO existente con el destino nominal `destination=fiscal-setup`;
+el POS compatible lo limita a `/admin/resoluciones`, conserva la selección de
+sucursal y exige su ACL normal. Publicar primero ese callback POS. No se enlaza
+directamente a configuración de otra sesión ni se comparten credenciales.
+Facturar sólo muestra el selector POS/FE si su servidor confirma disponibilidad;
+el onboarding y los cupos no ocupan permanentemente el área de venta.
+
 El retorno de Wompi identifica la compra mediante `checkoutSessionId` en la URL,
 independientemente del ID de transacción del proveedor y de la pestaña de origen.
 En registro, una verificación consumida sólo puede reanudar su checkout original pendiente

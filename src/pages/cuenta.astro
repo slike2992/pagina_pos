@@ -25,6 +25,21 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         <div><dt>Estado</dt><dd data-field="subscription-status"></dd></div>
         <div><dt>Vencimiento actual</dt><dd data-field="period-end"></dd></div>
       </dl>
+      <section class="recovery-management" data-section="fiscal-onboarding" hidden aria-labelledby="fiscal-onboarding-heading">
+        <h3 id="fiscal-onboarding-heading">Facturación electrónica</h3>
+        <p data-field="fiscal-plan-guidance"></p>
+        <div data-field="fiscal-setup-steps" hidden>
+          <p>En la configuración del POS revisa estos requisitos para la sucursal y el ambiente que usarás:</p>
+          <ol>
+            <li>Completar los datos del emisor.</li>
+            <li>Configurar el perfil y las credenciales del proveedor.</li>
+            <li>Asociar las resoluciones de facturas y notas crédito vigentes.</li>
+            <li>Guardar la activación de emisión en ese ambiente.</li>
+          </ol>
+          <p>Si ya están completos, el selector POS o factura electrónica estará disponible al facturar. El cambio de plan por sí solo no activa la emisión ni cambia de pruebas a producción.</p>
+        </div>
+        <button class="button secondary" data-action="configure-fiscal" type="button" hidden disabled>Revisar configuración electrónica</button>
+      </section>
       <section class="recovery-management" data-section="renewal-issue" hidden aria-labelledby="renewal-issue-heading">
         <h3 id="renewal-issue-heading">Pago del próximo período rechazado</h3>
         <p role="status" aria-live="polite">La renovación fue rechazada. La cobertura actual conserva el vencimiento indicado arriba; este período rechazado aún no amplía la cobertura.</p>
@@ -140,6 +155,8 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     const panel = root.querySelector<HTMLElement>(".account-panel")!;
     const accountStatus = panel.querySelector<HTMLElement>(".account-status")!;
     const posLink = panel.querySelector<HTMLAnchorElement>("[data-action='open-pos']")!;
+    const fiscalOnboarding = panel.querySelector<HTMLElement>("[data-section='fiscal-onboarding']")!;
+    const fiscalSetupButton = panel.querySelector<HTMLButtonElement>("[data-action='configure-fiscal']")!;
     const cancelButton = panel.querySelector<HTMLButtonElement>("[data-action='cancel']")!;
     const reactivateButton = panel.querySelector<HTMLButtonElement>("[data-action='reactivate']")!;
     const dialog = root.querySelector<HTMLDialogElement>("#cancel-dialog")!;
@@ -229,6 +246,15 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       && ["active", "past_due", "grace", "restricted", "suspended", "cancel_at_period_end"].includes(currentSubscription.status)
       && periodState() === "current");
     const renderAccountActions = () => {
+      const publishedPlan = planCatalog?.plans.find(plan => plan.code === currentSubscription?.plan.code);
+      const fiscalVisible = Boolean(accountLogin && publishedPlan && ["owner", "admin", "billing"].includes(accountLogin.tenant.role));
+      fiscalOnboarding.hidden = !fiscalVisible;
+      field("fiscal-plan-guidance").textContent = !fiscalVisible ? "" : publishedPlan!.electronicInvoicing
+        ? "Tu plan incluye electrónica. La configuración fiscal y la disponibilidad de emisión se comprueban en el POS."
+        : "Este plan no incluye electrónica. Puedes vender con documentos POS. Si la necesitas, elige un plan con electrónica en Cambiar plan.";
+      field("fiscal-setup-steps").hidden = !fiscalVisible || !publishedPlan?.electronicInvoicing;
+      fiscalSetupButton.hidden = !fiscalVisible || !publishedPlan?.electronicInvoicing || !["owner", "admin"].includes(accountLogin!.tenant.role);
+      fiscalSetupButton.disabled = fiscalSetupButton.hidden || !canOpenPos() || subscriptionRefreshing || posBusy;
       const managementAllowed = canManageRenewal();
       const scheduled = renewalScheduled();
       cancelButton.hidden = !managementAllowed || scheduled;
@@ -951,16 +977,17 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         if (isCurrent()) { renewalBusy = false; renderAccountActions(); }
       }
     });
-    posLink.addEventListener("click", async (event) => {
+    const openPos = async (event: Event, setup = false) => {
       event.preventDefault();
       if (subscriptionRefreshing || posBusy || !canOpenPos() || posLink.getAttribute("aria-disabled") === "true") return;
+      if (setup && (fiscalSetupButton.hidden || fiscalSetupButton.disabled)) return;
       const token = accessToken;
       const login = accountLogin;
       const isCurrent = () => token === accessToken && login === accountLogin;
       posBusy = true;
       let navigating = false;
       renderAccountActions();
-      accountStatus.textContent = "Abriendo el POS…";
+      accountStatus.textContent = setup ? "Abriendo la configuración fiscal del POS…" : "Abriendo el POS…";
       accountStatus.dataset.state = "";
       try {
         const response = await fetch(`${apiUrl}/v1/auth/pos-sso`, {
@@ -975,6 +1002,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         if (destination.origin !== expected.origin || destination.pathname !== "/auth/sso") {
           throw new Error("Destino POS inválido");
         }
+        if (setup) destination.searchParams.set("destination", "fiscal-setup");
         window.location.assign(destination.toString());
         navigating = true;
       } catch (error) {
@@ -984,7 +1012,9 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       } finally {
         if (isCurrent()) { if (!navigating) posBusy = false; renderAccountActions(); }
       }
-    });
+    };
+    posLink.addEventListener("click", (event) => openPos(event));
+    fiscalSetupButton.addEventListener("click", (event) => openPos(event, true));
     const resetAccount = (message = "") => {
       loginGeneration++;
       catalogGeneration++;

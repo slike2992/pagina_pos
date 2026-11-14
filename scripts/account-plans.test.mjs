@@ -110,7 +110,7 @@ function browser(options = {}) {
       if (route === '/v1/public/plans') return options.catalog ? options.catalog(call, loginCount) : reply(published());
       if (route === '/v1/me/billing/payment-sources') return reply({ paymentSource: null });
       if (route === '/v1/public/payment-source-config') return reply({ error: { message: 'Proveedor simulado no configurado' } }, 503);
-      if (route === '/v1/auth/pos-sso') return reply({ redirectUrl: 'https://pos.example.invalid/auth/sso?ticket=synthetic' });
+      if (route === '/v1/auth/pos-sso') return options.sso ? options.sso(call) : reply({ redirectUrl: 'https://pos.example.invalid/auth/sso?ticket=synthetic' });
       if (route === '/v1/me/subscription/cancel') { model.cancelAtPeriodEnd = true; return reply(structuredClone(model)); }
       if (route === '/v1/me/subscription/reactivate') { model.cancelAtPeriodEnd = false; return reply(structuredClone(model)); }
       if (route === '/v1/me/subscription/change') return options.change ? options.change(call) : reply({ subscriptionChangeId: '33333333-3333-4333-8333-333333333333', changeType: 'downgrade', status: 'scheduled',
@@ -388,4 +388,48 @@ test('server prorated quote 1989780 keeps 19.897,80 COP in payment status and pe
   first.resolve(reply({ error: { message: 'Synthetic payment opening failure' } }, 503)); await confirming;
   assert.match(h.get("[data-field='pending-plan-summary']").textContent, /Importe cotizado: 19\.897,80 COP/);
   assert.equal(JSON.parse(checkoutCalls(h)[0].body).amountMinor, undefined, 'the UI sends no calculated amount');
+});
+
+
+test('commercial onboarding follows the current published FE flag and refreshes after an applied plan change', async () => {
+  const h = browser({ planCode: 'basic' }); await h.login();
+  assert.equal(h.get("[data-section='fiscal-onboarding']").hidden, false);
+  assert.match(h.get("[data-field='fiscal-plan-guidance']").textContent, /no incluye/);
+  assert.equal(h.get("[data-field='fiscal-setup-steps']").hidden, true);
+  assert.equal(h.get("[data-action='configure-fiscal']").hidden, true);
+  h.model.plan.code = 'basic-fe';
+  await h.click('refresh-recovery');
+  assert.match(h.get("[data-field='fiscal-plan-guidance']").textContent, /incluye electrónica/);
+  assert.equal(h.get("[data-field='fiscal-setup-steps']").hidden, false);
+  assert.equal(h.get("[data-action='configure-fiscal']").disabled, false);
+});
+
+test('fiscal setup reuses authenticated SSO with a named destination while ordinary entry stays unchanged', async () => {
+  const h = browser(); await h.login(); await h.click('configure-fiscal');
+  const target = new URL(h.navigations[0]);
+  assert.equal(target.origin, 'https://pos.example.invalid');
+  assert.equal(target.pathname, '/auth/sso');
+  assert.equal(target.searchParams.get('destination'), 'fiscal-setup');
+  assert.equal(h.calls.filter(c => new URL(c.url).pathname === '/v1/auth/pos-sso').length, 1);
+  const ordinary = browser(); await ordinary.login(); await ordinary.click('open-pos');
+  assert.equal(new URL(ordinary.navigations[0]).searchParams.has('destination'), false);
+});
+
+for (const role of ['billing', 'member']) test(`fiscal setup does not offer administration to ${role}`, async () => {
+  const h = browser({ role }); await h.login();
+  assert.equal(h.get("[data-action='configure-fiscal']").hidden, true);
+  await h.click('configure-fiscal');
+  assert.equal(h.navigations.length, 0);
+  assert.equal(h.calls.filter(c => new URL(c.url).pathname === '/v1/auth/pos-sso').length, 0);
+});
+
+test('late SSO configuration response cannot navigate after logout, and onboarding is cleared', async () => {
+  const pending = deferred();
+  const h = browser({ sso: () => pending.promise }); await h.login();
+  const opening = h.click('configure-fiscal'); await flush();
+  await h.click('logout');
+  pending.resolve(reply({ redirectUrl: 'https://pos.example.invalid/auth/sso?ticket=synthetic' })); await opening;
+  assert.equal(h.navigations.length, 0);
+  assert.equal(h.get("[data-section='fiscal-onboarding']").hidden, true);
+  assert.equal(h.get("[data-field='fiscal-plan-guidance']").textContent, '');
 });
