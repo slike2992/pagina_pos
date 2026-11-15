@@ -203,3 +203,11 @@ Consultar el [plan y pendientes](docs/WEB_GROWTH_PLAN_2026-10-26.md) y la
 
 Calidad frontend y evidencia: [bloque 2026-10-26](docs/WEB_QUALITY_2026-10-26.md).
 Helpers y comprobaciones: [lib](src/lib/README.md) y [scripts](scripts/README.md).
+
+## Instalación reproducible de la web
+
+Usar pnpm install --frozen-lockfile con Node compatible. pnpm-lock.yaml es el
+lockfile de este repositorio. .npmrc mantiene node-linker=hoisted para que el
+prerenderizador de Astro resuelva su grafo completo dentro de esta aplicación;
+no debe resolver cookie u otras dependencias de un proyecto padre. El build
+limpio de staging se verificó con esta configuración, sin cambiar versiones.
