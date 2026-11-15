@@ -2,13 +2,14 @@
 import FlowLayout from "../../layouts/FlowLayout.astro";
 const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
 ---
-<FlowLayout title="Crear cuenta" eyebrow="Empieza con Cripton" heading="Prepara tu empresa" lead="Elige el plan, confirma tus datos y valida tu correo antes del pago.">
+<FlowLayout title="Crear cuenta" eyebrow="Empieza con Cripton" heading="Prueba gratis durante 15 días" lead="Elige tu plan y verifica tu correo. No necesitas tarjeta para la prueba; no se cobra ni renueva automáticamente. Los 15 días empiezan cuando tu empresa esté lista.">
   <form class="flow-form" id="signup-form" data-api-url={apiUrl}>
     <div class="field"><label for="contactName">Nombre completo (obligatorio)</label><input id="contactName" name="contactName" autocomplete="name" minlength="2" maxlength="180" required /></div>
     <div class="field"><label for="email">Correo (obligatorio)</label><input id="email" name="email" type="email" autocomplete="email" maxlength="320" required /></div>
     <div class="field"><label for="companyName">Empresa (obligatorio)</label><input id="companyName" name="companyName" autocomplete="organization" minlength="2" maxlength="200" required /></div>
     <div class="field"><label for="phone">Teléfono (opcional)</label><input id="phone" name="phone" type="tel" autocomplete="tel" minlength="5" maxlength="40" /></div>
     <div class="field full"><label for="priceCode">Plan (obligatorio)</label><select id="priceCode" name="priceCode" required><optgroup label="Sin facturación electrónica"><option value="basic">Básico · $49.900/mes</option><option value="professional">Profesional · $79.900/mes</option><option value="enterprise">Empresarial · $129.900/mes</option></optgroup><optgroup label="Con facturación electrónica"><option value="basic-fe">Básico FE · $69.900/mes</option><option value="professional-fe">Profesional FE · $99.900/mes</option><option value="enterprise-fe">Empresarial FE · $159.900/mes</option></optgroup></select></div>
+    <p>Los precios del plan se aplican si decides contratarlo después de la prueba. La disponibilidad electrónica requiere configurar el emisor y el ambiente fiscal.</p>
     <label class="legal-check"><input id="legal" type="checkbox" required disabled /><span>Acepto los <a id="terms-link" href="/legal/terminos" target="_blank" rel="noopener">términos</a> y la <a id="privacy-link" href="/legal/privacidad" target="_blank" rel="noopener">política de privacidad</a> vigentes. (obligatorio)</span></label>
     <div class="actions"><button class="button" type="submit" disabled>Continuar</button></div>
     <p class="status" role="status" aria-live="polite">Consultando condiciones vigentes…</p>

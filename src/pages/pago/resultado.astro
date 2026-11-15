@@ -48,7 +48,7 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
       amount.textContent = new Intl.NumberFormat("es-CO", { style: "currency", currency: result.currency, maximumFractionDigits: 0 }).format(result.amountInCents / 100);
       summary.hidden = false;
       retry.hidden = result.status !== "declined";
-      if (result.purpose === "plan_change" || result.purpose === "unknown") {
+      if (result.purpose === "plan_change" || result.purpose === "trial_conversion" || result.purpose === "unknown") {
         amount.textContent = recoveryAmount(result.amountInCents, result.currency);
         const view = accountPaymentResult(result);
         heading.textContent = view.heading;
@@ -163,7 +163,7 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
             detail.textContent = "Tu empresa está lista. Si es tu primera cuenta, recibirás por correo el enlace para crear tu contraseña. Si ya tienes una, puedes ingresar con ella.";
           }
         }
-        pollAgain = body.purpose === "plan_change" || body.purpose === "unknown"
+        pollAgain = body.purpose === "plan_change" || body.purpose === "trial_conversion" || body.purpose === "unknown"
           ? accountPaymentResult(body).poll : !terminalStates.has(body.status);
       } catch (error) {
         const message = typeof error === "object" && error && "error" in error ? (error as { error?: { message?: string } }).error?.message : null;

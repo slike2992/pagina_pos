@@ -452,3 +452,14 @@ test('invalid public receipt values fail closed rather than rendering an applied
     assert.equal(h.elements.get('.status').dataset.state, 'error'); noSignup(h);
   }
 });
+
+
+for (const state of ['pending','approved','fulfilled','declined','expired']) test(`trial_conversion ${state} uses the existing account and never triggers signup provisioning/setup`, async()=>{
+  const body={status:state,purpose:'trial_conversion',reference:'SYNTHETIC-TRIAL',currency:'COP',amountInCents:4990000};
+  const result=await run([{httpStatus:200,body}],{development:true});
+  assert.equal(result.calls.length,1); assert.equal(result.elements.get('#password-link').href,'/cuenta');
+  const text=[result.elements.get('#result-heading').textContent,result.elements.get('[data-detail]').textContent,result.elements.get('.status').textContent].join(' ');
+  assert.doesNotMatch(text,/bandeja|enlace de verificación|crear tu contraseña|aprovisionamiento terminó|empresa no fue activada/i);
+  if(state==='fulfilled') {assert.equal(result.elements.get('#result-heading').textContent,'Plan contratado');assert.equal(result.timers.size,0);}
+  if(state==='approved') assert.match(result.elements.get('#result-heading').textContent,/en proceso/);
+});

@@ -1,5 +1,14 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-14 — Prueba gratuita canónica de 15 días
+
+- Registro/verificación consumen trial_setup sin checkout automático; legacy pagado conserva checkout. Mi cuenta valida trial nullable, fechas UTC/canConvert del servidor y no infiere un período pagado.
+- Contratación explícita con POST trial-checkout e idempotencia; retorno trial_conversion separado de signup. Prueba activa/expirada no habilita recuperación de deuda, cambio de plan o cobro recurrente. Member no recibe acciones de pago.
+- Landing/planes anuncian 15 días sin tarjeta/cobro automático, con precio posterior. JSON-LD mantiene precios pagados; sin afirmación de gratuidad permanente. Conservados Brand/demo ajenos.
+- API/worker/SQL029 y contratos deben publicarse primero desde pos_saas, incluida la ruta trial-checkout en el acceso HTTP del entorno. La web no crea ni extiende pruebas, modifica SSO o decide elegibilidad. Sin SQL, commit/deploy por este agente.
+- Validación Node 24: test:web 231/231, build:public y sus auditorías aprobados; Astro cero errores/advertencias/hints. Codex IAB local verificó trial_setup, cuenta activa/expirada y retorno trial_conversion con respuestas sintéticas. Viewport medido 393×852 en cuenta expirada; tarjeta, recuperación y cambio de plan ocultos. Sin DB/proveedor/correo; no equivale a aceptación de staging ni pago real. Pendiente recorrido integrado después del despliegue compatible.
+
+
 ## 2026-11-10 — Publicación y aceptación externa de recuperación
 
 - Web c90569e publicada en codex/staging-signup-recovery e integrada mediante

@@ -5,6 +5,7 @@ import vm from 'node:vm';
 import ts from 'typescript';
 import { readAccountPlans, loadAccountPlans, selectAccountPlan, accountPlanLabel } from '../src/lib/account-plans.ts';
 import { readPendingPlanChange, readUpgradeCheckout } from '../src/lib/subscription-upgrade.ts';
+import { readSubscriptionTrial, readTrialCheckout } from '../src/lib/subscription-trial.ts';
 
 const codes = ['basic', 'professional', 'enterprise', 'basic-fe', 'professional-fe', 'enterprise-fe'];
 const published = () => ({ country: 'CO', currency: 'COP', plans: codes.map((code, index) => ({
@@ -68,6 +69,7 @@ const plansCode = compile(await readFile(new URL('../src/lib/account-plans.ts', 
 const recoveryCode = compile(await readFile(new URL('../src/lib/subscription-recovery.ts', import.meta.url), 'utf8'));
 const returnCode = compile(await readFile(new URL('../src/lib/checkout-return.ts', import.meta.url), 'utf8'));
 const upgradeCode = compile(await readFile(new URL('../src/lib/subscription-upgrade.ts', import.meta.url), 'utf8'));
+const trialCode = compile(await readFile(new URL('../src/lib/subscription-trial.ts', import.meta.url), 'utf8'));
 
 function browser(options = {}) {
   const elements = new Map(), calls = [], navigations = [];
@@ -91,7 +93,7 @@ function browser(options = {}) {
   const model = { subscriptionId: '11111111-1111-4111-8111-111111111111', status: 'active', plan: { code: options.planCode || 'professional-fe', name: 'Suscripción confirmada FE' },
     price: { amountMinor: 123451, currency: 'COP', billingInterval: options.period || 'monthly' },
     currentPeriodStart: '2020-01-01T00:00:00Z', currentPeriodEnd: '2099-01-01T00:00:00Z', cancelAtPeriodEnd: false,
-    ...(options.pendingChange !== undefined ? { pendingChange: options.pendingChange } : {}) };
+    ...(options.pendingChange !== undefined ? { pendingChange: options.pendingChange } : {}), ...options.subscription };
   let tenant;
   const sandbox = { URL, URLSearchParams, Intl, Error, Date, console,
     document: { querySelector: get, createElement: element },
@@ -116,6 +118,7 @@ function browser(options = {}) {
       if (route === '/v1/me/subscription/change') return options.change ? options.change(call) : reply({ subscriptionChangeId: '33333333-3333-4333-8333-333333333333', changeType: 'downgrade', status: 'scheduled',
         toPlan: { code: 'enterprise-fe', name: 'Plan publicado' }, quote: { amountMinor: 0, currency: 'COP', expiresAt: null }, effectiveAt: model.currentPeriodEnd, nextAction: 'wait_for_period_end' });
       if (route === '/v1/me/billing/checkout-sessions') return options.checkout ? options.checkout(call) : assert.fail('Unexpected checkout');
+      if (route === '/v1/me/subscription/trial-checkout') return options.trialCheckout ? options.trialCheckout(call) : assert.fail('Unexpected trial checkout');
       assert.fail(`unexpected request ${route}`);
     },
   };
@@ -129,6 +132,7 @@ function browser(options = {}) {
   run(accountCode, name => {
     if (name === '../lib/account-plans') return run(plansCode);
     if (name === '../lib/subscription-upgrade') return run(upgradeCode);
+    if (name === '../lib/subscription-trial') return run(trialCode);
     if (name === '../lib/subscription-recovery') return recovery;
     if (name === '../scripts/client-idempotency') return { createIdempotencyKey: () => `key-${++key}` };
     if (name === '../lib/wompi-client') return { prepareWompiSession() { assert.fail('No provider calls allowed'); } };
@@ -432,4 +436,82 @@ test('late SSO configuration response cannot navigate after logout, and onboardi
   assert.equal(h.navigations.length, 0);
   assert.equal(h.get("[data-section='fiscal-onboarding']").hidden, true);
   assert.equal(h.get("[data-field='fiscal-plan-guidance']").textContent, '');
+});
+
+
+const trial = (status = 'active') => ({ status, durationDays: 15,
+  startsAt: '2030-01-01T00:00:00.000Z', endsAt: '2030-01-16T00:00:00.000Z', convertedAt: null, canConvert: true });
+const trialSubscription = (status = 'active') => ({ status: status === 'expired' ? 'trial_expired' : 'trialing',
+  trial: trial(status), currentPeriodStart: null, currentPeriodEnd: null });
+const trialReceipt = () => {
+  const id = '55555555-5555-4555-8555-555555555555';
+  const url = new URL('https://checkout.wompi.co/p/');
+  url.searchParams.set('redirect-url', `https://web.example.invalid/pago/resultado?checkoutSessionId=${id}`);
+  return { checkoutSessionId: id, orderId: '66666666-6666-4666-8666-666666666666', provider: 'wompi',
+    checkoutUrl: url.href, expirationTime: '2099-01-01T00:00:00Z', amountInCents: 123451, currency: 'COP' };
+};
+
+test('trial DTO preserves paid legacy and validates exactly fifteen server-owned days', () => {
+  assert.equal(readSubscriptionTrial(undefined), null); assert.equal(readSubscriptionTrial(null), null);
+  assert.deepEqual(readSubscriptionTrial(trial()), trial());
+  for (const patch of [{durationDays: 14}, {canConvert: 'true'}, {startsAt: null}, {endsAt: '2030-02-01T00:00:00Z'},
+    {status: 'unknown'}, {convertedAt: '2030-01-02T00:00:00Z'}, {status: 'converted'},
+    {status: 'provisioning'}, {endsAt: 'bad'}]) assert.throws(() => readSubscriptionTrial({...trial(), ...patch}));
+  assert.equal(readSubscriptionTrial({...trial('provisioning'), startsAt: null, endsAt: null, canConvert: false}).status, 'provisioning');
+});
+
+for (const state of ['active', 'expired']) test(`real account trial ${state} displays its dates and forbids all automatic billing/recovery actions`, async () => {
+  const h = browser({ subscription: trialSubscription(state) }); await h.login();
+  assert.equal(h.get("[data-section='subscription-trial']").hidden, false);
+  for (const section of ['plan-management','payment-source','recovery']) assert.equal(h.get(`[data-section='${section}']`).hidden, true);
+  for (const action of ['cancel','reactivate']) assert.equal(h.get(`[data-action='${action}']`).hidden, true);
+  assert.equal(h.get("[data-action='contract-trial']").hidden, false);
+  assert.match(h.get("[data-field='period-end']").textContent, /Sin período pagado/);
+  assert.match(h.get("[data-field='price']").textContent, /después de la prueba/);
+  assert.doesNotMatch(h.get("[data-field='access-guidance']").textContent, /No pudimos confirmar un período/);
+  assert.ok(h.calls.every(call => !/payment-source|subscription\/recovery|trial-checkout/.test(call.url)));
+  await h.click('cancel'); await h.click('change-plan');
+  assert.equal(h.calls.filter(call=>call.method==='POST').length, 1, 'Only login, no billing mutation');
+});
+
+test('member trial sees dates and POS access without any checkout or billing controls', async () => {
+  const h = browser({ role:'member', subscription: trialSubscription() }); await h.login();
+  assert.equal(h.get("[data-action='contract-trial']").hidden, true);
+  await h.click('contract-trial');
+  assert.ok(h.calls.every(call=>!call.url.endsWith('/trial-checkout')));
+  assert.equal(h.get("[data-action='open-pos']").getAttribute('aria-disabled'), null);
+});
+
+test('trial explicit double click posts one server subscription ID and preserves the exact checkout URL', async () => {
+  const hold = deferred(), receipt = trialReceipt();
+  const h = browser({ subscription:trialSubscription('expired'), trialCheckout:()=>hold.promise }); await h.login();
+  const first = h.click('contract-trial'), second = h.click('contract-trial'); await flush();
+  const calls=h.calls.filter(call=>call.url.endsWith('/trial-checkout'));
+  assert.equal(calls.length,1); assert.deepEqual(JSON.parse(calls[0].body),{subscriptionId:h.model.subscriptionId});
+  assert.ok(calls[0].headers['idempotency-key']);
+  hold.resolve(reply(receipt)); await Promise.all([first,second]);
+  assert.deepEqual(h.navigations,[receipt.checkoutUrl]);
+});
+
+test('late trial checkout cannot navigate after logout', async () => {
+  const hold=deferred(), h=browser({subscription:trialSubscription(),trialCheckout:()=>hold.promise}); await h.login();
+  const pending=h.click('contract-trial'); await flush(); await h.click('logout'); hold.resolve(reply(trialReceipt())); await pending;
+  assert.deepEqual(h.navigations,[]); assert.equal(h.get("[data-section='subscription-trial']").hidden,true);
+});
+
+test('trial denied or malformed checkout stays in account and reuses its idempotency key', async () => {
+  const keys=[]; let calls=0;
+  const h=browser({subscription:trialSubscription(),trialCheckout:call=>{keys.push(call.headers['idempotency-key']);
+    return ++calls===1 ? reply({error:{message:'Pago pendiente; actualiza el estado'}},409) : reply({...trialReceipt(),checkoutUrl:'https://foreign.invalid/'});}});
+  await h.login(); await h.click('contract-trial'); await h.click('contract-trial');
+  assert.equal(keys.length,2); assert.equal(keys[0],keys[1]); assert.deepEqual(h.navigations,[]);
+  assert.equal(h.get('.account-status').dataset.state,'error');
+});
+
+test('trial checkout validates Wompi origin, expiration, currency and same-origin exact return context', () => {
+  const receipt=trialReceipt(); assert.equal(readTrialCheckout(receipt,'https://web.example.invalid').checkoutUrl,receipt.checkoutUrl);
+  for (const patch of [{provider:'local_demo'}, {amountInCents:-1}, {currency:'USD'}, {expirationTime:'2000-01-01T00:00:00Z'},
+    {orderId:'bad'}, {checkoutUrl:'https://evil.invalid/'}, {checkoutUrl:receipt.checkoutUrl.replace('web.example.invalid','foreign.invalid')}]) {
+    assert.throws(()=>readTrialCheckout({...receipt,...patch},'https://web.example.invalid'));
+  }
 });

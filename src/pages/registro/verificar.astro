@@ -2,7 +2,7 @@
 import FlowLayout from "../../layouts/FlowLayout.astro";
 const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
 ---
-<FlowLayout title="Verificar correo" eyebrow="Verificación" heading="Confirma tu correo" lead="Validaremos el enlace antes de preparar el pago seguro.">
+<FlowLayout title="Verificar correo" eyebrow="Verificación" heading="Confirma tu correo" lead="Validaremos el enlace y el siguiente paso de tu registro.">
   <div class="result" id="verification" data-api-url={apiUrl}>
     <p class="status" role="status" aria-live="polite">Validando el enlace…</p>
     <div class="actions" hidden><a class="button" id="checkout-link" href="#">Continuar al pago seguro</a></div>
@@ -64,6 +64,21 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
         if (!verification.ok) {
           if (verified?.error?.code !== "invalid_or_expired_token") throw verified;
           resumed = await resumeCheckout();
+        }
+        if (verification.ok && verified?.nextAction === "trial_setup") {
+          if (verified.status !== "provisioning" || verified.signupIntentId !== signupIntentId
+            || typeof verified.tenantId !== "string" || !/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(verified.tenantId)) {
+            throw new Error("Respuesta de verificación inválida");
+          }
+          status.textContent = "Correo confirmado. Estamos preparando tu prueba gratis de 15 días. El plazo comienza cuando tu empresa esté lista. Recibirás las instrucciones de acceso por correo; si ya tienes contraseña, puedes ingresar a Mi cuenta.";
+          status.dataset.state = "success";
+          link.href = "/cuenta";
+          link.textContent = "Revisar Mi cuenta";
+          actions.hidden = false;
+          return;
+        }
+        if (verification.ok && verified?.nextAction !== undefined && verified.nextAction !== "checkout") {
+          throw new Error("Siguiente paso no reconocido");
         }
         status.textContent = "Correo confirmado. Estamos preparando tu orden…";
         const keyName = `checkout-key:${signupIntentId}`;

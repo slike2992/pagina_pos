@@ -84,6 +84,38 @@ mensajes de alta ni correo de verificación de registro. Sólo `purpose='signup'
 habilita esa guía; ausencia de contexto permanece neutra y la recuperación de
 períodos conserva su contrato. El retorno nunca autentica ni habilita acceso.
 
+## Prueba gratuita de 15 días
+
+Los registros nuevos usan la prueba canónica de la API: verificar correo devuelve
+`nextAction=trial_setup`, estado provisioning y tenantId. La web muestra preparación
+e instrucciones por correo/Mi cuenta; no crea checkout, inicia días ni configura
+contraseñas. La API conserva la respuesta checkout de los registros pagados legacy.
+
+Mi cuenta valida `trial?: null | {status,durationDays:15,startsAt,endsAt,convertedAt,canConvert}`.
+Las fechas UTC son del servidor y el período pagado permanece separado. Durante
+provisioning/active/expired oculta renovación, tarjeta recurrente, recuperación de
+atrasos y cambios de plan. Owner/admin/billing pueden contratar sólo si canConvert;
+member conserva lectura y acceso POS según el servidor. Expirar no impide login.
+
+Contratar plan hace un POST explícito `/v1/me/subscription/trial-checkout` con
+subscriptionId e Idempotency-Key en memoria. Reutiliza el checkout canónico;
+no decide si puede repetir un pago pendiente/ambiguo. `purpose=trial_conversion`
+en el retorno dirige a la misma cuenta/contraseña; approved aún espera aplicación,
+fulfilled muestra contratación aplicada. No dispara un segundo aprovisionamiento.
+La prueba no necesita tarjeta ni se cobra/renueva automáticamente. El precio de
+catálogo describe la contratación posterior, no gratuidad permanente. El plan FE
+sigue requiriendo su configuración/activación por tenant y ambiente.
+
+Publicar primero API/worker/SQL029 y contrato compatible, después esta web.
+Sin nuevos permisos, SQL, cambio de legales/Brand/demo ni credenciales en el cliente.
+Validación Node 24: `PUBLIC_SITE_INDEXABLE=true npm run test:web`, 231/231;
+`npm run build:public`, Astro sin errores/advertencias/hints y auditorías públicas
+aprobadas. Los tests ejecutan controladores/helpers reales con DOM/HTTP simulados.
+Codex IAB local verificó trial_setup, prueba activa/expirada y retorno contratado
+con respuestas sintéticas; viewport medido 393×852 en cuenta expirada, con tarjeta,
+recuperación y cambio de plan ocultos. Sin proveedor, correo ni DB. Esta evidencia
+no acredita staging ni una contratación real; aceptación desplegada pendiente.
+
 ## Desarrollo
 
 Requiere Node >=22.12; esta revisión utiliza Node 24.22.1. No usar el Node 18

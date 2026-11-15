@@ -16,12 +16,12 @@ const links = [
   <nav class="desktop-nav" aria-label="Navegación principal">
     {links.map(({ href, label }) => <a href={href} aria-current={Astro.url.pathname === href ? "page" : undefined}>{label}</a>)}
   </nav>
-  <a class="header-cta button" href="/registro?plan=professional" data-track="signup" data-track-location="header" data-track-plan="professional">Crear cuenta</a>
+  <a class="header-cta button" href="/registro?plan=professional" data-track="signup" data-track-location="header" data-track-plan="professional">Probar 15 días</a>
   <details class="mobile-menu">
     <summary aria-label="Abrir o cerrar navegación"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" /></svg><span>Menú</span></summary>
     <nav aria-label="Navegación móvil">
       {links.map(({ href, label }) => <a href={href} aria-current={Astro.url.pathname === href ? "page" : undefined}>{label}</a>)}
-      <a href="/registro?plan=professional" data-track="signup" data-track-location="header" data-track-plan="professional">Crear cuenta</a>
+      <a href="/registro?plan=professional" data-track="signup" data-track-location="header" data-track-plan="professional">Probar 15 días</a>
     </nav>
   </details>
 </header>

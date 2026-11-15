@@ -122,3 +122,20 @@ test('return normalization rejects foreign destinations and mismatched or duplic
   const once = withCheckoutReturn(checkout.href, id, origin);
   assert.equal(withCheckoutReturn(once, id, origin), once);
 });
+
+
+test('trial_setup prepares access and never creates or resumes a charge checkout', async () => {
+  for (let repeat=0;repeat<2;repeat++) {
+    const result=await run([{ok:true,body:{signupIntentId:id,status:'provisioning',nextAction:'trial_setup',tenantId:'77777777-7777-4777-8777-777777777777'}}]);
+    assert.equal(result.calls.length,1); assert.match(result.calls[0].url,/verify-email$/);
+    assert.equal(result.link.href,'/cuenta'); assert.equal(result.link.textContent,'Revisar Mi cuenta');
+    assert.match(result.status.textContent,/15 días/); assert.equal(result.actions.hidden,false);
+  }
+});
+
+test('unknown next action or malformed trial setup cannot fall through to a paid checkout',async()=>{
+  for(const body of [{nextAction:'unknown'}, {nextAction:'trial_setup',status:'provisioning',signupIntentId:id,tenantId:'invalid'}]){
+    const result=await run([{ok:true,body}]); assert.equal(result.calls.length,1);
+    assert.equal(result.status.dataset.state,'error'); assert.equal(result.actions.hidden,true);
+  }
+});

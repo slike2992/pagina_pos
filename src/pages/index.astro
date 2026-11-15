@@ -40,7 +40,7 @@ const planCatalog = [
     registers: "1 caja",
     items: "Hasta 1.000 ítems",
     features: ["Ventas y caja", "Productos e inventario básico", "Reportes esenciales", "Soporte por chat", "Acompañamiento de arranque"],
-    cta: "Elegir Básico",
+    cta: "Probar Básico gratis 15 días",
     highlighted: false,
   },
   {
@@ -55,7 +55,7 @@ const planCatalog = [
     registers: "2 cajas, una por sucursal",
     items: "Hasta 5.000 ítems",
     features: ["Todo lo del plan Básico", "Usuarios y permisos", "Inventario avanzado", "Compras y proveedores", "Reportes avanzados", "Soporte prioritario"],
-    cta: "Elegir Profesional",
+    cta: "Probar Profesional gratis 15 días",
     highlighted: true,
   },
   {
@@ -70,7 +70,7 @@ const planCatalog = [
     registers: "Hasta 6 cajas, dos por sucursal",
     items: "Hasta 20.000 ítems",
     features: ["Todo lo del plan Profesional", "Permisos avanzados", "Indicadores gerenciales", "Preparado para integraciones", "Soporte prioritario y acompañamiento"],
-    cta: "Elegir Empresarial",
+    cta: "Probar Empresarial gratis 15 días",
     highlighted: false,
   },
 ] as const;
@@ -85,7 +85,7 @@ const electronicInvoicingPlans = [
     annual: "$699.000",
 
     documents: "Hasta 1.000 documentos electrónicos al año",
-    cta: "Elegir Básico FE",
+    cta: "Probar Básico FE gratis 15 días",
   },
   {
     ...planCatalog[1],
@@ -96,7 +96,7 @@ const electronicInvoicingPlans = [
     annual: "$999.000",
 
     documents: "Hasta 2.000 documentos electrónicos al año",
-    cta: "Elegir Profesional FE",
+    cta: "Probar Profesional FE gratis 15 días",
   },
   {
     ...planCatalog[2],
@@ -107,7 +107,7 @@ const electronicInvoicingPlans = [
     annual: "$1.599.000",
 
     documents: "Documentos electrónicos ilimitados",
-    cta: "Elegir Empresarial FE",
+    cta: "Probar Empresarial FE gratis 15 días",
   },
 ] as const;
 
@@ -123,7 +123,7 @@ const comparisons = [
 ];
 
 const faqs = [
-  ["¿Puedo conocer el sistema antes de contratar?", "Sí. Coordinamos una demostración enfocada en el flujo real de tu negocio para que puedas evaluar ventas, caja, inventario y reportes."],
+  ["¿Puedo conocer el sistema antes de contratar?", "Sí. Puedes iniciar una prueba gratis de 15 días con el plan elegido, sin tarjeta. Comienza cuando tu empresa esté lista. Después decides si contratas; no se cobra automáticamente. También puedes solicitar una demostración."],
   ["¿Necesito instalar el sistema en cada equipo?", "La plataforma está pensada para operar en la web. Durante la implementación revisamos tus equipos, conexión y necesidades para definir la configuración adecuada."],
   ["¿Qué incluye la implementación inicial?", "Revisamos los datos, equipos y pasos necesarios para iniciar. El alcance y cualquier costo de acompañamiento deben confirmarse antes de contratar; no se añade un cargo desde este formulario."],
   ["¿Puedo cambiar de plan más adelante?", "Sí. La estructura está preparada para acompañar el crecimiento del negocio y ajustar capacidades cuando la operación lo requiera."],
@@ -169,6 +169,7 @@ const siteSchema = {
       offers: plans.map((plan) => ({
         "@type": "Offer",
         name: `Plan ${plan.name}, mensual`,
+        description: "Precio del plan después de la prueba gratuita de 15 días. Contratación opcional, sin cobro automático de la prueba.",
         url: `${SITE_URL}/#planes`,
         price: plan.monthly.replace(/[$.]/g, ""),
         priceCurrency: "COP",
@@ -203,10 +204,10 @@ const siteSchema = {
           <h1>Software POS para comercios en Colombia.</h1>
           <p class="hero-lead">Para tiendas, papelerías y comercios especializados: vende con agilidad, organiza tu caja y conoce tu inventario en una sola plataforma.</p>
           <div class="hero-actions" aria-label="Acciones principales">
-            <a class="button primary light-button" href="#planes" data-track="plans" data-track-location="hero">Ver planes para mi negocio</a>
+            <a class="button primary light-button" href="/registro?plan=professional" data-track="signup" data-track-location="hero" data-track-plan="professional">Probar gratis 15 días</a>
             <a class="text-link light-link" href="#contacto" data-track="demo" data-track-location="hero">Solicitar una demostración <span aria-hidden="true">→</span></a>
           </div>
-          <p class="hero-note">Planes desde <strong>$49.900 al mes</strong> · Implementación acompañada</p>
+          <p class="hero-note">15 días gratis, sin tarjeta. Después, planes desde <strong>$49.900 al mes</strong> si decides contratar.</p>
         </div>
       </section>
 
@@ -259,13 +260,13 @@ const siteSchema = {
         <div class="section-heading centered"><p class="eyebrow">Planes</p><h2>Elige el nivel de control que necesitas</h2><p>Dos modalidades independientes para que contrates solo lo que tu operación necesita. Valores en pesos colombianos.</p></div>
         <div class="plan-group" aria-labelledby="plans-without-fe-title">
           <div class="plan-group-heading"><div><p class="eyebrow">Operación POS</p><h3 id="plans-without-fe-title">Planes sin facturación electrónica</h3></div><p>Ideales si ya tienes un proveedor de facturación o todavía no necesitas emitir documentos electrónicos.</p></div>
-          <div class="plans-grid">{planCatalog.map((plan) => <article class:list={["plan-card", { highlighted: plan.highlighted }]}>{plan.highlighted && <span class="plan-badge">Recomendado</span>}<h4 class="plan-name">Plan {plan.name}</h4><div class="price"><strong>{plan.monthly}</strong><span>COP / mes</span></div><div class="annual-price"><strong>{plan.annual}</strong><span>COP / año</span><em>Ahorra {planSaving(plan)}</em></div><p>{plan.summary}</p><dl class="plan-limits"><div><dt>Usuarios</dt><dd>{plan.users}</dd></div><div><dt>Sucursales</dt><dd>{plan.branches}</dd></div><div><dt>Cajas</dt><dd>{plan.registers}</dd></div><div><dt>Inventario</dt><dd>{plan.items}</dd></div></dl><ul class="check-list">{plan.features.map((feature) => <li>{feature}</li>)}</ul><a class:list={["button plan-button", { primary: plan.highlighted }]} href={`/registro?plan=${plan.code}`} data-track="signup" data-track-location="plan" data-track-plan={plan.code}>{plan.cta}</a></article>)}</div>
+          <div class="plans-grid">{planCatalog.map((plan) => <article class:list={["plan-card", { highlighted: plan.highlighted }]}>{plan.highlighted && <span class="plan-badge">Recomendado</span>}<h4 class="plan-name">Plan {plan.name}</h4><div class="price"><strong>{plan.monthly}</strong><span>COP / mes después de la prueba</span></div><div class="annual-price"><strong>{plan.annual}</strong><span>COP / año después de la prueba</span><em>Ahorra {planSaving(plan)}</em></div><p>{plan.summary}</p><dl class="plan-limits"><div><dt>Usuarios</dt><dd>{plan.users}</dd></div><div><dt>Sucursales</dt><dd>{plan.branches}</dd></div><div><dt>Cajas</dt><dd>{plan.registers}</dd></div><div><dt>Inventario</dt><dd>{plan.items}</dd></div></dl><ul class="check-list">{plan.features.map((feature) => <li>{feature}</li>)}</ul><a class:list={["button plan-button", { primary: plan.highlighted }]} href={`/registro?plan=${plan.code}`} data-track="signup" data-track-location="plan" data-track-plan={plan.code}>{plan.cta}</a></article>)}</div>
         </div>
         <div class="plan-group plan-group-fe" aria-labelledby="plans-with-fe-title">
           <div class="plan-group-heading"><div><p class="eyebrow fe-eyebrow">Facturación electrónica</p><h3 id="plans-with-fe-title">Planes con facturación electrónica</h3></div><p>POS y facturación electrónica con límites claros. Emitir requiere preparar y habilitar el emisor, su numeración y el ambiente correspondiente.</p></div>
-          <div class="plans-grid">{electronicInvoicingPlans.map((plan) => <article class:list={["plan-card", "fe-card", { highlighted: plan.highlighted }]}>{plan.highlighted && <span class="plan-badge">Recomendado</span>}<h4 class="plan-name">Plan {plan.name}</h4><div class="price"><strong>{plan.monthly}</strong><span>COP / mes</span></div><div class="annual-price"><strong>{plan.annual}</strong><span>COP / año</span><em>Ahorra {planSaving(plan)}</em></div><p>{plan.summary}</p><dl class="plan-limits"><div><dt>Usuarios</dt><dd>{plan.users}</dd></div><div><dt>Sucursales</dt><dd>{plan.branches}</dd></div><div><dt>Cajas</dt><dd>{plan.registers}</dd></div><div><dt>Inventario</dt><dd>{plan.items}</dd></div></dl><ul class="check-list"><li>Facturación electrónica incluida</li><li>{plan.documents}</li>{plan.features.map((feature) => <li>{feature}</li>)}</ul><a class:list={["button plan-button", { primary: plan.highlighted }]} href={`/registro?plan=${plan.code}`} data-track="signup" data-track-location="plan" data-track-plan={plan.code}>{plan.cta}</a></article>)}</div>
+          <div class="plans-grid">{electronicInvoicingPlans.map((plan) => <article class:list={["plan-card", "fe-card", { highlighted: plan.highlighted }]}>{plan.highlighted && <span class="plan-badge">Recomendado</span>}<h4 class="plan-name">Plan {plan.name}</h4><div class="price"><strong>{plan.monthly}</strong><span>COP / mes después de la prueba</span></div><div class="annual-price"><strong>{plan.annual}</strong><span>COP / año después de la prueba</span><em>Ahorra {planSaving(plan)}</em></div><p>{plan.summary}</p><dl class="plan-limits"><div><dt>Usuarios</dt><dd>{plan.users}</dd></div><div><dt>Sucursales</dt><dd>{plan.branches}</dd></div><div><dt>Cajas</dt><dd>{plan.registers}</dd></div><div><dt>Inventario</dt><dd>{plan.items}</dd></div></dl><ul class="check-list"><li>Facturación electrónica incluida</li><li>{plan.documents}</li>{plan.features.map((feature) => <li>{feature}</li>)}</ul><a class:list={["button plan-button", { primary: plan.highlighted }]} href={`/registro?plan=${plan.code}`} data-track="signup" data-track-location="plan" data-track-plan={plan.code}>{plan.cta}</a></article>)}</div>
         </div>
-        <p class="price-note">Los límites de usuarios, cajas, sucursales, ítems y documentos se aplican por empresa. El ahorro anual compara doce mensualidades con el valor anual publicado. Confirma la periodicidad y el desglose aplicable antes de pagar.</p>
+        <p class="price-note">La prueba gratuita dura 15 días desde que tu empresa esté lista. No requiere tarjeta y no se cobra ni renueva automáticamente. Una prueba por persona elegible. Los límites de usuarios, cajas, sucursales, ítems y documentos se aplican por empresa. El ahorro anual compara doce mensualidades con el valor anual publicado. Confirma la periodicidad y el desglose aplicable antes de pagar.</p>
       </section>
 
       <section class="comparison-section section" id="comparador">

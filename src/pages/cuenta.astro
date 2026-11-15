@@ -25,6 +25,16 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         <div><dt>Estado</dt><dd data-field="subscription-status"></dd></div>
         <div><dt>Vencimiento actual</dt><dd data-field="period-end"></dd></div>
       </dl>
+      <section class="recovery-management" data-section="subscription-trial" hidden aria-labelledby="trial-heading">
+        <h3 id="trial-heading">Prueba gratis de 15 días</h3>
+        <p data-field="trial-summary" role="status" aria-live="polite"></p>
+        <dl class="subscription-data">
+          <div><dt>Inicio de la prueba (UTC)</dt><dd data-field="trial-start"></dd></div>
+          <div><dt>Fin de la prueba (UTC)</dt><dd data-field="trial-end"></dd></div>
+        </dl>
+        <p>La prueba no se cobra ni renueva automáticamente. Para continuar, contrata el plan de esta empresa mediante el pago seguro.</p>
+        <button class="button" data-action="contract-trial" type="button" hidden disabled>Contratar plan</button>
+      </section>
       <section class="recovery-management" data-section="fiscal-onboarding" hidden aria-labelledby="fiscal-onboarding-heading">
         <h3 id="fiscal-onboarding-heading">Facturación electrónica</h3>
         <p data-field="fiscal-plan-guidance"></p>
@@ -134,13 +144,14 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
   <script>
     import { createIdempotencyKey } from "../scripts/client-idempotency";
     import { prepareWompiSession } from "../lib/wompi-client";
+    import { readSubscriptionTrial, readTrialCheckout, type SubscriptionTrial } from "../lib/subscription-trial";
     import { loadAccountPlans, selectAccountPlan, renderAccountPlans, type AccountPlanCatalog } from "../lib/account-plans";
     import { readPendingPlanChange, readPlanChange, readUpgradeCheckout, UpgradeValidationError, type PlanChange } from "../lib/subscription-upgrade";
     import { readRenewalIssue, readRecoveryOffer, readRecoveryCheckout, recoveryAmount, recoveryDate, recoveryPeriodText, rememberRecoveryCheckout, type RenewalIssue, type RecoveryOffer, type RecoveryCheckout } from "../lib/subscription-recovery";
 
     type Tenant = { tenantId: string; tenantKey: string; name: string; status: string; role: string };
     type LoginResult = { accessToken: string; expiresAt: string; principal: { displayName: string }; tenant: Tenant };
-    type Subscription = { subscriptionId: string; status: string; plan: { code: string; name: string }; price: { amountMinor: number; currency: string; billingInterval: string }; currentPeriodStart: string | null; currentPeriodEnd: string | null; cancelAtPeriodEnd: boolean; renewalIssue?: RenewalIssue | null; pendingChange?: unknown };
+    type Subscription = { subscriptionId: string; status: string; plan: { code: string; name: string }; price: { amountMinor: number; currency: string; billingInterval: string }; currentPeriodStart: string | null; currentPeriodEnd: string | null; cancelAtPeriodEnd: boolean; renewalIssue?: RenewalIssue | null; pendingChange?: unknown; trial?: SubscriptionTrial | null };
     type PaymentSourceConfig = { publicKey: string; widgetScriptUrl: string; fraudScriptUrl: string; acceptance: { token: string; permalink: string }; personalDataAuthorization: { token: string; permalink: string } };
     type PaymentSource = { type: "card" | "nequi"; displayHint: string | null; recurringConsentAt: string };
     type TokenizedSource = { token: string; type: "CARD" | "NEQUI" };
@@ -153,6 +164,8 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     const tenantField = root.querySelector<HTMLElement>("#tenant-field")!;
     const tenantSelect = root.querySelector<HTMLSelectElement>("#tenant")!;
     const panel = root.querySelector<HTMLElement>(".account-panel")!;
+    const trialSection = root.querySelector<HTMLElement>("[data-section='subscription-trial']")!;
+    const trialContract = root.querySelector<HTMLButtonElement>("[data-action='contract-trial']")!;
     const accountStatus = panel.querySelector<HTMLElement>(".account-status")!;
     const posLink = panel.querySelector<HTMLAnchorElement>("[data-action='open-pos']")!;
     const fiscalOnboarding = panel.querySelector<HTMLElement>("[data-section='fiscal-onboarding']")!;
@@ -193,6 +206,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     let pendingProblem = "";
     let changeIdempotencyKey = "";
     let checkoutIdempotencyKey = "";
+    let trialCheckoutKey = "";
     let paymentSourceConfig: PaymentSourceConfig | null = null;
     let paymentSourceBusy = false;
     let paymentSourceAttempt = "";
@@ -224,7 +238,8 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       : "Por confirmar";
     const statusLabels: Record<string, string> = {
       active: "Activo", past_due: "Pago pendiente", grace: "En gracia", restricted: "Solo lectura",
-      suspended: "Suspendido", cancel_at_period_end: "Cancelación programada", pending: "Pendiente"
+      suspended: "Suspendido", cancel_at_period_end: "Cancelación programada", pending: "Pendiente",
+      trialing: "Prueba gratuita", trial_expired: "Prueba finalizada"
     };
 
     const periodState = () => {
@@ -241,17 +256,32 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       && ["owner", "admin", "member", "billing"].includes(accountLogin.tenant.role)
       && ["active", "restricted"].includes(accountLogin.tenant.status));
     const renewalScheduled = () => Boolean(currentSubscription?.cancelAtPeriodEnd || currentSubscription?.status === "cancel_at_period_end");
+    const hasOpenTrial = () => Boolean(currentSubscription?.trial && currentSubscription.trial.status !== "converted");
     const canManageRenewal = () => Boolean(accessToken && accountLogin && currentSubscription
+      && !hasOpenTrial()
       && ["owner", "admin", "billing"].includes(accountLogin.tenant.role)
       && ["active", "past_due", "grace", "restricted", "suspended", "cancel_at_period_end"].includes(currentSubscription.status)
       && periodState() === "current");
     const renderAccountActions = () => {
+      const trial = currentSubscription?.trial;
+      trialSection.hidden = !trial;
+      field("trial-start").textContent = trial?.startsAt ? recoveryDate(trial.startsAt) : "Al terminar la preparación";
+      field("trial-end").textContent = trial?.endsAt ? recoveryDate(trial.endsAt) : "15 días desde que la empresa esté lista";
+      field("trial-summary").textContent = !trial ? "" : trial.status === "provisioning"
+        ? "Estamos preparando tu empresa. Los 15 días comienzan cuando termine la preparación."
+        : trial.status === "converted" ? "El servidor confirmó la contratación. Tu período pagado aparece en la suscripción."
+          : trial.status === "expired" ? "La prueba finalizó. Puedes contratar el plan desde esta cuenta; el servidor determina el acceso permitido al POS."
+            : "Tu prueba gratuita está activa. Las fechas son las confirmadas por el servidor.";
+      trialContract.hidden = !trial || !hasOpenTrial() || !trial.canConvert || !accountLogin
+        || !["owner", "admin", "billing"].includes(accountLogin.tenant.role);
+      trialContract.disabled = trialContract.hidden || subscriptionRefreshing || planBusy || renewalBusy || paymentSourceBusy;
       const publishedPlan = planCatalog?.plans.find(plan => plan.code === currentSubscription?.plan.code);
       const fiscalVisible = Boolean(accountLogin && publishedPlan && ["owner", "admin", "billing"].includes(accountLogin.tenant.role));
       fiscalOnboarding.hidden = !fiscalVisible;
       field("fiscal-plan-guidance").textContent = !fiscalVisible ? "" : publishedPlan!.electronicInvoicing
         ? "Tu plan incluye electrónica. La configuración fiscal y la disponibilidad de emisión se comprueban en el POS."
-        : "Este plan no incluye electrónica. Puedes vender con documentos POS. Si la necesitas, elige un plan con electrónica en Cambiar plan.";
+        : hasOpenTrial() ? "Este plan no incluye electrónica. Puedes vender con documentos POS durante la prueba."
+          : "Este plan no incluye electrónica. Puedes vender con documentos POS. Si la necesitas, elige un plan con electrónica en Cambiar plan.";
       field("fiscal-setup-steps").hidden = !fiscalVisible || !publishedPlan?.electronicInvoicing;
       fiscalSetupButton.hidden = !fiscalVisible || !publishedPlan?.electronicInvoicing || !["owner", "admin"].includes(accountLogin!.tenant.role);
       fiscalSetupButton.disabled = fiscalSetupButton.hidden || !canOpenPos() || subscriptionRefreshing || posBusy;
@@ -298,7 +328,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       }
       const messages: string[] = [];
       if (accountLogin && currentSubscription) {
-        const period = periodState();
+        const period = hasOpenTrial() ? null : periodState();
         if (period === "expired") messages.push(`La suscripción presenta atraso: el período cubierto terminó el ${formatDate(currentSubscription.currentPeriodEnd)}. Revisa los períodos pendientes de recuperación.`);
         else if (period === "invalid") messages.push("No pudimos confirmar un período vigente. Cancelar o reactivar la renovación no está disponible; actualiza Mi cuenta.");
         if (!canOpenPos()) messages.push(accountLogin.tenant.status === "suspended"
@@ -312,6 +342,10 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     const renderAccount = (login: LoginResult, subscription: Subscription) => {
       // Validate before replacing any confirmed account state, including refresh
       // and renewal responses. Missing/null remains compatible with older APIs.
+      const trial = readSubscriptionTrial(subscription.trial);
+      if (["trialing", "trial_expired"].includes(subscription.status) && (!trial || trial.status === "converted")) {
+        throw new Error("Falta el estado de la prueba. Actualiza Mi cuenta antes de continuar.");
+      }
       const issue = readRenewalIssue(subscription.renewalIssue);
       let nextPending: PlanChange | null = null;
       let nextPendingProblem = "";
@@ -325,7 +359,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       pendingChange = nextPending; pendingProblem = nextPendingProblem; reviewedPlan = null;
       if (accountLogin !== login) { posBusy = false; renewalBusy = false; }
       accountLogin = login;
-      currentSubscription = { ...subscription, renewalIssue: issue };
+      currentSubscription = { ...subscription, renewalIssue: issue, trial };
       renewalIssueSection.hidden = !issue;
       field("renewal-issue-amount").textContent = issue ? recoveryAmount(issue.amountMinor, issue.currency) : "";
       field("renewal-issue-period").textContent = issue ? recoveryPeriodText(issue) : "";
@@ -337,14 +371,15 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       field("plan").textContent = subscription.plan.name;
       field("price").textContent = `${new Intl.NumberFormat("es-CO", { style: "currency", currency: subscription.price.currency, maximumFractionDigits: 0 }).format(subscription.price.amountMinor / 100)} / ${subscription.price.billingInterval === "annual" ? "año" : "mes"}`;
       field("subscription-status").textContent = statusLabels[subscription.status] ?? subscription.status;
-      field("period-end").textContent = formatDate(subscription.currentPeriodEnd);
+      field("period-end").textContent = hasOpenTrial() ? "Sin período pagado durante la prueba" : formatDate(subscription.currentPeriodEnd);
+      if (hasOpenTrial()) field("price").textContent += " después de la prueba";
       field("recurring-consent").textContent = `Autorizo la renovación automática de ${subscription.plan.name} por ${new Intl.NumberFormat("es-CO", { style: "currency", currency: subscription.price.currency, maximumFractionDigits: 0 }).format(subscription.price.amountMinor / 100)} ${subscription.price.currency} ${subscription.price.billingInterval === "annual" ? "al año" : "al mes"}, desde mi próximo periodo. Puedo cancelar la renovación desde Mi cuenta.`;
       field("cancel-date").textContent = formatDate(subscription.currentPeriodEnd);
       const scheduled = subscription.cancelAtPeriodEnd || subscription.status === "cancel_at_period_end";
       const canManage = ["owner", "admin", "billing"].includes(login.tenant.role);
-      planSection.hidden = scheduled || !canManage || subscription.status !== "active";
-      paymentSourceSection.hidden = scheduled || !canManage || !["active", "past_due", "grace", "restricted", "suspended"].includes(subscription.status);
-      recoverySection.hidden = !canManage || !["active", "past_due", "grace", "restricted", "suspended"].includes(subscription.status)
+      planSection.hidden = hasOpenTrial() || scheduled || !canManage || subscription.status !== "active";
+      paymentSourceSection.hidden = hasOpenTrial() || scheduled || !canManage || !["active", "past_due", "grace", "restricted", "suspended"].includes(subscription.status);
+      recoverySection.hidden = hasOpenTrial() || !canManage || !["active", "past_due", "grace", "restricted", "suspended"].includes(subscription.status)
         || (subscription.status === "active" && !issue && (!subscription.currentPeriodEnd || Date.parse(subscription.currentPeriodEnd) > Date.now()));
       accountStatus.textContent = scheduled ? `La renovación está cancelada desde el ${formatDate(subscription.currentPeriodEnd)}.` : "";
       accountStatus.dataset.state = scheduled ? "success" : "";
@@ -355,7 +390,8 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     };
 
     const refreshPlanCatalog = async () => {
-      if (!accessToken || !accountLogin || !currentSubscription || planSection.hidden) {
+      if (!accessToken || !accountLogin || !currentSubscription || (planSection.hidden && !hasOpenTrial())
+        || !["owner", "admin", "billing"].includes(accountLogin.tenant.role)) {
         catalogGeneration++; catalogBusy = false; planCatalog = null; catalogOwner = null; reviewedPlan = null;
         catalogSelection = ""; planNames = Object.create(null);
         planSelect.replaceChildren(new Option("Cambio de plan no disponible", ""));
@@ -590,7 +626,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       return url.href;
     };
     const preparePaymentSource = async () => {
-      if (subscriptionRefreshing || paymentSourceBusy || !accessToken) return;
+      if (subscriptionRefreshing || paymentSourceBusy || !accessToken || hasOpenTrial()) return;
       const preparingAccessToken = accessToken;
       paymentSourceBusy = true;
       renderAccountActions();
@@ -685,7 +721,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     });
 
     paymentSourceButton.addEventListener("click", async () => {
-      if (subscriptionRefreshing || paymentSourceBusy || !accessToken) return;
+      if (subscriptionRefreshing || paymentSourceBusy || !accessToken || hasOpenTrial()) return;
       if (!paymentSourceConfig) { await preparePaymentSource(); return; }
       if (!termsAcceptance.checked || !personalDataAcceptance.checked || !recurringAcceptance.checked) {
         paymentSourceStatus.textContent = "Acepta los documentos de Wompi y autoriza la renovación automática para continuar.";
@@ -1015,6 +1051,36 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     };
     posLink.addEventListener("click", (event) => openPos(event));
     fiscalSetupButton.addEventListener("click", (event) => openPos(event, true));
+
+    trialContract.addEventListener("click", async () => {
+      if (subscriptionRefreshing || planBusy || !accessToken || !accountLogin || !currentSubscription
+        || !hasOpenTrial() || !currentSubscription.trial?.canConvert || trialContract.hidden) return;
+      const token = accessToken, login = accountLogin, subscription = currentSubscription;
+      const isCurrent = () => token === accessToken && login === accountLogin && subscription === currentSubscription;
+      planBusy = true;
+      if (!trialCheckoutKey) trialCheckoutKey = createIdempotencyKey();
+      renderAccountActions();
+      let navigating = false;
+      try {
+        const response = await fetch(`${apiUrl}/v1/me/subscription/trial-checkout`, {
+          method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json", "idempotency-key": trialCheckoutKey },
+          body: JSON.stringify({ subscriptionId: subscription.subscriptionId }),
+        });
+        if (stopOnUnauthorized(response, isCurrent)) return;
+        const body = await response.json();
+        if (!isCurrent()) return;
+        if (!response.ok) throw body;
+        const checkout = readTrialCheckout(body, location.origin);
+        navigating = true;
+        location.assign(checkout.checkoutUrl);
+      } catch (error) {
+        if (!isCurrent()) return;
+        accountStatus.textContent = messageFrom(error, error instanceof Error ? error.message : "No pudimos preparar la contratación. Actualiza Mi cuenta antes de reintentar.");
+        accountStatus.dataset.state = "error";
+      } finally {
+        if (isCurrent()) { planBusy = navigating; renderAccountActions(); }
+      }
+    });
     const resetAccount = (message = "") => {
       loginGeneration++;
       catalogGeneration++;
@@ -1055,6 +1121,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       pendingProblem = "";
       changeIdempotencyKey = "";
       checkoutIdempotencyKey = "";
+      trialCheckoutKey = "";
       paymentSourceConfig = null;
       paymentSourceBusy = false;
       paymentSourceAttempt = "";

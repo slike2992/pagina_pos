@@ -1,4 +1,4 @@
-export type CheckoutPurpose = "signup" | "plan_change" | "renewal" | "unknown";
+export type CheckoutPurpose = "signup" | "plan_change" | "renewal" | "trial_conversion" | "unknown";
 export type CheckoutResult = {
   status: "pending" | "approved" | "declined" | "expired" | "cancelled" | "fulfilled" | "refunded";
   reference: string;
@@ -24,7 +24,7 @@ export function readCheckoutResult(value: unknown, previous: CheckoutPurpose = "
   const purpose = row.purpose === undefined
     ? row.recovery === undefined ? "unknown" : "renewal"
     : row.purpose;
-  if (!["signup", "plan_change", "renewal", "unknown"].includes(purpose as string)
+  if (!["signup", "plan_change", "renewal", "trial_conversion", "unknown"].includes(purpose as string)
     || (previous !== "unknown" && purpose !== previous)
     || (purpose === "renewal" && row.recovery === undefined)
     || (purpose !== "renewal" && row.recovery !== undefined)
@@ -42,6 +42,20 @@ export function readCheckoutResult(value: unknown, previous: CheckoutPurpose = "
 }
 
 export function accountPaymentResult(result: CheckoutResult): { heading: string; status: string; detail: string; state: string; poll: boolean } {
+  if (result.purpose === "trial_conversion") {
+    if (result.status === "fulfilled") return {
+      heading: "Plan contratado", status: "El servidor confirmó la aplicación de la contratación de tu prueba.",
+      detail: "Revisa el período pagado y tu acceso en Mi cuenta con tu misma contraseña. La contratación no activa automáticamente la emisión electrónica ni la renovación automática.", state: "success", poll: false,
+    };
+    if (result.status === "approved" || result.status === "pending") return {
+      heading: result.status === "approved" ? "Pago confirmado; contratación en proceso" : "Estamos confirmando este pago",
+      status: "Espera la aplicación confirmada por el servidor. No realices otro pago.",
+      detail: "Tu empresa y contraseña se conservan. Consulta el estado en Mi cuenta; este resultado todavía no acredita un período pagado aplicado.", state: "", poll: true,
+    };
+    const labels: Record<string, string> = { declined: "Pago rechazado", expired: "Orden vencida", cancelled: "Pago cancelado", refunded: "Pago reembolsado" };
+    return { heading: labels[result.status], status: "Este resultado no confirma la contratación del plan.",
+      detail: "Revisa tu prueba y las opciones permitidas en Mi cuenta antes de reintentar. Conserva tu contraseña actual.", state: "error", poll: false };
+  }
   const upgrade = result.purpose === "plan_change";
   const labels: Record<string, string> = { declined: "Pago rechazado", expired: "Orden vencida", cancelled: "Pago cancelado", refunded: "Pago reembolsado" };
   const detail = upgrade

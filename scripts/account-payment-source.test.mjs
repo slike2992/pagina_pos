@@ -15,6 +15,7 @@ const returnCode = compile(await readFile(new URL('../src/lib/checkout-return.ts
 const recoveryCode = compile(await readFile(new URL('../src/lib/subscription-recovery.ts', import.meta.url), 'utf8'));
 const plansCode = compile(await readFile(new URL('../src/lib/account-plans.ts', import.meta.url), 'utf8'));
 const upgradeCode = compile(await readFile(new URL('../src/lib/subscription-upgrade.ts', import.meta.url), 'utf8'));
+const trialCode = compile(await readFile(new URL('../src/lib/subscription-trial.ts', import.meta.url), 'utf8'));
 const page = await readFile(new URL('../src/pages/cuenta.astro', import.meta.url), 'utf8');
 const accountScript = page.match(/<script>([\s\S]*?)<\/script>/)?.[1];
 assert.ok(accountScript, 'account controller must exist');
@@ -149,6 +150,7 @@ function prepared(initialize = callback => callback({ sessionId }, null)) {
 async function account(options = {}) {
   const h = browser();
   const selectors = ['#login-form', '.status', '#tenant-field', '#tenant', '.account-panel', '.account-status',
+    "[data-section='subscription-trial']", "[data-action='contract-trial']", "[data-field='trial-summary']", "[data-field='trial-start']", "[data-field='trial-end']",
     "[data-section='fiscal-onboarding']", "[data-action='configure-fiscal']", "[data-field='fiscal-plan-guidance']", "[data-field='fiscal-setup-steps']",
     "[data-action='open-pos']", "[data-action='cancel']", "[data-action='reactivate']", '#cancel-dialog',
     '#confirm-cancel', "[data-section='plan-management']", '#target-plan', "[data-action='change-plan']",
@@ -244,6 +246,7 @@ async function account(options = {}) {
     if (name === '../lib/subscription-recovery') return recovery;
     if (name === '../lib/account-plans') return h.module(plansCode);
     if (name === '../lib/subscription-upgrade') return h.module(upgradeCode, name => assert.fail(name));
+    if (name === '../lib/subscription-trial') return h.module(trialCode, name => assert.fail(name));
     assert.fail(`unexpected controller import: ${name}`);
   });
   return Object.assign(h, {
