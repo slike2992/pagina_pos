@@ -207,7 +207,10 @@ Helpers y comprobaciones: [lib](src/lib/README.md) y [scripts](scripts/README.md
 ## Instalación reproducible de la web
 
 Usar pnpm install --frozen-lockfile con Node compatible. pnpm-lock.yaml es el
-lockfile de este repositorio. .npmrc mantiene node-linker=hoisted para que el
+lockfile de este repositorio. pnpm-workspace.yaml mantiene nodeLinker: hoisted para que el
 prerenderizador de Astro resuelva su grafo completo dentro de esta aplicación;
 no debe resolver cookie u otras dependencias de un proyecto padre. El build
 limpio de staging se verificó con esta configuración, sin cambiar versiones.
+
+Gestor fijado: pnpm11.25.0; Node>=22.13. La configuración de pnpm11 usa YAML:
+https://pnpm.io/es/11.x/settings . El workspace sólo contiene esta aplicación.

@@ -235,7 +235,7 @@ versionada del control SaaS; los tres borradores no cambian la aceptación actua
 
 ## 2026-11-14 — Dependencias del build Astro aisladas
 
-Instalación pnpm congelada con node-linker=hoisted en .npmrc. Evita resolver la
+Instalación pnpm congelada con nodeLinker: hoisted en pnpm-workspace.yaml. Evita resolver la
 versión de cookie del SaaS padre al prerenderizar. Sin cambios de grafo/lock,
 contrato, diseño ni ambiente. Compilación limpia y231 pruebas aprobadas; no
 equivale a aceptación integrada de staging.
