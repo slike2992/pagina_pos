@@ -32,7 +32,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
           <div><dt>Inicio de la prueba (UTC)</dt><dd data-field="trial-start"></dd></div>
           <div><dt>Fin de la prueba (UTC)</dt><dd data-field="trial-end"></dd></div>
         </dl>
-        <p>La prueba no se cobra ni renueva automáticamente. Para continuar, contrata el plan de esta empresa mediante el pago seguro.</p>
+        <p data-field="trial-guidance"></p>
         <button class="button" data-action="contract-trial" type="button" hidden disabled>Contratar plan</button>
       </section>
       <section class="recovery-management" data-section="fiscal-onboarding" hidden aria-labelledby="fiscal-onboarding-heading">
@@ -272,6 +272,9 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         : trial.status === "converted" ? "El servidor confirmó la contratación. Tu período pagado aparece en la suscripción."
           : trial.status === "expired" ? "La prueba finalizó. Puedes contratar el plan desde esta cuenta; el servidor determina el acceso permitido al POS."
             : "Tu prueba gratuita está activa. Las fechas son las confirmadas por el servidor.";
+      field("trial-guidance").textContent = !trial ? "" : trial.status === "converted"
+        ? "Consulta las fechas de tu período pagado en la suscripción. La contratación no activa la renovación automática."
+        : "La prueba no se cobra ni renueva automáticamente. Para continuar, contrata el plan de esta empresa mediante el pago seguro.";
       trialContract.hidden = !trial || !hasOpenTrial() || !trial.canConvert || !accountLogin
         || !["owner", "admin", "billing"].includes(accountLogin.tenant.role);
       trialContract.disabled = trialContract.hidden || subscriptionRefreshing || planBusy || renewalBusy || paymentSourceBusy;

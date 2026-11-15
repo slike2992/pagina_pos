@@ -1,5 +1,20 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-15 — Texto de la prueba ya contratada
+
+- Mi cuenta usa el estado canónico `trial.status=converted` para sustituir la
+  invitación a contratar por orientación al período pagado de la suscripción,
+  conservando que contratar no activa la renovación automática. Las pruebas
+  abiertas mantienen su texto y los clientes sin trial no muestran ese bloque.
+- Corrección sólo de presentación: sin cambios de contrato HTTP, permisos, SQL,
+  API ni worker. No requiere migración ni orden de publicación adicional.
+- La aceptación real de conversión fue informada por el integrador (Activo,
+  vencimiento 15 de diciembre y confirmación de contratación). Esta corrección
+  se verifica con el controlador real en VM; navegador desplegado queda al
+  integrador. No se ejecutan CUA, pagos, proveedores ni despliegues en este bloque.
+- Node 24: 157/157 pruebas de cuenta (incluye conversión y actualización),
+  Astro check sobre 51 archivos sin errores, advertencias ni hints.
+
 ## 2026-11-14 — Prueba gratuita canónica de 15 días
 
 - Registro/verificación consumen trial_setup sin checkout automático; legacy pagado conserva checkout. Mi cuenta valida trial nullable, fechas UTC/canConvert del servidor y no infiere un período pagado.

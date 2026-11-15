@@ -468,10 +468,40 @@ for (const state of ['active', 'expired']) test(`real account trial ${state} dis
   assert.equal(h.get("[data-action='contract-trial']").hidden, false);
   assert.match(h.get("[data-field='period-end']").textContent, /Sin período pagado/);
   assert.match(h.get("[data-field='price']").textContent, /después de la prueba/);
+  assert.equal(h.get("[data-field='trial-guidance']").textContent,
+    'La prueba no se cobra ni renueva automáticamente. Para continuar, contrata el plan de esta empresa mediante el pago seguro.');
   assert.doesNotMatch(h.get("[data-field='access-guidance']").textContent, /No pudimos confirmar un período/);
   assert.ok(h.calls.every(call => !/payment-source|subscription\/recovery|trial-checkout/.test(call.url)));
   await h.click('cancel'); await h.click('change-plan');
   assert.equal(h.calls.filter(call=>call.method==='POST').length, 1, 'Only login, no billing mutation');
+});
+
+test('converted trial displays the paid period without inviting another purchase or promising automatic renewal', async () => {
+  assert.match(page, /<p data-field="trial-guidance"><\/p>/);
+  const h = browser({ subscription: { trial: { ...trial('converted'), convertedAt: '2030-01-10T00:00:00.000Z', canConvert: false } } });
+  await h.login();
+  assert.match(h.get("[data-field='trial-summary']").textContent, /El servidor confirmó la contratación/);
+  assert.equal(h.get("[data-field='trial-guidance']").textContent,
+    'Consulta las fechas de tu período pagado en la suscripción. La contratación no activa la renovación automática.');
+  assert.doesNotMatch(h.get("[data-field='period-end']").textContent, /Sin período pagado/);
+  assert.doesNotMatch(h.get("[data-field='price']").textContent, /después de la prueba/);
+  assert.equal(h.get("[data-action='contract-trial']").hidden, true);
+  assert.ok(h.calls.every(call => !call.url.endsWith('/trial-checkout')));
+});
+
+test('refresh replaces the trial purchase invitation after conversion and clears it when trial is absent', async () => {
+  const h = browser({ subscription: trialSubscription() }); await h.login();
+  assert.match(h.get("[data-field='trial-guidance']").textContent, /Para continuar, contrata/);
+  Object.assign(h.model, { status: 'active', currentPeriodStart: '2030-01-16T00:00:00Z', currentPeriodEnd: '2099-01-01T00:00:00Z',
+    trial: { ...trial('converted'), convertedAt: '2030-01-10T00:00:00.000Z', canConvert: false } });
+  await h.click('refresh-recovery');
+  assert.match(h.get("[data-field='trial-guidance']").textContent, /período pagado/);
+  assert.doesNotMatch(h.get("[data-field='trial-guidance']").textContent, /Para continuar, contrata/);
+  assert.equal(h.get("[data-action='contract-trial']").hidden, true);
+  h.model.trial = null;
+  await h.click('refresh-recovery');
+  assert.equal(h.get("[data-section='subscription-trial']").hidden, true);
+  assert.equal(h.get("[data-field='trial-guidance']").textContent, '');
 });
 
 test('member trial sees dates and POS access without any checkout or billing controls', async () => {
