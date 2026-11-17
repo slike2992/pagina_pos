@@ -1,5 +1,21 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-16 — Logo raster para correo transaccional de Cripton
+
+- Añade únicamente public/brand/v1.0/cripton_horizontal_reverso_v1.0.png,
+  exportación PNG transparente 738×199 del SVG oficial del mismo nombre.
+  Source SHA256:1083a405fbe7f3755b4e8c3b4027821413733f60d86a1335293b25d6d9baa2ac.
+- Consumidor: marco HTML del worker SaaS. Usa el origen web ya configurado;
+  imagen pública sin cookies, token, destinatario o seguimiento. PNG conserva
+  proporción y marca; permite clientes de correo que no muestran SVG.
+- Publicar este recurso antes del worker que lo referencia. No cambia páginas,
+  formularios, precio, SEO, componentes de marca, SQL ni contratos HTTP.
+- Reenvío anterior aceptado en Codex: correo inicial y segundo mensaje reales
+  en la bandeja principal de santy.2992.2@gmail.com, desde notificaciones;
+  contador60s, recarga sin reiniciar espera, mismo enlace y acceso recibidos.
+  La recepción en santy.slike.2992@gmail.com fue confirmada por el propietario.
+  Evidencia de branding posterior se registra en pos_saas/docs/.
+
 ## 2026-11-16 — Reenvío de verificación después de un minuto
 
 - Registro muestra recibo, contador60s y botón Reenviar correo. Usa POST
