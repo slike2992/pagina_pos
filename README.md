@@ -214,3 +214,13 @@ limpio de staging se verificó con esta configuración, sin cambiar versiones.
 
 Gestor fijado: pnpm11.25.0; Node>=22.13. La configuración de pnpm11 usa YAML:
 https://pnpm.io/es/11.x/settings . El workspace sólo contiene esta aplicación.
+
+## Reenvío del correo de registro
+
+La pantalla Revisa tu bandeja permite reenviar después de60 segundos. La API
+valida el plazo, la vigencia y el destinatario; solicitar no confirma recepción.
+Recargar conserva el registro pendiente sin volver a crear una cuenta ni enviar
+automáticamente. Si el correo estaba mal escrito puede corregirse mediante una
+nueva solicitud explícita. Publicar primero API/borde con resend-verification.
+En staging, sólo los destinatarios QA habilitados pueden recibir mensajes; un
+destino no disponible conserva el formulario y muestra orientación.

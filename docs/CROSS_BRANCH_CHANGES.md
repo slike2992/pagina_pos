@@ -1,5 +1,25 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-16 — Reenvío de verificación después de un minuto
+
+- Registro muestra recibo, contador60s y botón Reenviar correo. Usa POST
+  signup-intents/:id/resend-verification con email original e Idempotency-Key;
+  acepta202 genérico, respeta429 y preserva clave ante pérdida de respuesta.
+- Alta admite verificationEmail opcional (resendAvailableAt/retryAfterSeconds).
+  API antigua usa espera local conservadora; publicar API/borde de pos_saas
+  3f52263 antes de esta web.503 email_delivery_unavailable conserva formulario.
+- Recarga recupera sólo id/email/expiry/resendAt sin enviar automáticamente.
+  Migra recibos locales anteriores sin conservar su formulario completo. La
+  creación conserva su idempotencia previa ante recarga/fallo de red. Verificar
+  limpia sólo el recibo propio, después de validar el resultado de la API.
+- Enlace vencido permite volver al registro; corregir correo es explícito, sin
+  borrar la solicitud del servidor ni modificar pruebas, pagos o permisos.
+- Sin cambios de dependencias, marca, estilos globales, precios o páginas de pago.
+  Pruebas del controlador/timer, red, doble clic, recarga,503 y storage bloqueado;
+  aceptación del proveedor/bandeja y despliegue se registran en pos_saas/docs/
+  QA_SIGNUP_EMAIL_RESEND_2026-11-16.md.
+
+
 ## 2026-11-15 — Texto de la prueba ya contratada
 
 - Mi cuenta usa el estado canónico `trial.status=converted` para sustituir la

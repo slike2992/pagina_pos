@@ -11,6 +11,7 @@ const helperExports = {};
 vm.runInNewContext(compile(await readFile(new URL('../src/lib/checkout-return.ts', import.meta.url), 'utf8')), {
   exports: helperExports, URL,
 });
+const verificationCode = compile(await readFile(new URL('../src/lib/signup-verification.ts', import.meta.url), 'utf8'));
 const { withCheckoutReturn } = helperExports;
 const page = await readFile(new URL('../src/pages/registro/verificar.astro', import.meta.url), 'utf8');
 const script = compile(page.match(/<script>([\s\S]*?)<\/script>/)[1].replaceAll('import.meta.env.DEV', 'false'));
@@ -33,16 +34,21 @@ async function run(responses, { initialStorage = [], blockedStorage = false } = 
   const root = { dataset: { apiUrl: 'https://api.staging.example.invalid' },
     querySelector: selector => ({ '.status': status, '.actions': actions,
       '#checkout-link': link, '#renew-local': renew })[selector] };
+  const sessionStorage = {
+    getItem: key => { if (blockedStorage) throw Error('Storage denied'); return storage.get(key) ?? null; },
+    setItem: (key, value) => { if (blockedStorage) throw Error('Storage denied'); storage.set(key, value); },
+    removeItem: key => { if (blockedStorage) throw Error('Storage denied'); storage.delete(key); }
+  };
+  const verificationExports = {};
+  vm.runInNewContext(verificationCode, { exports: verificationExports, sessionStorage });
   vm.runInNewContext(script, {
     exports: {},
     document: { querySelector: () => root }, URL, URLSearchParams,
     location: { origin, search: '?signupIntentId=' + id + '&token=' + 'a'.repeat(64) },
-    sessionStorage: {
-      getItem: key => { if (blockedStorage) throw new Error('Storage denied'); return storage.get(key) ?? null; },
-      setItem: (key, value) => { if (blockedStorage) throw new Error('Storage denied'); storage.set(key, value); }
-    },
+    sessionStorage,
     require: name => name.includes('client-idempotency') ? { createIdempotencyKey: () => 'fixture-idempotency-key' }
-      : name.includes('checkout-return') ? helperExports : assert.fail('Unexpected import'),
+      : name.includes('checkout-return') ? helperExports
+      : name.includes('signup-verification') ? verificationExports : assert.fail('Unexpected import'),
     fetch: async (url, options) => {
       calls.push({ url, options });
       const next = responses.shift();
@@ -51,7 +57,7 @@ async function run(responses, { initialStorage = [], blockedStorage = false } = 
     },
   });
   for (let i = 0; i < 5; i++) await new Promise(resolve => setImmediate(resolve));
-  return { calls, status, actions, link };
+  return { calls, status, actions, link, storage };
 }
 
 test('a consumed email link resumes only the existing checkout without creating an order', async () => {

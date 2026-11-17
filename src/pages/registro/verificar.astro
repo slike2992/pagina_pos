@@ -10,6 +10,7 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
   </div>
   <script>
     import { createIdempotencyKey } from "../../scripts/client-idempotency";
+    import { clearPendingSignup } from "../../lib/signup-verification";
     import { withCheckoutReturn } from "../../lib/checkout-return";
 
     const root = document.querySelector<HTMLElement>("#verification")!;
@@ -70,6 +71,7 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
             || typeof verified.tenantId !== "string" || !/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(verified.tenantId)) {
             throw new Error("Respuesta de verificación inválida");
           }
+          clearPendingSignup(signupIntentId);
           status.textContent = "Correo confirmado. Estamos preparando tu prueba gratis de 15 días. El plazo comienza cuando tu empresa esté lista. Recibirás las instrucciones de acceso por correo; si ya tienes contraseña, puedes ingresar a Mi cuenta.";
           status.dataset.state = "success";
           link.href = "/cuenta";
@@ -80,6 +82,7 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
         if (verification.ok && verified?.nextAction !== undefined && verified.nextAction !== "checkout") {
           throw new Error("Siguiente paso no reconocido");
         }
+        if (verification.ok || resumed) clearPendingSignup(signupIntentId);
         status.textContent = "Correo confirmado. Estamos preparando tu orden…";
         const keyName = `checkout-key:${signupIntentId}`;
         let checkoutBody = resumed;

@@ -18,6 +18,8 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
     import { bindFormFeedback } from "../../lib/form-feedback";
     import { createIdempotencyKey } from "../../scripts/client-idempotency";
 
+    import { readPendingSignup, createdPendingSignup, savePendingSignup, showVerificationInbox } from "../../lib/signup-verification";
+
     type LegalDocument = { type: "terms" | "privacy"; version: string; contentUrl: string };
     const form = document.querySelector<HTMLFormElement>("#signup-form");
     const feedback = form ? bindFormFeedback(form) : null;
@@ -42,134 +44,95 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
       return "No fue posible completar la solicitud. Intenta de nuevo.";
     };
 
-    const resetInvalidAttempt = () => {
-      sessionStorage.removeItem("signup-draft");
-      sessionStorage.removeItem("signup-accepted-at");
-      sessionStorage.removeItem("signup-key");
-    };
-
-    const showLocalResume = (verificationUrl: string) => {
-      const url = new URL(verificationUrl);
-      if (url.origin !== location.origin || url.pathname !== "/registro/verificar") return;
-      const existing = form?.querySelector<HTMLElement>("[data-local-resume]");
-      if (existing) existing.remove();
-      const resume = document.createElement("p");
-      resume.className = "status";
-      resume.dataset.state = "success";
-      resume.dataset.localResume = "true";
-      resume.append("Tienes un registro local pendiente. ");
-      const link = document.createElement("a");
-      link.href = url.href;
-      link.textContent = "Continuar verificación";
-      resume.append(link, ".");
-      status?.after(resume);
-    };
-    const restoreLocalSignup = async () => {
-      const signupIntentId = sessionStorage.getItem("signup-intent-id");
-      if (!signupIntentId) return;
+    let attempt: { fingerprint: string; key: string; acceptedAt: string } | null = null;
+    const pending = readPendingSignup();
+    if (form && pending) {
+      form.addEventListener("submit", (event) => event.preventDefault());
+      if (import.meta.env.DEV) {
+        // Read-only local continuation. Staging/production never query development routes.
+        void fetch(`${apiUrl}/v1/development/signup-intents/${encodeURIComponent(pending.id)}/verification`)
+          .then(async (response) => response.ok ? (await response.json()).verificationUrl : undefined)
+          .then((url) => showVerificationInbox(form, apiUrl, pending, typeof url === "string" ? url : undefined, false))
+          .catch(() => showVerificationInbox(form, apiUrl, pending, undefined, false));
+      } else showVerificationInbox(form, apiUrl, pending, undefined, false);
+    } else {
+      // Preserve the original creation key after a lost response or reload.
       try {
-        const response = await fetch(`${apiUrl}/v1/development/signup-intents/${encodeURIComponent(signupIntentId)}/verification`);
-        const body = await response.json();
-        if (response.ok && typeof body?.verificationUrl === "string") showLocalResume(body.verificationUrl);
-      } catch {
-        // The standard registration form remains usable if no local continuation is available.
-      }
-    };
-    const selected = new URLSearchParams(location.search).get("plan");
-    if (plan && ["basic", "professional", "enterprise", "basic-fe", "professional-fe", "enterprise-fe"].includes(selected ?? "")) plan.value = selected!;
-    fetch(`${apiUrl}/v1/public/legal-documents`)
-      .then(async (response) => {
-        const body = await response.json();
-        if (!response.ok) throw body;
-        documents = body.documents;
-        const terms = documents.find((item) => item.type === "terms");
-        const privacy = documents.find((item) => item.type === "privacy");
-        if (!terms || !privacy) throw new Error("missing legal documents");
-        const termsLink = document.querySelector<HTMLAnchorElement>("#terms-link");
-        const privacyLink = document.querySelector<HTMLAnchorElement>("#privacy-link");
-        if (termsLink) termsLink.href = new URL(terms.contentUrl, location.origin).toString();
-        if (privacyLink) privacyLink.href = new URL(privacy.contentUrl, location.origin).toString();
-        if (legal) legal.disabled = false;
-        if (submit) submit.disabled = false;
-        setStatus(`Condiciones vigentes: ${terms.version}.`);
-      })
-      .catch(() => setStatus("No pudimos consultar las condiciones vigentes. Recarga la página.", "error"));
-    void restoreLocalSignup();
-    form?.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      if (!feedback?.validate() || documents.length < 2 || !legal || legal.disabled || !legal.checked || submit?.disabled) return;
-      const data = new FormData(form);
-      const terms = documents.find((item) => item.type === "terms")!;
-      const privacy = documents.find((item) => item.type === "privacy")!;
-      const draft = {
-        contactName: String(data.get("contactName") ?? ""), email: String(data.get("email") ?? ""),
-        companyName: String(data.get("companyName") ?? ""), phone: String(data.get("phone") ?? "") || undefined,
-        priceCode: String(data.get("priceCode") ?? "professional")
-      };
-      const legalAcceptance = { termsVersion: terms.version, privacyVersion: privacy.version };
-      const fingerprint = JSON.stringify({ ...draft, legalAcceptance });
-      const previous = sessionStorage.getItem("signup-draft");
-      const signupKey = sessionStorage.getItem("signup-key");
-      if (
-        previous !== fingerprint
-        || !sessionStorage.getItem("signup-accepted-at")
-        || !signupKey
-        || signupKey.length < 16
-      ) {
-        sessionStorage.setItem("signup-draft", fingerprint);
-        sessionStorage.setItem("signup-accepted-at", new Date().toISOString());
-        sessionStorage.setItem("signup-key", createIdempotencyKey());
-      }
-      const payload = {
-        ...draft,
-        legalAcceptance: {
-          ...legalAcceptance,
-          acceptedAt: sessionStorage.getItem("signup-accepted-at")!
+        const fingerprint = sessionStorage.getItem("signup-draft"), key = sessionStorage.getItem("signup-key"), acceptedAt = sessionStorage.getItem("signup-accepted-at");
+        if (fingerprint && key && key.length >= 16 && key.length <= 100 && acceptedAt && Number.isFinite(Date.parse(acceptedAt)))
+          attempt = { fingerprint, key, acceptedAt };
+      } catch { /* Current-page retry still works when storage is unavailable. */ }
+      const selected = new URLSearchParams(location.search).get("plan");
+      if (plan && ["basic", "professional", "enterprise", "basic-fe", "professional-fe", "enterprise-fe"].includes(selected ?? "")) plan.value = selected!;
+      fetch(`${apiUrl}/v1/public/legal-documents`)
+        .then(async (response) => {
+          const body = await response.json();
+          if (!response.ok) throw body;
+          documents = body.documents;
+          const terms = documents.find((item) => item.type === "terms");
+          const privacy = documents.find((item) => item.type === "privacy");
+          if (!terms || !privacy) throw new Error("missing legal documents");
+          const termsLink = document.querySelector<HTMLAnchorElement>("#terms-link");
+          const privacyLink = document.querySelector<HTMLAnchorElement>("#privacy-link");
+          if (termsLink) termsLink.href = new URL(terms.contentUrl, location.origin).toString();
+          if (privacyLink) privacyLink.href = new URL(privacy.contentUrl, location.origin).toString();
+          if (legal) legal.disabled = false;
+          if (submit) submit.disabled = false;
+          setStatus(`Condiciones vigentes: ${terms.version}.`);
+        })
+        .catch(() => setStatus("No pudimos consultar las condiciones vigentes. Recarga la página.", "error"));
+      form?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!feedback?.validate() || documents.length < 2 || !legal || legal.disabled || !legal.checked || submit?.disabled) return;
+        const data = new FormData(form);
+        const terms = documents.find((item) => item.type === "terms")!;
+        const privacy = documents.find((item) => item.type === "privacy")!;
+        const draft = {
+          contactName: String(data.get("contactName") ?? ""), email: String(data.get("email") ?? ""),
+          companyName: String(data.get("companyName") ?? ""), phone: String(data.get("phone") ?? "") || undefined,
+          priceCode: String(data.get("priceCode") ?? "professional")
+        };
+        const legalAcceptance = { termsVersion: terms.version, privacyVersion: privacy.version };
+        const fingerprint = JSON.stringify({ ...draft, legalAcceptance });
+        if (!attempt || attempt.fingerprint !== fingerprint) {
+          attempt = { fingerprint, key: createIdempotencyKey(), acceptedAt: new Date().toISOString() };
+          try {
+            sessionStorage.setItem("signup-draft", fingerprint); sessionStorage.setItem("signup-key", attempt.key); sessionStorage.setItem("signup-accepted-at", attempt.acceptedAt);
+          } catch { /* Storage is optional; preserve this attempt in memory. */ }
         }
-      };
-      submit!.disabled = true;
-      setStatus("Creando tu registro…");
-      try {
-        const response = await fetch(`${apiUrl}/v1/signup-intents`, { method: "POST", headers: { "content-type": "application/json", "idempotency-key": sessionStorage.getItem("signup-key")! }, body: JSON.stringify(payload) });
-        const body = await response.json();
-        if (!response.ok) throw body;
-        sessionStorage.setItem("signup-intent-id", body.signupIntentId);
-        form.replaceChildren();
-        const result = document.createElement("div");
-        result.className = "result";
-        const label = document.createElement("p");
-        label.className = "eyebrow";
-        label.textContent = "Registro recibido";
-        const heading = document.createElement("h2");
-        heading.textContent = "Revisa tu bandeja";
-        const message = document.createElement("p");
-        message.append("Solicitamos el envío del enlace de verificación a ");
-        const email = document.createElement("strong");
-        email.textContent = body.email;
-        message.append(email, ". El registro continuará desde ese enlace.");
-        result.append(label, heading, message);
-        if (typeof body.developmentVerificationUrl === "string") {
-          label.textContent = "Modo local";
-          heading.textContent = "Registro creado";
-          message.lastChild!.textContent = ". Continúa con la verificación local para probar el recorrido completo.";
-          const actions = document.createElement("div");
-          actions.className = "actions";
-          const link = document.createElement("a");
-          link.className = "button";
-          link.href = body.developmentVerificationUrl;
-          link.textContent = "Continuar verificación";
-          actions.append(link);
-          result.append(actions);
+        const payload = {
+          ...draft,
+          legalAcceptance: {
+            ...legalAcceptance,
+            acceptedAt: attempt.acceptedAt
+          }
+        };
+        submit!.disabled = true;
+        setStatus("Creando tu registro…");
+        try {
+          const response = await fetch(`${apiUrl}/v1/signup-intents`, { method: "POST", headers: { "content-type": "application/json", "idempotency-key": attempt.key }, body: JSON.stringify(payload) });
+          const body = await response.json();
+          if (!response.ok) throw body;
+          const pending = createdPendingSignup(body);
+          savePendingSignup(pending);
+          attempt = null;
+          showVerificationInbox(form, apiUrl, pending, typeof body.developmentVerificationUrl === "string" ? body.developmentVerificationUrl : undefined);
+        } catch (error) {
+          submit!.disabled = false;
+          if (
+            typeof error === "object" && error && "error" in error
+            && (error as { error?: { code?: string } }).error?.code === "invalid_request"
+          ) {
+            attempt = null;
+            try { for (const key of ["signup-draft", "signup-key", "signup-accepted-at"]) sessionStorage.removeItem(key); } catch { /* Storage optional. */ }
+          }
+          const deliveryUnavailable = typeof error === "object" && error && "error" in error
+            && (error as { error?: { code?: string } }).error?.code === "email_delivery_unavailable";
+          setStatus(deliveryUnavailable
+            ? `${errorMessage(error)} Conservamos los datos del formulario. Intenta nuevamente más tarde para continuar la verificación.`
+            : errorMessage(error), "error");
         }
-        form.append(result);
-      } catch (error) {
-        submit!.disabled = false;
-        if (
-          typeof error === "object" && error && "error" in error
-          && (error as { error?: { code?: string } }).error?.code === "invalid_request"
-        ) resetInvalidAttempt();
-        setStatus(errorMessage(error), "error");
-      }
-    });
+      });
+    }
   </script>
 </FlowLayout>

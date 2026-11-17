@@ -10,6 +10,7 @@ const compile = source => ts.transpileModule(source, {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
 }).outputText;
 const helperCode = compile(helperSource);
+const verificationCode = compile(await readFile(new URL('../src/lib/signup-verification.ts', import.meta.url), 'utf8'));
 
 // Only deterministic DOM/transport boundaries: no server or real signup request.
 function browser(specs = []) {
@@ -27,6 +28,7 @@ function browser(specs = []) {
         this.children.push(child);
       }
     }
+    replaceChildren(...children) { this.children = []; this.append(...children); }
     after(node) {
       node.parentElement = this.parentElement;
       this.parentElement.children.splice(this.parentElement.children.indexOf(this) + 1, 0, node);
@@ -246,7 +248,7 @@ test('disabling an invalid control clears its feedback on validation', () => {
   assert.equal(page.fields[0].getAttribute('aria-invalid'), null);
 });
 
-async function signup({ ready = true, documents = [
+async function signup({ ready = true, initialStorage = [], blockedStorage = false, transport, dev = false, documents = [
   { type: 'terms', version: '2026-09-01', contentUrl: '/legal/terminos' },
   { type: 'privacy', version: '2026-09-01', contentUrl: '/legal/privacidad' },
 ] } = {}) {
@@ -265,13 +267,21 @@ async function signup({ ready = true, documents = [
   const terms = new page.Element('a'); terms.id = 'terms-link';
   const privacy = new page.Element('a'); privacy.id = 'privacy-link';
   page.form.append(status, submit, terms, privacy);
-  const storage = new Map(), calls = [];
+  const storage = new Map(initialStorage), calls = [], timers = new Map(), windowListeners = {};
+  let now = Date.parse('2030-01-01T00:00:00Z');
   let sequence = 0;
   Object.assign(page.context, {
     bindFormFeedback: page.bind, URL, URLSearchParams,
     location: { origin: 'https://web.example.invalid', search: '' },
-    sessionStorage: { getItem: key => storage.get(key) ?? null,
-      setItem: (key, value) => storage.set(key, value), removeItem: key => storage.delete(key) },
+    Date: class extends Date { constructor(...args) { super(...(args.length ? args : [now])); } static now() { return now; } },
+    window: {
+      setInterval: callback => { timers.set(timers.size + 1, callback); return timers.size; },
+      clearInterval: id => timers.delete(id),
+      addEventListener: (name, callback) => { (windowListeners[name] ??= []).push(callback); },
+    },
+    sessionStorage: { getItem: key => { if (blockedStorage) throw Error('Storage denied'); return storage.get(key) ?? null; },
+      setItem: (key, value) => { if (blockedStorage) throw Error('Storage denied'); storage.set(key, value); },
+      removeItem: key => { if (blockedStorage) throw Error('Storage denied'); storage.delete(key); } },
     createIdempotencyKey: () => 'local-test-key-' + (++sequence).toString().padStart(4, '0'),
     FormData: class {
       constructor(form) { this.form = form; }
@@ -279,6 +289,7 @@ async function signup({ ready = true, documents = [
     },
     fetch: async (url, options) => {
       calls.push({ url, options });
+      if (transport && (options || url.includes('/development/'))) return transport(url, options);
       if (!options) return ready
         ? { ok: true, json: async () => ({ documents }) }
         : Promise.reject(new Error('offline fixture'));
@@ -287,10 +298,15 @@ async function signup({ ready = true, documents = [
     },
   });
   const script = registration.match(/<script>\s*([\s\S]*?)<\/script>/)[1]
-    .replace(/^\s*import[^;]+;/gm, '');
+    .replace(/^\s*import[^;]+;/gm, '').replaceAll('import.meta.env.DEV', String(dev));
+  vm.runInContext(verificationCode, page.context);
+  Object.assign(page.context, page.context.exports);
   vm.runInContext(compile(script), page.context);
   await new Promise(resolve => setImmediate(resolve));
   return { ...page, storage, calls, status, submit, legal: page.fields[5],
+    timers, windowListeners,
+    advance: seconds => { now += seconds * 1000; for (const callback of timers.values()) callback(); },
+    nodes: () => { const walk = root => root.children.flatMap(child => typeof child === 'string' ? [] : [child, ...walk(child)]); return walk(page.form); },
     posts: () => calls.filter(call => call.options?.method === 'POST') };
 }
 
@@ -349,11 +365,12 @@ test('valid local transport stub preserves raw payload, versions, acceptedAt, an
   assert.deepEqual(payload, {
     contactName: ' Ana ', email: 'ana@example.invalid', companyName: ' Tienda ', priceCode: 'professional',
     legalAcceptance: { termsVersion: '2026-09-01', privacyVersion: '2026-09-01',
-      acceptedAt: page.storage.get('signup-accepted-at') },
+      acceptedAt: payload.legalAcceptance.acceptedAt },
   });
   assert.ok(payload.legalAcceptance.acceptedAt);
   assert.equal(first.options.headers['content-type'], 'application/json');
-  assert.equal(first.options.headers['idempotency-key'], page.storage.get('signup-key'));
+  assert.ok(first.options.headers['idempotency-key'].length >= 16);
+  assert.equal(page.storage.size, 3, 'Creation retains its original retry key until confirmed');
   await page.form.emit('submit');
   assert.equal(page.posts()[1].options.headers['idempotency-key'], first.options.headers['idempotency-key']);
   assert.equal(page.posts()[1].options.body, first.options.body);
@@ -365,4 +382,92 @@ test('disabled submit blocks duplicate programmatic submission without changing 
   await page.form.emit('submit');
   assert.equal(page.posts().length, 0);
   assert.equal(page.storage.size, 0);
+});
+
+const verificationFixture = {
+  signupIntentId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1', status: 'email_pending', nextAction: 'verify_email',
+  email: 'ana@example.invalid', expiresAt: '2030-01-02T00:00:00.000Z',
+  verificationEmail: { resendAvailableAt: '2030-01-01T00:01:00.000Z', retryAfterSeconds: 60 }
+};
+const reply = (status, body, retryAfter = null) => ({ ok: status >= 200 && status < 300, status, headers: { get: name => name.toLowerCase() === 'retry-after' ? retryAfter : null }, json: async () => body });
+const receiptButton = page => page.nodes().find(node => node.tagName === 'BUTTON' && node.textContent === 'Reenviar correo');
+const receiptStatus = page => page.nodes().find(node => node.id === 'verification-resend-status');
+async function registered(transport, extra = {}) {
+  const page = await signup({ ...extra, transport: (url, options) => url.endsWith('/v1/signup-intents')
+    ? Promise.resolve(reply(201, verificationFixture)) : transport(url, options) });
+  page.legal.checked = true; await page.form.emit('submit'); return page;
+}
+
+test('verification receipt waits sixty seconds and resends only the existing registration', async () => {
+  const page = await registered(async () => reply(202, { status: 'accepted', resendAvailableAt: '2030-01-01T00:02:00.000Z', retryAfterSeconds: 60 }));
+  const button = receiptButton(page); assert.ok(button); assert.equal(button.disabled, true);
+  await button.emit('click'); assert.equal(page.posts().length, 1);
+  page.advance(59); assert.equal(button.disabled, true);
+  page.advance(1); assert.equal(button.disabled, false); await button.emit('click');
+  const post = page.posts()[1]; assert.match(post.url, new RegExp('/' + verificationFixture.signupIntentId + '/resend-verification$'));
+  assert.deepEqual(JSON.parse(post.options.body), { email: verificationFixture.email });
+  assert.equal(button.disabled, true); assert.match(receiptStatus(page).textContent, /Solicitamos de nuevo/);
+  const stored = JSON.parse(page.storage.get('signup-verification'));
+  assert.deepEqual(Object.keys(stored).sort(), ['email','expiry','id','resendAt']);
+  assert.equal(page.storage.size, 1); assert.equal(page.posts().filter(p => p.url.endsWith('/v1/signup-intents')).length, 1);
+});
+
+test('lost resend response retains its key and reload never automatically sends', async () => {
+  let attempts = 0;
+  const page = await registered(async () => { if (++attempts === 1) throw Error('Failed to fetch'); return reply(202, {status:'accepted',resendAvailableAt:'2030-01-01T00:02:00.000Z',retryAfterSeconds:60}); });
+  page.advance(60); const button=receiptButton(page); await button.emit('click');
+  assert.equal(button.disabled,false); assert.match(receiptStatus(page).textContent,/conexión/);
+  await button.emit('click'); assert.equal(page.posts()[1].options.headers['idempotency-key'],page.posts()[2].options.headers['idempotency-key']);
+  const reload=await signup({initialStorage:[...page.storage],transport:async()=>assert.fail('Reload must not send')});
+  assert.equal(reload.posts().length,0); assert.ok(receiptButton(reload));
+});
+
+test('in-flight resend blocks rapid clicks until the response arrives', async () => {
+  let release; const page=await registered(()=>new Promise(resolve=>{release=resolve;}));
+  page.advance(60); const button=receiptButton(page),first=button.emit('click');
+  await button.emit('click'); assert.equal(page.posts().length,2);
+  release(reply(202,{status:'accepted',resendAvailableAt:'2030-01-01T00:02:00.000Z',retryAfterSeconds:60})); await first;
+  assert.equal(button.disabled,true);
+});
+
+test('server cooldown and IP limits are respected even if the local timer elapsed', async () => {
+  for(const code of ['verification_resend_too_soon','rate_limit_exceeded']){
+    const page=await registered(async()=>reply(429,{error:{code,retryAfterSeconds:90,resendAvailableAt:'2030-01-01T00:02:30.000Z'}},'90'));
+    page.advance(60);const button=receiptButton(page);await button.emit('click');assert.equal(button.disabled,true);
+    page.advance(89);assert.equal(button.disabled,true);page.advance(1);assert.equal(button.disabled,false);
+  }
+});
+
+test('unavailable recipient keeps the form and never announces a queued verification', async () => {
+  const page=await signup({transport:async()=>reply(503,{error:{code:'email_delivery_unavailable',message:'El envío no está habilitado.'}})});
+  page.legal.checked=true;await page.form.emit('submit');
+  assert.equal(page.fields[1].value,'ana@example.invalid');assert.equal(page.submit.disabled,false);
+  assert.match(page.status.textContent,/El envío no está habilitado/);assert.equal(receiptButton(page),undefined);
+  assert.equal(page.storage.has('signup-verification'),false);
+});
+
+test('old pending browser receipt upgrades without sending or retaining the full form', async () => {
+  const page=await signup({initialStorage:[['signup-intent-id',verificationFixture.signupIntentId],['signup-draft',JSON.stringify({email:verificationFixture.email,companyName:'Sensitive draft'})],['signup-accepted-at','2030-01-01T00:00:00.000Z'],['signup-key','old-valid-idempotency-key']],transport:async()=>assert.fail('Restore must not send')});
+  assert.ok(receiptButton(page));assert.equal(page.posts().length,0);assert.equal(page.storage.size,1);
+  assert.doesNotMatch(page.storage.get('signup-verification'),/Sensitive draft|token|old-valid/);
+});
+
+test('expired receipt cannot resend and offers a way to start a new registration', async () => {
+  const page=await signup({initialStorage:[['signup-verification',JSON.stringify({id:verificationFixture.signupIntentId,email:verificationFixture.email,expiry:'2029-12-31T23:59:59.000Z',resendAt:'2029-12-31T23:59:00.000Z'})]]});
+  const button=receiptButton(page);assert.equal(button.disabled,true);await button.emit('click');assert.equal(page.posts().length,0);
+  const correct=page.nodes().find(n=>n.tagName==='A'&&n.textContent==='Corregir correo o iniciar otro registro');assert.ok(correct);
+  await correct.emit('click');assert.equal(page.storage.has('signup-verification'),false);
+});
+
+test('resend remains usable when browser storage is blocked', async () => {
+  const page=await registered(async()=>reply(202,{status:'accepted',resendAvailableAt:'2030-01-01T00:02:00.000Z',retryAfterSeconds:60}),{blockedStorage:true});
+  page.advance(60);await receiptButton(page).emit('click');assert.equal(page.posts().length,2);assert.match(receiptStatus(page).textContent,/Solicitamos de nuevo/);
+});
+test('creation retry preserves its key and legal acceptance after a lost response and reload', async () => {
+  const first=await signup({transport:async()=>{throw Error('Failed to fetch');}});first.legal.checked=true;await first.form.emit('submit');
+  const post=first.posts()[0];assert.equal(first.storage.size,3);
+  const reloaded=await signup({initialStorage:[...first.storage],transport:async()=>reply(201,verificationFixture)});
+  reloaded.legal.checked=true;await reloaded.form.emit('submit');
+  assert.equal(reloaded.posts()[0].options.headers['idempotency-key'],post.options.headers['idempotency-key']);
+  assert.equal(reloaded.posts()[0].options.body,post.options.body);assert.equal(reloaded.storage.size,1);
 });
