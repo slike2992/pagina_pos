@@ -70,6 +70,7 @@ const recoveryCode = compile(await readFile(new URL('../src/lib/subscription-rec
 const returnCode = compile(await readFile(new URL('../src/lib/checkout-return.ts', import.meta.url), 'utf8'));
 const upgradeCode = compile(await readFile(new URL('../src/lib/subscription-upgrade.ts', import.meta.url), 'utf8'));
 const trialCode = compile(await readFile(new URL('../src/lib/subscription-trial.ts', import.meta.url), 'utf8'));
+const portalCode = compile(await readFile(new URL('../src/lib/portal-return.ts', import.meta.url), 'utf8'));
 
 function browser(options = {}) {
   const elements = new Map(), calls = [], navigations = [];
@@ -97,7 +98,7 @@ function browser(options = {}) {
   let tenant;
   const sandbox = { URL, URLSearchParams, Intl, Error, Date, console,
     document: { querySelector: get, createElement: element },
-    window: { location: { origin: 'https://web.example.invalid', search: '?targetPlanCode=basic', assign: url => navigations.push(url) } },
+    window: { location: { href: 'https://web.example.invalid/cuenta', origin: 'https://web.example.invalid', search: '?targetPlanCode=basic', assign: url => navigations.push(url) } },
     sessionStorage: { setItem() { assert.fail('Upgrade must not persist hidden checkout data'); }, getItem() { return null; } },
     crypto: { randomUUID: () => `synthetic-${++key}` },
     Option: class { constructor(text, value) { this.text = text; this.value = value; } },
@@ -133,6 +134,7 @@ function browser(options = {}) {
     if (name === '../lib/account-plans') return run(plansCode);
     if (name === '../lib/subscription-upgrade') return run(upgradeCode);
     if (name === '../lib/subscription-trial') return run(trialCode);
+    if (name === '../lib/portal-return') return run(portalCode);
     if (name === '../lib/subscription-recovery') return recovery;
     if (name === '../scripts/client-idempotency') return { createIdempotencyKey: () => `key-${++key}` };
     if (name === '../lib/wompi-client') return { prepareWompiSession() { assert.fail('No provider calls allowed'); } };

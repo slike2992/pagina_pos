@@ -2,6 +2,7 @@
 import "../styles/base.css";
 import SiteFooter from "../components/SiteFooter.astro";
 import Brand from "../components/Brand.astro";
+import PasswordVisibility from "../components/PasswordVisibility.astro";
 import SeoHead from "../components/SeoHead.astro";
 
 interface Props {
@@ -18,6 +19,7 @@ const { title, eyebrow, heading, lead } = Astro.props;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
     <SeoHead title={`${title} | Cripton`} description={lead} />
     <meta name="theme-color" content="#051828" />
     <link rel="icon" type="image/svg+xml" href="/brand/v1.0/favicon.svg" />
@@ -39,6 +41,7 @@ const { title, eyebrow, heading, lead } = Astro.props;
       <section class="surface"><slot /></section>
     </main>
     <SiteFooter />
+    <PasswordVisibility />
   </body>
 </html>
 

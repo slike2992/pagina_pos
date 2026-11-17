@@ -66,3 +66,22 @@ desde URL o storage. El contexto conocido no puede desaparecer o convertirse en
 registro en la siguiente consulta. Se conserva recovery y sólo un signup
 identificado puede mostrar instrucciones de contraseña. Estos metadatos no
 incluyen PII ni otorgan autenticación/cobertura.
+
+
+## Retorno de POS y contraseñas — 17 noviembre 2026
+
+`portal-return.ts` coordina el retorno a Mi cuenta con PKCE S256 y estado aleatorio.
+Sólo guarda el verificador/estado/destino durante dos minutos en sessionStorage;
+no persiste contraseñas, token POS ni Bearer. El ticket llega en fragmento, se
+retira antes de consumirlo y no admite replay. Destinos nominales account/plans/
+fiscal; la API revalida la identidad, empresa, rol y sesión POS originales. No
+se comparte sesión con Control ni se eleva un empleado a administrador.
+
+Requiere API Control033 y `/v1/auth/portal-sso/issue|redeem`, además del endpoint
+POS `/auth/portal`. Publicar esta web antes o junto a ese runtime. El login normal
+y la selección explícita de empresa conservan su contrato. Si falla el retorno,
+se muestra error y se permite iniciar sesión; no se reintenta un ticket consumido.
+
+`PasswordVisibility.astro` monta una sola vez `password-visibility.ts` en los
+layouts de acceso. El botón es accesible, no envía el formulario, no copia el valor
+y vuelve a ocultar al enviar, resetear o salir de la pestaña.

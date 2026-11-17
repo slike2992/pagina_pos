@@ -1,5 +1,6 @@
 ---
 import Brand from "../components/Brand.astro";
+import PasswordVisibility from "../components/PasswordVisibility.astro";
 
 const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
 ---
@@ -482,6 +483,7 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
         loginForm.querySelector<HTMLInputElement>("input[name='email']")!.focus();
       });
     </script>
+    <PasswordVisibility />
   </body>
 </html>
 

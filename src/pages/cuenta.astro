@@ -150,6 +150,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     import { readRenewalIssue, readRecoveryOffer, readRecoveryCheckout, recoveryAmount, recoveryDate, recoveryPeriodText, rememberRecoveryCheckout, type RenewalIssue, type RecoveryOffer, type RecoveryCheckout } from "../lib/subscription-recovery";
 
     type Tenant = { tenantId: string; tenantKey: string; name: string; status: string; role: string };
+    import { beginPortalReturn, readPortalReturn, validatePortalLogin } from "../lib/portal-return";
     type LoginResult = { accessToken: string; expiresAt: string; principal: { displayName: string }; tenant: Tenant };
     type Subscription = { subscriptionId: string; status: string; plan: { code: string; name: string }; price: { amountMinor: number; currency: string; billingInterval: string }; currentPeriodStart: string | null; currentPeriodEnd: string | null; cancelAtPeriodEnd: boolean; renewalIssue?: RenewalIssue | null; pendingChange?: unknown; trial?: SubscriptionTrial | null };
     type PaymentSourceConfig = { publicKey: string; widgetScriptUrl: string; fraudScriptUrl: string; acceptance: { token: string; permalink: string }; personalDataAuthorization: { token: string; permalink: string } };
@@ -1149,6 +1150,52 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       loginForm.querySelector<HTMLInputElement>("#email")!.focus();
     };
     panel.querySelector<HTMLButtonElement>("[data-action='logout']")!.addEventListener("click", () => resetAccount());
+    const resumePortalSession = async () => {
+      const url = new URL(location.href);
+      if (!url.searchParams.has("from") && !new URLSearchParams(url.hash.slice(1)).has("portal-ticket")) return;
+      const generation = ++loginGeneration;
+      const isCurrent = () => generation === loginGeneration;
+      loginForm.hidden = true;
+      accountStatus.textContent = "Abriendo Mi cuenta…";
+      try {
+        const callback = readPortalReturn(url, sessionStorage);
+        history.replaceState(null, "", url.pathname);
+        if (!callback) {
+          const redirect = await beginPortalReturn(url, root.dataset.posUrl || "", sessionStorage);
+          if (redirect) { location.replace(redirect); return; }
+          throw new Error("Abre de nuevo Mi cuenta desde el POS.");
+        }
+        const response = await fetch(`${apiUrl}/v1/auth/portal-sso/redeem`, {
+          method: "POST", headers: { "content-type": "application/json" },
+          body: JSON.stringify({ ticket: callback.ticket, codeVerifier: callback.codeVerifier, state: callback.state }),
+          referrerPolicy: "no-referrer", cache: "no-store",
+        });
+        const body = await response.json();
+        if (!isCurrent()) return;
+        if (!response.ok) throw body;
+        const login = validatePortalLogin(body, callback.destination) as unknown as LoginResult;
+        accountLogin = login; accessToken = login.accessToken;
+        const subscriptionResponse = await fetch(`${apiUrl}/v1/me/subscription`, { headers: { authorization: `Bearer ${accessToken}` }, cache: "no-store" });
+        if (stopOnUnauthorized(subscriptionResponse, isCurrent)) return;
+        const subscription = await subscriptionResponse.json();
+        if (!isCurrent()) return;
+        if (!subscriptionResponse.ok) throw subscription;
+        renderAccount(login, subscription as Subscription);
+        if (!paymentSourceSection.hidden) void preparePaymentSource();
+        if (!recoverySection.hidden) void loadRecoveryOffer();
+        if (callback.destination === "plans" && !planSection.hidden) {
+          planSection.scrollIntoView({ block: "center" }); planSelect.focus({ preventScroll: true });
+        } else if (callback.destination === "fiscal") {
+          const section = panel.querySelector<HTMLElement>('[data-section="fiscal-onboarding"]');
+          if (section && !section.hidden) section.scrollIntoView({ block: "center" });
+        }
+      } catch (error) {
+        history.replaceState(null, "", url.pathname);
+        if (isCurrent()) resetAccount(messageFrom(error, error instanceof Error ? error.message : "No fue posible abrir Mi cuenta."));
+      }
+    };
+    void resumePortalSession();
+
   </script>
 </FlowLayout>
 

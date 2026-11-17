@@ -16,6 +16,7 @@ const recoveryCode = compile(await readFile(new URL('../src/lib/subscription-rec
 const plansCode = compile(await readFile(new URL('../src/lib/account-plans.ts', import.meta.url), 'utf8'));
 const upgradeCode = compile(await readFile(new URL('../src/lib/subscription-upgrade.ts', import.meta.url), 'utf8'));
 const trialCode = compile(await readFile(new URL('../src/lib/subscription-trial.ts', import.meta.url), 'utf8'));
+const portalCode = compile(await readFile(new URL('../src/lib/portal-return.ts', import.meta.url), 'utf8'));
 const page = await readFile(new URL('../src/pages/cuenta.astro', import.meta.url), 'utf8');
 const accountScript = page.match(/<script>([\s\S]*?)<\/script>/)?.[1];
 assert.ok(accountScript, 'account controller must exist');
@@ -88,7 +89,7 @@ function browser() {
   const window = {
     setTimeout(callback, delay) { const id = ++nextTimer; timers.set(id, { callback, due: clock + delay }); return id; },
     clearTimeout(id) { timers.delete(id); },
-    location: { origin: 'https://staging.example.invalid', assign() { assert.fail('unexpected navigation'); } },
+    location: { href: 'https://staging.example.invalid/cuenta', origin: 'https://staging.example.invalid', assign() { assert.fail('unexpected navigation'); } },
   };
   const sandbox = {
     document, window, URL, URLSearchParams, Intl, Error, Uint8Array,
@@ -247,6 +248,7 @@ async function account(options = {}) {
     if (name === '../lib/account-plans') return h.module(plansCode);
     if (name === '../lib/subscription-upgrade') return h.module(upgradeCode, name => assert.fail(name));
     if (name === '../lib/subscription-trial') return h.module(trialCode, name => assert.fail(name));
+    if (name === '../lib/portal-return') return h.module(portalCode);
     assert.fail(`unexpected controller import: ${name}`);
   });
   return Object.assign(h, {

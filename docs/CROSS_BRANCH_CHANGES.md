@@ -290,3 +290,17 @@ Instalación pnpm congelada con nodeLinker: hoisted en pnpm-workspace.yaml. Evit
 versión de cookie del SaaS padre al prerenderizar. Sin cambios de grafo/lock,
 contrato, diseño ni ambiente. Compilación limpia y231 pruebas aprobadas; no
 equivale a aceptación integrada de staging.
+
+
+## 2026-11-17 — Acceso a Mi cuenta desde POS y visibilidad de contraseñas
+
+- Retorno con PKCE S256/estado y código single-use60s, sin Bearer persistido ni
+  cookies compartidas con Control. Destinos account/plans/fiscal y validación de
+  la sesión/empresa/rol original en API. Main POS requiere Control033, endpoints
+  portal-sso y `/auth/portal`; no equivale a un permiso de plataforma.
+- Ojito compartido para login/configuración y las dos formas de acceso heredado.
+  No cambia política ni contraseña. Formularios y pagos mantienen sus contratos.
+- Astro check sin errores y160 pruebas de cuenta/retorno aprobadas. Publicación,
+  navegación HTTPS y recepción de correos se documentan en el informe integrado
+  del POS; esta entrada no acredita esas comprobaciones todavía.
+- Cambios ajenos de Brand y pago/demo preservados fuera de este bloque.
