@@ -645,6 +645,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         const currentResponse = await fetch(`${apiUrl}/v1/me/billing/payment-sources`, {
           headers: { authorization: `Bearer ${preparingAccessToken}` }
         });
+        if (stopOnUnauthorized(currentResponse, () => accessToken === preparingAccessToken)) return;
         const currentBody = await currentResponse.json();
         if (accessToken !== preparingAccessToken) return;
         if (!currentResponse.ok) throw currentBody;
@@ -783,6 +784,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
               personalDataAuthToken: config.personalDataAuthorization.token
             })
           });
+          if (stopOnUnauthorized(response, () => accessToken === registrationAccessToken && paymentSourceAttempt === attempt)) return;
           const body = await response.json();
           if (accessToken !== registrationAccessToken || paymentSourceAttempt !== attempt) return;
           if (!response.ok) throw body;
@@ -840,6 +842,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         },
         body: JSON.stringify({ subscriptionChangeId: change.subscriptionChangeId })
       });
+      if (stopOnUnauthorized(response, isCurrent)) return false;
       const body = await response.json();
       if (!isCurrent()) return false;
       if (!response.ok) throw body;
@@ -918,6 +921,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
           },
           body: JSON.stringify({ targetPlanCode: reviewed.target })
         });
+        if (stopOnUnauthorized(response, isCurrent)) return;
         const body = await response.json();
         if (!isCurrent()) return;
         if (!response.ok) throw body;
@@ -974,6 +978,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       renderAccountActions();
       try {
         const response = await fetch(`${apiUrl}/v1/me/subscription/cancel`, { method: "POST", headers: { authorization: `Bearer ${token}` } });
+        if (stopOnUnauthorized(response, isCurrent)) return;
         const body = await response.json();
         if (!isCurrent()) return;
         if (!response.ok) throw body;
@@ -1002,6 +1007,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       accountStatus.dataset.state = "";
       try {
         const response = await fetch(`${apiUrl}/v1/me/subscription/reactivate`, { method: "POST", headers: { authorization: `Bearer ${token}` } });
+        if (stopOnUnauthorized(response, isCurrent)) return;
         const body = await response.json();
         if (!isCurrent()) return;
         if (!response.ok) throw body;
@@ -1034,6 +1040,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
           method: "POST",
           headers: { authorization: `Bearer ${token}` }
         });
+        if (stopOnUnauthorized(response, isCurrent)) return;
         const body = await response.json();
         if (!isCurrent() || !canOpenPos()) return;
         if (!response.ok) throw body;
@@ -1170,6 +1177,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
           body: JSON.stringify({ ticket: callback.ticket, codeVerifier: callback.codeVerifier, state: callback.state }),
           referrerPolicy: "no-referrer", cache: "no-store",
         });
+        if (stopOnUnauthorized(response, isCurrent)) return;
         const body = await response.json();
         if (!isCurrent()) return;
         if (!response.ok) throw body;

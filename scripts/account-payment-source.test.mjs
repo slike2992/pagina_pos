@@ -150,6 +150,16 @@ function prepared(initialize = callback => callback({ sessionId }, null)) {
 
 async function account(options = {}) {
   const h = browser();
+  if (options.portal) {
+    h.sandbox.sessionStorage.removeItem = key => h.storage.delete(key);
+    const state = 's'.repeat(43);
+    h.window.location.href += '#portal-ticket=' + 't'.repeat(43) + '&state=' + state;
+    h.storage.set('cripton.portal.return.v1', JSON.stringify({ verifier: 'v'.repeat(43), state,
+      destination: 'account', createdAt: Date.UTC(2026, 10, 10) }));
+    h.sandbox.history = { replaceState(_state, _title, route) {
+      h.window.location.href = new URL(route, h.window.location.href).href;
+    } };
+  }
   const selectors = ['#login-form', '.status', '#tenant-field', '#tenant', '.account-panel', '.account-status',
     "[data-section='subscription-trial']", "[data-action='contract-trial']", "[data-field='trial-summary']", "[data-field='trial-guidance']", "[data-field='trial-start']", "[data-field='trial-end']",
     "[data-section='fiscal-onboarding']", "[data-action='configure-fiscal']", "[data-field='fiscal-plan-guidance']", "[data-field='fiscal-setup-steps']",
@@ -202,6 +212,7 @@ async function account(options = {}) {
     const call = { url, ...plain(init), method: init.method ?? 'GET' }; calls.push(call);
     const path = new URL(url).pathname;
     assert.equal(new URL(url).origin, 'https://api.example.invalid');
+    if (path === '/v1/auth/portal-sso/redeem' && options.portal) return options.portal(call);
     if (path === '/v1/auth/login') {
       loginCount++;
       tenant = { ...tenant, tenantId: `synthetic-tenant-${loginCount}` };
@@ -1707,4 +1718,102 @@ test('a login subscription 401 resets issue data while a stale 401 cannot close 
       for (const name of ['amount', 'period', 'reference', 'recorded']) assert.equal(issueField(h, name).textContent, '');
     } else assert.equal(issueField(h, 'reference').textContent, renewalIssueFixture().reference);
   }
+});
+
+
+function assertExpiredAccount(h) {
+  assert.equal(h.get('.account-panel').hidden, true);
+  assert.equal(h.get('#login-form').hidden, false);
+  assert.equal(h.get("button[type='submit']").disabled, false);
+  assert.equal(h.get('#email').focused, true);
+  assert.match(h.get('.status').textContent, /sesión.*expiró.*iniciar sesión/);
+  assert.equal(h.button.disabled, true);
+  assert.equal(h.terms.checked, false); assert.equal(h.data.checked, false); assert.equal(h.recurring.checked, false);
+  assert.equal(accountAction(h, 'open-pos').getAttribute('aria-disabled'), 'true');
+  assert.equal(accountAction(h, 'open-pos').href, undefined);
+}
+
+test('payment-source GET 401 resets before reading its body or loading provider metadata', async () => {
+  let expired = true;
+  const h = await account({ current: () => expired ? unauthorized() : reply({ paymentSource: null }) });
+  await h.login(); assertExpiredAccount(h);
+  assert.equal(h.calls.filter(call => call.url.endsWith('/public/payment-source-config')).length, 0);
+  assert.equal(h.initCount(), 0); assert.equal(h.posts().length, 0);
+  expired = false; await h.login(); assert.equal(h.get('.account-panel').hidden, false); assert.equal(h.button.disabled, false);
+});
+
+test('payment-source POST 401 resets auth and discards the callback token even after a new login', async () => {
+  const h = await account({ post: () => unauthorized() }); await h.login(); h.consent(); await h.openWidget();
+  const callback = h.widgets[0].callback;
+  await callback(source); assertExpiredAccount(h);
+  assert.equal(h.posts().length, 1);
+  await callback(source); await h.advance(60000); assert.equal(h.posts().length, 1);
+  await h.login(); await callback(source);
+  assert.equal(h.get('.account-panel').hidden, false); assert.equal(h.posts().length, 1);
+  assert.equal(h.recurring.checked, false); assert.equal(h.initCount(), 1);
+});
+
+test('late payment-source GET and POST 401 cannot reset a subsequent authenticated account', async () => {
+  for (const phase of ['GET', 'POST']) {
+    const hold = deferred();
+    const h = await account({ current: call => phase === 'GET' && call.headers.authorization === 'Bearer synthetic-auth-1'
+      ? hold.promise : reply({ paymentSource: null }), post: () => hold.promise });
+    await h.login(); let pending;
+    if (phase === 'POST') { h.consent(); await h.openWidget(); pending = h.widgets[0].callback(source); await flush(); }
+    await h.logout(); await h.login();
+    let bodyReads = 0;
+    hold.resolve({ ok: false, status: 401, json() { bodyReads++; return {}; } }); if (pending) await pending; await flush();
+    assert.equal(bodyReads, 0);
+    assert.equal(h.get('.account-panel').hidden, false); assert.equal(h.get('#login-form').hidden, true);
+    assert.equal(h.button.disabled, false); assert.equal(h.get('.status').dataset.state, '');
+    assert.equal(h.posts().length, phase === 'POST' ? 1 : 0);
+  }
+});
+
+test('payment-source 400 and other non-auth failures stay local and never replay the token or create a charge', async () => {
+  for (const status of [400, 403, 409, 500]) {
+    const h = await account({ post: () => reply({ error: { code: 'registration_failed', message: 'No se confirmó el registro.' } }, status) });
+    await h.login(); h.consent(); await h.openWidget();
+    await h.widgets[0].callback(source); await h.widgets[0].callback(source); await h.advance(60000);
+    assert.equal(h.get('.account-panel').hidden, false); assert.equal(h.get('#login-form').hidden, true);
+    assert.equal(h.status.dataset.state, 'error'); assert.equal(h.posts().length, 1);
+    assert.equal(h.calls.filter(call => call.url.endsWith('/checkout-sessions')).length, 0);
+  }
+});
+
+test('renewal, POS and fiscal entry 401 reset current auth and never navigate or replay', async () => {
+  for (const action of ['cancel', 'reactivate', 'open-pos', 'configure-fiscal']) {
+    const h = await account({ subscription: { cancelAtPeriodEnd: action === 'reactivate', plan: { code: 'professional-fe', name: 'Profesional FE' } },
+      cancel: () => unauthorized(), reactivate: () => unauthorized(), sso: () => unauthorized() });
+    await h.login(); h.consent(); await accountAction(h, action).dispatch('click');
+    if (action === 'cancel') await h.get('#confirm-cancel').dispatch('click');
+    assertExpiredAccount(h); assert.equal(h.navigations.length, 0);
+    const calls = h.calls.length; await accountAction(h, action).dispatch('click');
+    assert.equal(h.calls.length, calls);
+  }
+});
+
+test('late renewal and POS entry 401 do not sign out a newer login', async () => {
+  for (const action of ['cancel', 'reactivate', 'open-pos', 'configure-fiscal']) {
+    const hold = deferred();
+    const h = await account({ subscription: { cancelAtPeriodEnd: action === 'reactivate', plan: { code: 'professional-fe', name: 'Profesional FE' } },
+      cancel: () => hold.promise, reactivate: () => hold.promise, sso: () => hold.promise });
+    await h.login();
+    const pending = action === 'cancel' ? h.get('#confirm-cancel').dispatch('click') : accountAction(h, action).dispatch('click');
+    await flush(); await h.logout(); await h.login();
+    const message = h.get('.account-status').textContent; let bodyReads = 0;
+    hold.resolve({ ok: false, status: 401, json() { bodyReads++; return {}; } }); await pending;
+    assert.equal(bodyReads, 0);
+    assert.equal(h.get('.account-panel').hidden, false); assert.equal(h.get('#login-form').hidden, true);
+    assert.equal(h.navigations.length, 0); assert.equal(h.get('.account-status').textContent, message);
+  }
+});
+
+test('portal redemption 401 resets without reading its body, retaining the ticket or replaying it on login', async () => {
+  const h = await account({ portal: () => unauthorized() }); await flush();
+  assertExpiredAccount(h);
+  assert.equal(h.window.location.href.includes('portal-ticket'), false); assert.equal(h.storage.size, 0);
+  await h.login(); await flush();
+  assert.equal(h.get('.account-panel').hidden, false);
+  assert.equal(h.calls.filter(call => call.url.endsWith('/portal-sso/redeem')).length, 1);
 });

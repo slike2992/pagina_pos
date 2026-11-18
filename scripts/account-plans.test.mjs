@@ -547,3 +547,39 @@ test('trial checkout validates Wompi origin, expiration, currency and same-origi
     assert.throws(()=>readTrialCheckout({...receipt,...patch},'https://web.example.invalid'));
   }
 });
+
+
+test('plan change, upgrade checkout and trial checkout 401 reset the account before JSON and never replay or navigate', async () => {
+  for (const action of ['change', 'checkout', 'trial']) {
+    const denied = () => ({ ok: false, status: 401, json() { assert.fail('401 body must not be read'); } });
+    const h = browser({ ...(action === 'checkout' ? { pendingChange: pendingFixture() } : {}),
+      ...(action === 'trial' ? { subscription: trialSubscription() } : {}),
+      change: denied, checkout: denied, trialCheckout: denied });
+    await h.login();
+    if (action === 'change') { h.get('#target-plan').value = 'enterprise-fe'; await h.get('#target-plan').dispatch('change'); await h.click('change-plan'); await h.confirm(); }
+    else await h.click(action === 'trial' ? 'contract-trial' : 'change-plan');
+    assert.equal(h.get('.account-panel').hidden, true); assert.equal(h.get('#login-form').hidden, false);
+    assert.match(h.get('.status').textContent, /sesión.*expiró.*iniciar sesión/);
+    assert.equal(h.get('#plan-dialog').hidden, true); assert.equal(h.navigations.length, 0);
+    const calls = h.calls.length;
+    await h.confirm(); await h.click('change-plan'); await h.click('contract-trial'); assert.equal(h.calls.length, calls);
+  }
+});
+
+test('late plan change, upgrade checkout and trial checkout 401 cannot reset a new session', async () => {
+  for (const action of ['change', 'checkout', 'trial']) {
+    const hold = deferred();
+    const h = browser({ ...(action === 'checkout' ? { pendingChange: pendingFixture() } : {}),
+      ...(action === 'trial' ? { subscription: trialSubscription() } : {}),
+      change: () => hold.promise, checkout: () => hold.promise, trialCheckout: () => hold.promise });
+    await h.login(); let pending;
+    if (action === 'change') { h.get('#target-plan').value = 'enterprise-fe'; await h.get('#target-plan').dispatch('change'); await h.click('change-plan'); pending = h.confirm(); }
+    else pending = h.click(action === 'trial' ? 'contract-trial' : 'change-plan');
+    await flush(); await h.click('logout'); await h.login();
+    let bodyReads = 0;
+    hold.resolve({ ok: false, status: 401, json() { bodyReads++; return {}; } }); await pending;
+    assert.equal(bodyReads, 0);
+    assert.equal(h.get('.account-panel').hidden, false); assert.equal(h.get('#login-form').hidden, true);
+    assert.equal(h.get('.account-status').textContent, ''); assert.equal(h.navigations.length, 0);
+  }
+});
