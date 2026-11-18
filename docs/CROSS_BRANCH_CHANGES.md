@@ -1,5 +1,20 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-17 — Índice informativo legal sin oferta de demostración
+
+- Resuelve el pendiente comercial del bloque anterior con autorización expresa:
+  sólo la frase orientativa de /legal/ cambia a prueba gratis de 15 días sin
+  tarjeta y planes de pago. No modifica documentos, versiones legales, textos
+  vinculantes ni enlaces de aceptación/privacidad. No requiere versionar legales.
+- Consumidores: personas que consultan los canales de ayuda y ventas. Sin cambios
+  HTTP/tipos, API, worker, SQL, permisos, runtime o checkout; sin migración ni
+  orden adicional de publicación. Brand.astro y pago/demo.astro ajenos intactos.
+- La auditoría semántica de HTML/SEO/JSON-LD sin demo cubre ahora todas las rutas
+  públicas, incluido el centro legal. Nueva regresión verifica su frase, canales,
+  enlaces documentales y versiones. Continúan los hashes de documentos aceptados.
+  Check/build y 265/265 pruebas locales en exportación limpia con Node24/pnpm11,
+  env staging noindex; bundle Linux final preparado, sin SSH/UI ni despliegue.
+
 ## 2026-11-17 — Oferta pública única: 15 días gratis, sin tarjeta
 
 - Sustituye ofertas comerciales de demo por prueba gratis de 15 días: portada,

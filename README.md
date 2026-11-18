@@ -103,14 +103,14 @@ Se conservan local_demo, los pagos Sandbox y las rutas canónicas. La página
 /pago/demo sigue disponible en astro dev; todo build estático publica en esa
 ruta sólo una redirección fija a /registro?plan=professional, sin reenviar
 parámetros ni cargar el controlador local. La protección no depende de Caddy.
-Los documentos legales, marca y diseño quedan fuera del cambio. La referencia
-comercial a demostraciones del centro legal (src/pages/legal/index.astro:15)
-queda señalada al integrador para resolver bajo autorización sobre legales.
+El índice orientativo /legal/ actualiza exclusivamente su frase comercial para
+referir a la prueba gratis de 15 días sin tarjeta y los planes de pago. No
+modifica documentos legales, versiones, condiciones de aceptación, marca o diseño.
 
 Las regresiones ejecutan el controlador real de contacto en VM (ambos canales,
 validación, foco y mensaje obsoleto) y auditan HTML/SEO/JSON-LD y enlaces del build.
 Validación de esta revisión en exportación limpia con Node24.22.1/pnpm11.25.0:
-Astro check sin errores/advertencias/hints, build y 264/264 pruebas aprobadas,
+Astro check sin errores/advertencias/hints, build y 265/265 pruebas aprobadas,
 con las cuatro variables públicas de staging (indexación/borradores=false).
 La evidencia local no acredita publicación, navegador ni una ejecución Linux.
 

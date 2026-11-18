@@ -191,12 +191,13 @@ const textContent = html => markup(html).replace(/<style\b[^>]*>[\s\S]*?<\/style
 const anchors = html => [...markup(html).matchAll(/<a\b[^>]*>[\s\S]*?<\/a>/g)].map(([tag]) => ({ ...tags(tag, 'a')[0], label: textContent(tag) }));
 
 test('commercial HTML, metadata and structured data offer only 15 free days without a card, followed by a paid plan', async () => {
-  for (const route of commercialPaths) {
+  for (const route of PUBLIC_PATHS) {
     const html = await rendered(route);
     const visible = textContent(html);
     const metadata = tags(html, 'meta').map(tag => tag.content ?? '').join(' ');
     const schema = [...html.matchAll(/<script\b[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)].map(([, json]) => JSON.stringify(JSON.parse(json))).join(' ');
     assert.doesNotMatch([visible, metadata, schema].join(' '), /\b(?:demo|demostraci[oó]n|demostraciones)\b|persona elegible|gratis para siempre|gratuit[oa] permanentemente/i, route);
+    if (!commercialPaths.includes(route)) continue;
     assert.match(visible, /15 d[ií]as/i, route);
     assert.match(visible, /gratis|gratuita/i, route);
     assert.match(visible, /sin tarjeta|no necesitas tarjeta/i, route);
@@ -266,4 +267,18 @@ test('production build hook replaces only the generated local payment page and n
   assert.deepEqual(anchors(html).map(link => new URL(link.href, SITE_URL).pathname), ['/registro']);
   assert.doesNotMatch(html, /<script|local payment controller|Demostraci[oó]n|checkoutSessionId/);
   assert.equal(await readFile(path.join(directory, 'index.html'), 'utf8'), 'home remains intact');
+});
+
+
+test('legal index guidance describes the trial and paid plans without changing accepted-document links or versions', async () => {
+  const html = await rendered('/legal/');
+  const main = html.match(/<main\b[^>]*>[\s\S]*?<\/main>/)[0];
+  const paragraph = [...main.matchAll(/<p\b[^>]*>[\s\S]*?<\/p>/g)].map(([value]) => value).find(value => anchors(value).some(link => link.href === 'mailto:ventas@cripton.com.co'));
+  assert.ok(paragraph);
+  assert.match(textContent(paragraph), /prueba gratis de 15 días sin tarjeta y los planes de pago/);
+  assert.doesNotMatch(textContent(main), /\bdemo\b|demostraci[oó]n|demostraciones/i);
+  assert.deepEqual(anchors(paragraph).map(link => link.href), ['mailto:servicioalcliente@cripton.com.co', 'mailto:ventas@cripton.com.co']);
+  const documents = anchors(main).filter(link => ['Leer términos vigentes', 'Leer política vigente', 'Consultar cookies y preferencias'].includes(link.label));
+  assert.deepEqual(documents.map(link => new URL(link.href, SITE_URL).pathname), ['/legal/terminos/', '/legal/privacidad/', '/legal/cookies/']);
+  assert.equal((textContent(main).match(/Versión publicada: 2026-09-01/g) ?? []).length, 2);
 });
