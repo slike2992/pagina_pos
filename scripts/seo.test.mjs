@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile, readdir, access } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import test from 'node:test';
+import sharp from 'sharp';
 import config from '../astro.config.mjs';
 import { PUBLIC_PATHS, SITE_URL, publicPageUrl, indexableSite } from '../src/lib/seo.ts';
 import { commercialEvent, CONSENT_TTL, storedConsent } from '../src/lib/analytics.ts';
@@ -136,4 +137,47 @@ test('analytics payload is allowlisted, cannot copy form fields, and consent exp
   const now = Date.now();
   assert.equal(storedConsent(JSON.stringify({ choice: 'granted', expiresAt: now + CONSENT_TTL }), now), 'granted');
   for (const raw of ['invalid', '{}', JSON.stringify({ choice: 'granted', expiresAt: now - 1 }), JSON.stringify({ choice: 'granted', expiresAt: now + CONSENT_TTL + 1 })]) assert.equal(storedConsent(raw, now), null);
+});
+
+
+const positiveLogo = 'brand/v1.0/cripton_horizontal_color_v1.0';
+const positivePngSha = '90eaef34445c2344be5ae8900146c9b95d0b4f88d61c49049179ce1bfb154529';
+const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
+
+test('official positive PNG retains the official SVG identity, size, transparency and existing reverse asset', async () => {
+  const svg = await readFile(new URL('public/' + positiveLogo + '.svg', root));
+  const png = await readFile(new URL('public/' + positiveLogo + '.png', root));
+  assert.equal(sha256(svg), 'dd240d31abb5c92d304904e94c305fe79cac0e8bcc55faef3121e68d0d9eec22');
+  assert.equal(sha256(png), positivePngSha);
+  const metadata = await sharp(png).metadata();
+  assert.equal(metadata.format, 'png'); assert.equal(metadata.space, 'srgb');
+  assert.equal(metadata.width, 738); assert.equal(metadata.height, 199); assert.equal(metadata.hasAlpha, true);
+  assert.equal(metadata.hasProfile, true); assert.ok(metadata.icc?.length > 0, 'production PNG embeds its sRGB profile');
+  assert.ok(Math.abs(metadata.width - metadata.height * (1517.039 / 409.226)) < 1, 'only integer-pixel rounding of the original aspect ratio');
+  assert.equal(sha256(await readFile(new URL('public/brand/v1.0/cripton_horizontal_reverso_v1.0.png', root))),
+    '7825a6629b3990e74ed3577249862ec965fa652688150b6be58dcc08c3a99035');
+});
+
+test('official positive PNG pixels preserve navy, cyan, negative space and the vector geometry', async () => {
+  const svg = await readFile(new URL('public/' + positiveLogo + '.svg', root));
+  const actual = await sharp(await readFile(new URL('public/' + positiveLogo + '.png', root))).ensureAlpha().raw().toBuffer();
+  const reference = await sharp(svg, {density: 144}).resize({width: 738, height: 199, fit: 'contain',
+    background: {r: 255, g: 255, b: 255, alpha: 0}}).toColourspace('srgb').ensureAlpha().raw().toBuffer();
+  assert.equal(actual.length, reference.length);
+  let navy = 0, cyan = 0, transparent = 0, difference = 0;
+  for (let i = 0; i < actual.length; i++) difference += Math.abs(actual[i] - reference[i]);
+  assert.ok(difference / actual.length <= 0.25, 'raster must match the official paths, allowing renderer rounding');
+  for (let i = 0; i < actual.length; i += 4) {
+    if (actual[i+3] === 0) transparent++;
+    if (actual[i+3] === 255 && actual[i] === 5 && actual[i+1] === 24 && actual[i+2] === 40) navy++;
+    if (actual[i+3] === 255 && actual[i] === 49 && actual[i+1] === 204 && actual[i+2] === 212) cyan++;
+  }
+  assert.ok(navy > 1000 && cyan > 100 && transparent > 1000);
+  for (const pixel of [0, 737, 738 * 198, 738 * 199 - 1]) assert.equal(actual[pixel * 4 + 3], 0);
+});
+
+test('published positive PNG is byte-identical to the approved source at the stable email URL', async () => {
+  const published = await readFile(new URL(output + '/' + positiveLogo + '.png', root));
+  assert.equal(sha256(published), positivePngSha);
+  assert.deepEqual(published, await readFile(new URL('public/' + positiveLogo + '.png', root)));
 });

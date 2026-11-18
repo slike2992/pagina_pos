@@ -1,5 +1,28 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-17 — PNG positivo para correo sobre fondo blanco
+
+- Añade sólo /brand/v1.0/cripton_horizontal_color_v1.0.png, exportación738×199
+  del SVG oficial del mismo nombre. Fuente SHA256:
+  dd240d31abb5c92d304904e94c305fe79cac0e8bcc55faef3121e68d0d9eec22.
+  PNG SHA256:90eaef34445c2344be5ae8900146c9b95d0b4f88d61c49049179ce1bfb154529.
+- Manual oficial: Cripton_Kit_Marca_v1_0/00_manual/Cripton_Manual_Texto_v1_0.md,
+  revisión1.1.0, apartados Correcciones, Fondos claros y Tabla de tamaños mínimos.
+  Conserva paths, proporción, espacios negativos, marino#051828 y cian#31CCD4.
+  PNG RGBA transparente: el fondo blanco uniforme corresponde al marco HTML
+  del correo, como exige el manual; no se integra un rectángulo al imagotipo.
+- Exportación reproducible: Sharp0.35.4/libvips8.18.6, density144, resize738×199
+  fit=contain/alpha0, sRGB con withIccProfile('srgb'), PNG compressionLevel9,
+  adaptiveFiltering=false,
+  palette=false/progressive=false. Redondeo de proporción inferior a un píxel.
+- Consumidor: plantilla común del worker SaaS. Publicar este recurso antes del
+  worker que lo referencia. URL y bytes del PNG reverso anterior se preservan.
+  Sin cambios de login, páginas, CSS, dependencias, API, SQL ni pagos.
+- Pruebas Sharp verifican formato, hashes, colores, transparencia, geometría
+  contra el vector y copia exacta en dist. La evidencia Linux del commit se
+  conserva en artifacts del integrador; esto no acredita visualización en Gmail.
+
+
 ## 2026-11-16 — Logo raster para correo transaccional de Cripton
 
 - Añade únicamente public/brand/v1.0/cripton_horizontal_reverso_v1.0.png,
