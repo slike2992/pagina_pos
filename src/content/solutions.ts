@@ -33,7 +33,7 @@ export interface Solution {
   relatedSlugs: readonly SolutionSlug[];
 }
 
-// Editorial content, not a plan entitlement matrix. Confirm scope in the demo.
+// Editorial content, not a plan entitlement matrix. Confirm scope during the 15-day trial.
 export const solutions: readonly Solution[] = [
   {
     slug: "ventas-y-caja",
@@ -63,7 +63,7 @@ export const solutions: readonly Solution[] = [
         heading: "Cierra con registros que puedas contrastar",
         paragraphs: [
           "Al terminar el turno, revisa las ventas, los movimientos y el dinero disponible. Consultar el historial permite volver al turno que necesitas investigar, en lugar de mezclarlo con operaciones posteriores. Una diferencia requiere revisión: el sistema no determina por sí solo su causa.",
-          "Por ejemplo, una salida de dinero no explica una reducción de ventas. Conviene revisar qué movimiento se registró, a qué operación corresponde y si hubo una devolución. Este es un criterio de trabajo para la demostración, no un resultado garantizado para todos los negocios.",
+          "Por ejemplo, una salida de dinero no explica una reducción de ventas. Conviene revisar qué movimiento se registró, a qué operación corresponde y si hubo una devolución. Este es un criterio de trabajo para la prueba de 15 días, no un resultado garantizado para todos los negocios.",
         ],
       },
     ],
@@ -85,15 +85,15 @@ export const solutions: readonly Solution[] = [
       "La facturación electrónica requiere una modalidad que la incluya y una habilitación adicional del emisor.",
     ],
     questions: [
-      { question: "¿Puedo revisar un turno anterior?", answer: "Sí. El módulo de caja permite consultar turnos y su detalle. En la demostración podemos revisar cómo localizar la apertura que te interesa y contrastar sus movimientos." },
+      { question: "¿Puedo revisar un turno anterior?", answer: "Sí. El módulo de caja permite consultar turnos y su detalle. Durante tu prueba puedes localizar la apertura que te interesa y contrastar sus movimientos." },
       { question: "¿Una devolución siempre retira dinero de caja?", answer: "No necesariamente. El efecto sobre caja depende de la devolución solicitada y del estado del documento. Conviene revisar por separado la nota, las cantidades devueltas y el movimiento de dinero." },
     ],
     demo: {
       heading: "Prueba el recorrido de una venta y un cierre",
-      description: "Trae un ejemplo de tu operación para revisar el flujo con el equipo de Cripton.",
+      description: "Prueba gratis 15 días con un ejemplo de tu operación, sin tarjeta. Para continuar después, elige un plan de pago.",
       checks: ["Abrir una caja y registrar una venta.", "Consultar el comprobante y revisar una devolución.", "Localizar los movimientos y el detalle del turno antes de cerrar."],
     },
-    registration: { label: "Elegir Profesional para ventas y caja", href: "/registro?plan=professional" },
+    registration: { label: "Probar Profesional gratis 15 días", href: "/registro?plan=professional" },
     relatedSlugs: ["inventario", "reportes"],
   },
   {
@@ -138,7 +138,7 @@ export const solutions: readonly Solution[] = [
       "Un catálogo revisado y cantidades iniciales contrastadas con un conteo.",
       "Responsables de compras, ajustes y traslados, con permisos para cada tarea.",
       "Sucursales y destinos de inventario definidos según la operación contratada.",
-      "Conexión a internet; revisa en la demo los equipos y lectores que quieras utilizar.",
+      "Conexión a internet; comprueba durante tu prueba los equipos y lectores que quieras utilizar.",
     ],
     limits: [
       "El límite de ítems y el alcance de inventario dependen del plan; confirma compras, ajustes y traslados antes de contratar.",
@@ -147,14 +147,14 @@ export const solutions: readonly Solution[] = [
     ],
     questions: [
       { question: "¿Puedo conocer el origen de un cambio de stock?", answer: "El kardex y las consultas de movimientos permiten revisar entradas y salidas registradas. La explicación depende de que las operaciones se hayan documentado correctamente." },
-      { question: "¿La cantidad cambia al preparar una compra?", answer: "El borrador permite revisar la compra antes de confirmarla. La confirmación es el paso que aplica el movimiento de stock; comprueba ese recorrido en la demostración." },
+      { question: "¿La cantidad cambia al preparar una compra?", answer: "El borrador permite revisar la compra antes de confirmarla. La confirmación es el paso que aplica el movimiento de stock; comprueba ese recorrido durante tu prueba." },
     ],
     demo: {
       heading: "Sigue un producto de la recepción a la venta",
-      description: "Usa una referencia conocida para comprobar si el flujo de inventario encaja con tu manera de trabajar.",
+      description: "Usa una referencia conocida para comprobar el flujo de inventario. Prueba gratis 15 días, sin tarjeta; para continuar después, elige un plan de pago.",
       checks: ["Consultar el producto y sus existencias.", "Preparar y confirmar una entrada de compra.", "Revisar una salida y localizar ambos movimientos en el historial."],
     },
-    registration: { label: "Elegir Profesional para inventario", href: "/registro?plan=professional" },
+    registration: { label: "Probar Profesional gratis 15 días", href: "/registro?plan=professional" },
     relatedSlugs: ["ventas-y-caja", "reportes"],
   },
   {
@@ -212,15 +212,15 @@ export const solutions: readonly Solution[] = [
       "Una cifra de ventas no equivale a utilidad contable, saldo bancario ni pronóstico de ingresos.",
     ],
     questions: [
-      { question: "¿Todos los usuarios ven los mismos reportes?", answer: "No. El acceso combina las funciones habilitadas para la empresa y los permisos del usuario. Confirma las vistas necesarias para cada responsabilidad durante la demostración." },
+      { question: "¿Todos los usuarios ven los mismos reportes?", answer: "No. El acceso combina las funciones habilitadas para la empresa y los permisos del usuario. Confirma las vistas necesarias para cada responsabilidad durante tu prueba de 15 días." },
       { question: "¿Por qué conviene revisar más que el total vendido?", answer: "Porque una decisión puede depender del producto, el medio de pago o el periodo. El detalle permite contrastar el resultado con la operación, sin atribuirle una explicación automática." },
     ],
     demo: {
-      heading: "Lleva una pregunta de negocio a la demostración",
-      description: "Revisa cómo encontrar la información y qué necesitas comprobar antes de usarla para decidir.",
+      heading: "Resuelve una pregunta de negocio durante tu prueba",
+      description: "Revisa cómo encontrar y comprobar la información. Prueba gratis 15 días, sin tarjeta; para continuar después, elige un plan de pago.",
       checks: ["Consultar ventas de un periodo definido.", "Revisar referencias y medios de pago con criterios comparables.", "Confirmar los reportes incluidos en el plan y los accesos de tu equipo."],
     },
-    registration: { label: "Elegir Profesional y revisar sus reportes", href: "/registro?plan=professional" },
+    registration: { label: "Probar Profesional gratis 15 días", href: "/registro?plan=professional" },
     relatedSlugs: ["ventas-y-caja", "inventario"],
   },
   {
@@ -243,7 +243,7 @@ export const solutions: readonly Solution[] = [
       {
         heading: "Pruebas y producción tienen propósitos distintos",
         paragraphs: [
-          "El ambiente de pruebas permite revisar el recorrido antes de pasar a la operación productiva. Cada empresa tiene una configuración separada para pruebas y producción; completar una demostración o una prueba no acredita autorización para emitir documentos productivos.",
+          "El ambiente de pruebas permite revisar el recorrido antes de pasar a la operación productiva. Cada empresa tiene una configuración separada para pruebas y producción; completar una prueba no acredita autorización para emitir documentos productivos.",
           "El paso a producción requiere revisar y confirmar la preparación del emisor por una persona autorizada. Cuando una empresa trabaja con varias sucursales, conviene comprobar el emisor y la configuración que corresponde a cada una. Cambiar el ambiente de nuevas emisiones no transforma los documentos que ya existen.",
         ],
       },
@@ -286,10 +286,10 @@ export const solutions: readonly Solution[] = [
     ],
     demo: {
       heading: "Revisa la preparación de tu caso antes de contratar",
-      description: "La demostración permite conocer el recorrido y detectar la información que necesitas reunir; no constituye una autorización fiscal.",
+      description: "La prueba gratis de 15 días permite conocer el recorrido y la información necesaria; no constituye una autorización fiscal. No necesitas tarjeta; para continuar después, elige un plan de pago.",
       checks: ["Identificar empresa, sucursales y emisor.", "Revisar una emisión de prueba, sus estados y sus documentos.", "Confirmar cuota, notas crédito y requisitos pendientes para producción."],
     },
-    registration: { label: "Elegir Profesional FE", href: "/registro?plan=professional-fe" },
+    registration: { label: "Probar Profesional FE gratis 15 días", href: "/registro?plan=professional-fe" },
     relatedSlugs: ["ventas-y-caja", "reportes"],
   },
 ];

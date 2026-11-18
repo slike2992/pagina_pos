@@ -14,7 +14,7 @@ const moduleLinks = ["/soluciones/ventas-y-caja/", "/soluciones/ventas-y-caja/",
 const commercialEmail = "ventas@cripton.com.co";
 
 const seoTitle = "Software POS en Colombia: ventas e inventario | Cripton";
-const seoDescription = "Cripton es un software POS web para comercios en Colombia. Gestiona ventas, caja, inventario, usuarios y reportes. Conoce los planes y agenda una demostración.";
+const seoDescription = "Cripton POS: ventas, caja e inventario para comercios en Colombia. Prueba gratis 15 días, sin tarjeta; después, elige un plan de pago para continuar.";
 
 const whatsappNumber = import.meta.env.PUBLIC_WHATSAPP_NUMBER?.replace(/\D/g, "") ?? "";
 
@@ -123,13 +123,13 @@ const comparisons = [
 ];
 
 const faqs = [
-  ["¿Puedo conocer el sistema antes de contratar?", "Sí. Puedes iniciar una prueba gratis de 15 días con el plan elegido, sin tarjeta. Comienza cuando tu empresa esté lista. Después decides si contratas; no se cobra automáticamente. También puedes solicitar una demostración."],
+  ["¿Puedo conocer el sistema antes de contratar?", "Sí. Puedes iniciar una prueba gratis de 15 días con el plan elegido, sin tarjeta. Una prueba por cuenta elegible. Comienza cuando tu empresa esté lista. Para continuar después, debes contratar un plan de pago; la prueba no se cobra ni renueva automáticamente."],
   ["¿Necesito instalar el sistema en cada equipo?", "La plataforma está pensada para operar en la web. Durante la implementación revisamos tus equipos, conexión y necesidades para definir la configuración adecuada."],
   ["¿Qué incluye la implementación inicial?", "Revisamos los datos, equipos y pasos necesarios para iniciar. El alcance y cualquier costo de acompañamiento deben confirmarse antes de contratar; no se añade un cargo desde este formulario."],
   ["¿Puedo cambiar de plan más adelante?", "Sí. La estructura está preparada para acompañar el crecimiento del negocio y ajustar capacidades cuando la operación lo requiera."],
   ["¿Los precios publicados son definitivos?", "Los planes muestran su valor mensual y anual en pesos colombianos. Revisa la periodicidad, los límites y el desglose de impuestos que se te presente antes de confirmar el pago."],
   ["¿Contratar un plan FE activa la emisión inmediatamente?", "La emisión requiere preparar el emisor, la numeración y el ambiente correspondiente. El pago del plan no reemplaza esa configuración ni la habilitación fiscal necesaria."],
-  ["¿Qué necesito para trabajar desde un navegador?", "Una conexión y equipos compatibles con el flujo de tu negocio. En la demostración revisamos los periféricos que utilizas; no asumas funcionamiento sin conexión ni compatibilidad con toda impresora."],
+  ["¿Qué necesito para trabajar desde un navegador?", "Una conexión y equipos compatibles con el flujo de tu negocio. Durante la prueba, comprueba los periféricos que utilizas; no asumas funcionamiento sin conexión ni compatibilidad con toda impresora."],
 ];
 
 const siteSchema = {
@@ -205,7 +205,7 @@ const siteSchema = {
           <p class="hero-lead">Para tiendas, papelerías y comercios especializados: vende con agilidad, organiza tu caja y conoce tu inventario en una sola plataforma.</p>
           <div class="hero-actions" aria-label="Acciones principales">
             <a class="button primary light-button" href="/registro?plan=professional" data-track="signup" data-track-location="hero" data-track-plan="professional">Probar gratis 15 días</a>
-            <a class="text-link light-link" href="#contacto" data-track="demo" data-track-location="hero">Solicitar una demostración <span aria-hidden="true">→</span></a>
+            <a class="text-link light-link" href="#planes" data-track="plans" data-track-location="hero">Comparar planes <span aria-hidden="true">→</span></a>
           </div>
           <p class="hero-note">15 días gratis, sin tarjeta. Después, planes desde <strong>$49.900 al mes</strong> si decides contratar.</p>
         </div>
@@ -266,7 +266,7 @@ const siteSchema = {
           <div class="plan-group-heading"><div><p class="eyebrow fe-eyebrow">Facturación electrónica</p><h3 id="plans-with-fe-title">Planes con facturación electrónica</h3></div><p>POS y facturación electrónica con límites claros. Emitir requiere preparar y habilitar el emisor, su numeración y el ambiente correspondiente.</p></div>
           <div class="plans-grid">{electronicInvoicingPlans.map((plan) => <article class:list={["plan-card", "fe-card", { highlighted: plan.highlighted }]}>{plan.highlighted && <span class="plan-badge">Recomendado</span>}<h4 class="plan-name">Plan {plan.name}</h4><div class="price"><strong>{plan.monthly}</strong><span>COP / mes después de la prueba</span></div><div class="annual-price"><strong>{plan.annual}</strong><span>COP / año después de la prueba</span><em>Ahorra {planSaving(plan)}</em></div><p>{plan.summary}</p><dl class="plan-limits"><div><dt>Usuarios</dt><dd>{plan.users}</dd></div><div><dt>Sucursales</dt><dd>{plan.branches}</dd></div><div><dt>Cajas</dt><dd>{plan.registers}</dd></div><div><dt>Inventario</dt><dd>{plan.items}</dd></div></dl><ul class="check-list"><li>Facturación electrónica incluida</li><li>{plan.documents}</li>{plan.features.map((feature) => <li>{feature}</li>)}</ul><a class:list={["button plan-button", { primary: plan.highlighted }]} href={`/registro?plan=${plan.code}`} data-track="signup" data-track-location="plan" data-track-plan={plan.code}>{plan.cta}</a></article>)}</div>
         </div>
-        <p class="price-note">La prueba gratuita dura 15 días desde que tu empresa esté lista. No requiere tarjeta y no se cobra ni renueva automáticamente. Una prueba por persona elegible. Los límites de usuarios, cajas, sucursales, ítems y documentos se aplican por empresa. El ahorro anual compara doce mensualidades con el valor anual publicado. Confirma la periodicidad y el desglose aplicable antes de pagar.</p>
+        <p class="price-note">La prueba gratuita dura 15 días desde que tu empresa esté lista. No requiere tarjeta y no se cobra ni renueva automáticamente. Una prueba por cuenta elegible. Para continuar después de los 15 días, debes contratar un plan de pago. Los límites de usuarios, cajas, sucursales, ítems y documentos se aplican por empresa. El ahorro anual compara doce mensualidades con el valor anual publicado. Confirma la periodicidad y el desglose aplicable antes de pagar.</p>
       </section>
 
       <section class="comparison-section section" id="comparador">
@@ -278,7 +278,7 @@ const siteSchema = {
 
       <section class="cta-band">
         <div><p class="eyebrow light">Decide con tranquilidad</p><h2>Conoce el sistema aplicado a tu negocio</h2><p>Agenda una conversación y revisemos juntos el flujo que hoy quieres mejorar.</p></div>
-        <a class="button light-button" href="#contacto" data-track="demo" data-track-location="content">Quiero una demostración</a>
+        <a class="button light-button" href="/registro?plan=professional" data-track="signup" data-track-location="content" data-track-plan="professional">Probar gratis 15 días</a>
       </section>
 
       <section class="decision-section section" aria-labelledby="decision-title">
@@ -296,7 +296,7 @@ const siteSchema = {
       </section>
 
       <section class="contact-section section" id="contacto">
-        <div class="contact-copy"><p class="eyebrow light">Hablemos de tu operación</p><h2>Trae un caso de tu negocio a la demostración</h2><p>Cuéntanos qué vendes, cuántas personas usan el sistema y qué necesitas ordenar. Prepararemos el mensaje para que puedas revisarlo antes de enviarlo.</p><p>También puedes escribir a <a href={`mailto:${commercialEmail}`}>{commercialEmail}</a>.</p><dl><div><dt>Demostración</dt><dd>Recorrido según tu operación</dd></div><div><dt>Plan</dt><dd>Capacidades y requisitos claros</dd></div><div><dt>Arranque</dt><dd>Preparación de tus primeros pasos</dd></div></dl></div>
+        <div class="contact-copy"><p class="eyebrow light">Hablemos de tu operación</p><h2>¿Tienes dudas sobre tu prueba de 15 días?</h2><p>Cuéntanos qué vendes, cuántas personas usan el sistema y qué necesitas ordenar. Prepararemos el mensaje para que puedas revisarlo antes de enviarlo.</p><p>También puedes escribir a <a href={`mailto:${commercialEmail}`}>{commercialEmail}</a>.</p><dl><div><dt>Prueba gratis</dt><dd>15 días sin tarjeta; después, plan de pago</dd></div><div><dt>Plan</dt><dd>Capacidades y requisitos claros</dd></div><div><dt>Arranque</dt><dd>Preparación de tus primeros pasos</dd></div></dl></div>
         <form class="lead-form" id="lead-form" data-whatsapp-number={whatsappNumber}>
           <div class="lead-field"><label for="name">Nombre (obligatorio)</label><input id="name" type="text" name="name" autocomplete="name" minlength="2" maxlength="120" required placeholder="Tu nombre" disabled /></div>
           <div class="lead-field"><label for="phone">Teléfono o WhatsApp (opcional)</label><input id="phone" type="tel" name="phone" autocomplete="tel" maxlength="40" inputmode="tel" placeholder="300 000 0000" disabled /></div>
@@ -306,7 +306,7 @@ const siteSchema = {
           <p class="form-note">Este formulario prepara un mensaje en tu navegador. No almacena tus datos ni los envía automáticamente. El canal elegido tiene sus propias condiciones. <a href="/legal/privacidad/">Consulta privacidad</a>.</p>
           <p class="form-status" role="status" aria-live="polite"></p>
           <button class="button secondary contact-ready" data-contact-ready type="button" hidden></button>
-          <noscript><p>Para solicitar una demostración escribe a <a href="mailto:ventas@cripton.com.co">ventas@cripton.com.co</a>. El formulario requiere JavaScript para preparar el mensaje sin enviar datos a esta página.</p></noscript>
+          <noscript><p>Para consultar sobre la prueba gratis de 15 días escribe a <a href="mailto:ventas@cripton.com.co">ventas@cripton.com.co</a>. El formulario requiere JavaScript para preparar el mensaje sin enviar datos a esta página.</p></noscript>
         </form>
       </section>
     </main>
@@ -333,9 +333,9 @@ const siteSchema = {
         event.preventDefault();
         if (!feedback?.validate() || !ready) return;
         const data = new FormData(form);
-        const lines = ["Hola, quiero agendar una demostración de Cripton.", `Nombre: ${String(data.get("name") ?? "").trim()}`, data.get("phone") ? `Teléfono: ${String(data.get("phone")).trim()}` : "", `Plan de interés: ${data.get("plan")}`, data.get("message") ? `Necesidad: ${String(data.get("message")).trim()}` : ""].filter(Boolean).join("\n");
+        const lines = ["Hola, tengo una consulta sobre la prueba gratis de 15 días de Cripton, sin tarjeta. Para continuar después se requiere un plan de pago.", `Nombre: ${String(data.get("name") ?? "").trim()}`, data.get("phone") ? `Teléfono: ${String(data.get("phone")).trim()}` : "", `Plan de interés: ${data.get("plan")}`, data.get("message") ? `Necesidad: ${String(data.get("message")).trim()}` : ""].filter(Boolean).join("\n");
         const number = form.dataset.whatsappNumber ?? "";
-        preparedUrl = number ? `https://wa.me/${number}?text=${encodeURIComponent(lines)}` : `mailto:ventas@cripton.com.co?subject=${encodeURIComponent("Demostración de Cripton POS")}&body=${encodeURIComponent(lines)}`;
+        preparedUrl = number ? `https://wa.me/${number}?text=${encodeURIComponent(lines)}` : `mailto:ventas@cripton.com.co?subject=${encodeURIComponent("Prueba gratis de 15 días de Cripton POS")}&body=${encodeURIComponent(lines)}`;
         ready.textContent = number ? "Revisar y abrir mi mensaje en WhatsApp" : "Revisar y abrir mi aplicación de correo";
         ready.hidden = false;
         if (status) status.textContent = "Tu mensaje está preparado. Abre el mensaje para revisarlo en el canal y enviarlo cuando decidas.";

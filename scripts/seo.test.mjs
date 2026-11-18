@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
-import { readFile, readdir, access } from 'node:fs/promises';
+import { readFile, readdir, access, mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
 import test from 'node:test';
 import sharp from 'sharp';
@@ -180,4 +183,87 @@ test('published positive PNG is byte-identical to the approved source at the sta
   const published = await readFile(new URL(output + '/' + positiveLogo + '.png', root));
   assert.equal(sha256(published), positivePngSha);
   assert.deepEqual(published, await readFile(new URL('public/' + positiveLogo + '.png', root)));
+});
+
+
+const commercialPaths = PUBLIC_PATHS.filter(path => !path.startsWith('/legal/'));
+const textContent = html => markup(html).replace(/<style\b[^>]*>[\s\S]*?<\/style>/g, '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+const anchors = html => [...markup(html).matchAll(/<a\b[^>]*>[\s\S]*?<\/a>/g)].map(([tag]) => ({ ...tags(tag, 'a')[0], label: textContent(tag) }));
+
+test('commercial HTML, metadata and structured data offer only 15 free days without a card, followed by a paid plan', async () => {
+  for (const route of commercialPaths) {
+    const html = await rendered(route);
+    const visible = textContent(html);
+    const metadata = tags(html, 'meta').map(tag => tag.content ?? '').join(' ');
+    const schema = [...html.matchAll(/<script\b[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)].map(([, json]) => JSON.stringify(JSON.parse(json))).join(' ');
+    assert.doesNotMatch([visible, metadata, schema].join(' '), /\b(?:demo|demostraci[oó]n|demostraciones)\b|persona elegible|gratis para siempre|gratuit[oa] permanentemente/i, route);
+    assert.match(visible, /15 d[ií]as/i, route);
+    assert.match(visible, /gratis|gratuita/i, route);
+    assert.match(visible, /sin tarjeta|no necesitas tarjeta/i, route);
+    assert.match(visible, /para continuar despu[eé]s[^.]*plan de pago/i, route);
+  }
+  assert.match(textContent(await rendered('/')), /una prueba por cuenta elegible/i);
+  assert.doesNotMatch(textContent(await rendered('/')), /una prueba por persona|detecta(?:mos|r)?[^.]*alias/i);
+});
+
+test('trial CTAs resolve to registration with a valid plan, including all six cards and the FE solution', async () => {
+  const plans = ['basic', 'professional', 'enterprise', 'basic-fe', 'professional-fe', 'enterprise-fe'];
+  await rendered('/registro/');
+  for (const route of commercialPaths) {
+    const links = anchors(await rendered(route)).filter(link => link['data-track'] === 'signup');
+    assert.ok(links.length > 0, route);
+    for (const link of links) {
+      assert.match(link.label, /(?:probar|prueba).*gratis.*15 d[ií]as/i, route);
+      const target = new URL(link.href.replace(/&amp;/g, '&'), SITE_URL + route);
+      assert.equal(target.origin, SITE_URL, route);
+      assert.equal(target.pathname, '/registro', route);
+      assert.ok(plans.includes(target.searchParams.get('plan')), link.href);
+      assert.deepEqual([...target.searchParams.keys()], ['plan'], link.href);
+      assert.equal(target.hash, '', link.href);
+    }
+  }
+  const cards = anchors(await rendered('/')).filter(link => link['data-track-location'] === 'plan');
+  assert.deepEqual(cards.map(link => new URL(link.href, SITE_URL).searchParams.get('plan')), plans);
+  const fe = anchors(await rendered('/soluciones/facturacion-electronica/')).filter(link => link['data-track'] === 'signup' && link.label.includes('Profesional FE'));
+  assert.equal(fe.length, 1);
+  assert.equal(new URL(fe[0].href, SITE_URL).searchParams.get('plan'), 'professional-fe');
+});
+
+test('shared footer offers the trial even on legal pages while the local payment route stays private', async () => {
+  for (const path of PUBLIC_PATHS) {
+    const html = await rendered(path);
+    const footer = html.match(/<footer\b[^>]*>[\s\S]*?<\/footer>/)?.[0];
+    assert.ok(footer, path);
+    assert.doesNotMatch(textContent(footer), /demo|demostraci[oó]n/i, path);
+    assert.ok(anchors(footer).some(link => link['data-track'] === 'signup' && link.label === 'Probar gratis 15 días'), path);
+  }
+  const local = await rendered('/pago/demo/');
+  assert.equal(publicPageUrl('/pago/demo/'), null);
+  assert.equal(tags(local, 'link').some(tag => tag.rel === 'canonical'), false);
+  assert.match(tags(local, 'meta').find(tag => tag.name === 'robots').content, /noindex/);
+  const refresh = tags(local, 'meta').find(tag => tag['http-equiv'] === 'refresh');
+  assert.equal(refresh.content, '0;url=/registro?plan=professional');
+  assert.deepEqual(anchors(local).map(link => link.href), ['/registro?plan=professional']);
+  assert.doesNotMatch(local, /<script|demo-payment|data-api-url|development\/checkout|demostraci[oó]n/i);
+  assert.equal(tags(local, 'meta').find(tag => tag.name === 'referrer').content, 'no-referrer');
+  const home = await rendered('/');
+  assert.equal(tags(home.match(/<button\b[^>]*data-contact-ready[^>]*>/)[0], 'button')[0].type, 'button');
+});
+
+
+test('production build hook replaces only the generated local payment page and never runs during dev', async t => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'cripton-local-payment-'));
+  t.after(() => rm(directory, {recursive: true, force: true}));
+  await mkdir(path.join(directory, 'pago/demo'), {recursive: true});
+  await writeFile(path.join(directory, 'pago/demo/index.html'), '<script>local payment controller</script>');
+  await writeFile(path.join(directory, 'index.html'), 'home remains intact');
+  const integration = config.integrations.find(item => item.name === 'cripton-public-local-payment');
+  assert.ok(integration);
+  assert.deepEqual(Object.keys(integration.hooks), ['astro:build:done']);
+  await integration.hooks['astro:build:done']({dir: pathToFileURL(directory + path.sep)});
+  const html = await readFile(path.join(directory, 'pago/demo/index.html'), 'utf8');
+  assert.equal(tags(html, 'meta').find(tag => tag['http-equiv'] === 'refresh').content, '0;url=/registro?plan=professional');
+  assert.deepEqual(anchors(html).map(link => new URL(link.href, SITE_URL).pathname), ['/registro']);
+  assert.doesNotMatch(html, /<script|local payment controller|Demostraci[oó]n|checkoutSessionId/);
+  assert.equal(await readFile(path.join(directory, 'index.html'), 'utf8'), 'home remains intact');
 });

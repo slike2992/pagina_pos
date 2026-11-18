@@ -1,5 +1,34 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-17 — Oferta pública única: 15 días gratis, sin tarjeta
+
+- Sustituye ofertas comerciales de demo por prueba gratis de 15 días: portada,
+  soluciones, guía, confianza, navegación/pie, metadatos, JSON-LD y mensaje
+  preparado de WhatsApp/correo. Continuar después requiere un plan de pago;
+  expresa el límite como una prueba por cuenta elegible, sin afirmar detección
+  de una persona entre alias. No promete gratuidad permanente ni repetición
+  ilimitada de pruebas.
+- Consumidores: API de registro/verificación y worker de correo, cuya política
+  de signup y protección contra abuso pertenecen al integrador. Sin cambios
+  HTTP/tipos, SQL, permisos, catálogo/precios, sesión, checkout legacy o flags
+  internos. Sin migración. El integrador habilita el modo público con
+  CUSTOMER_SIGNUP_PUBLIC_SINCE una sola vez en backend; no cambia rutas API.
+  Coordinar la publicación con esa política.
+- CTA de alta conservan /registro y los seis códigos de plan; sin nuevas rutas
+  públicas/canónicas. La página de pago local se conserva en astro dev; el hook
+  de producción publica en /pago/demo sólo una redirección fija al registro,
+  sin parámetros ni controlador local, también en staging noindex. Mantiene
+  pagos Sandbox/pruebas y local_demo; no son una oferta comercial.
+- Excluye trabajo ajeno en Brand.astro y pago/demo.astro, activos, diseño y legales.
+  Pendiente explícito fuera de alcance: frase comercial «planes y demostraciones»
+  en src/pages/legal/index.astro:15; el integrador debe autorizar su corrección.
+- Validación: suite Astro existente más regresiones sobre HTML real del build
+  (copy, SEO/JSON-LD, enlaces de alta y privacidad de la ruta local) y controlador
+  de contacto real en VM (WhatsApp/mailto sin envío automático, validación, foco,
+  invalidación de mensaje anterior). Exportación limpia: check sin diagnósticos,
+  build y 264/264 pruebas con Node24.22.1/pnpm11.25.0 y env staging noindex. Linux
+  se entrega como comandos reproducibles, sin SSH, UI ni despliegue en este bloque.
+
 ## 2026-11-17 — PNG positivo para correo sobre fondo blanco
 
 - Añade sólo /brand/v1.0/cripton_horizontal_color_v1.0.png, exportación738×199

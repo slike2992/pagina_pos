@@ -51,7 +51,7 @@ const schema = canonical ? {
         <p class="eyebrow">{eyebrow}</p>
         <h1>{heading}</h1>
         <p class="lead">{lead}</p>
-        {commercialPage && <div class="editorial-actions"><a class="button" href="/#contacto" data-track="demo" data-track-location="content">Solicitar una demostración</a><a href="/#planes" data-track="plans" data-track-location="content">Comparar planes</a></div>}
+        {commercialPage && <div class="editorial-actions"><a class="button" href="/registro?plan=professional" data-track="signup" data-track-location="content" data-track-plan="professional">Probar gratis 15 días</a><a href="/#planes" data-track="plans" data-track-location="content">Comparar planes</a></div>}
       </section>
       <div class="editorial-copy"><slot /></div>
     </main>

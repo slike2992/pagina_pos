@@ -44,7 +44,7 @@ function browser(specs = []) {
     removeAttribute(name) { this.attributes.delete(name); }
     addEventListener(type, listener) { (this.listeners[type] ??= []).push(listener); }
     async emit(type, target = this) {
-      const event = { target, prevented: false, preventDefault() { this.prevented = true; } };
+      const event = { target, prevented: false, propagationStopped: false, preventDefault() { this.prevented = true; }, stopPropagation() { this.propagationStopped = true; } };
       for (const listener of this.listeners[type] ?? []) await listener(event);
       return event;
     }
@@ -470,4 +470,90 @@ test('creation retry preserves its key and legal acceptance after a lost respons
   reloaded.legal.checked=true;await reloaded.form.emit('submit');
   assert.equal(reloaded.posts()[0].options.headers['idempotency-key'],post.options.headers['idempotency-key']);
   assert.equal(reloaded.posts()[0].options.body,post.options.body);assert.equal(reloaded.storage.size,1);
+});
+
+const landing = await readFile(new URL('../src/pages/index.astro', import.meta.url), 'utf8');
+function contact(whatsappNumber = '') {
+  const page = browser([
+    { id: 'name', name: 'name', required: true, minLength: 2, maxLength: 120, value: ' Ana ', disabled: true },
+    { id: 'phone', name: 'phone', type: 'tel', maxLength: 40, value: '3000000000', disabled: true },
+    { id: 'plan', name: 'plan', tag: 'select', value: 'Profesional FE', disabled: true },
+    { id: 'message', name: 'message', tag: 'textarea', maxLength: 1500, value: 'Inventario y caja', disabled: true },
+  ]);
+  page.form.id = 'lead-form';
+  page.form.dataset.whatsappNumber = whatsappNumber;
+  const status = new page.Element('p'); status.className = 'form-status';
+  const ready = new page.Element('button'); ready.type = 'button'; ready.hidden = true;
+  const submit = new page.Element('button'); submit.type = 'submit'; submit.disabled = true;
+  page.form.append(status, ready, submit);
+  const originalQuery = page.form.querySelector.bind(page.form);
+  page.form.querySelector = selector => selector === '[data-contact-ready]' ? ready : selector === '.form-status' ? status : originalQuery(selector);
+  page.form.querySelectorAll = selector => {
+    assert.equal(selector, 'input, select, textarea, button');
+    return [...page.fields, ready, submit];
+  };
+  page.document.querySelector = selector => selector === '#lead-form' ? page.form : null;
+  const opened = [];
+  Object.assign(page.context, {
+    bindFormFeedback: page.bind,
+    window: { open: (...args) => opened.push(args) },
+    fetch: () => { throw Error('Contact must not send network requests'); },
+    localStorage: new Proxy({}, { get() { throw Error('Contact must not persist data'); } }),
+    sessionStorage: new Proxy({}, { get() { throw Error('Contact must not persist data'); } }),
+    FormData: class {
+      constructor(form) { this.form = form; }
+      get(name) { return this.form.elements.find(field => field.name === name && !field.disabled)?.value ?? null; }
+    },
+  });
+  const code = landing.match(/<script>\s*([\s\S]*?)<\/script>/)[1].replace(/^\s*import[^;]+;/gm, '');
+  vm.runInContext(compile(code), page.context);
+  return { ...page, ready, status, submit, opened };
+}
+
+for (const [channel, number] of [['WhatsApp', '573000000000'], ['email', '']]) {
+  test('contact prepares the 15-day trial inquiry for ' + channel + ' and opens only after explicit confirmation', async () => {
+    const page = contact(number);
+    assert.ok(page.fields.every(field => !field.disabled));
+    assert.equal(page.submit.disabled, false);
+    const event = await page.form.emit('submit');
+    assert.equal(event.prevented, true);
+    assert.equal(page.ready.hidden, false);
+    assert.equal(page.document.activeElement, page.ready);
+    assert.equal(page.opened.length, 0);
+    const click = await page.ready.emit('click');
+    assert.equal(click.propagationStopped, true);
+    assert.equal(page.opened.length, 1);
+    const [href, target, features] = page.opened[0];
+    assert.equal(target, '_blank'); assert.equal(features, 'noopener,noreferrer');
+    const url = new URL(href);
+    assert.equal(url.protocol, number ? 'https:' : 'mailto:');
+    if (number) { assert.equal(url.hostname, 'wa.me'); assert.equal(url.pathname, '/' + number); }
+    else { assert.equal(url.pathname, 'ventas@cripton.com.co'); assert.equal(url.searchParams.get('subject'), 'Prueba gratis de 15 días de Cripton POS'); }
+    const message = url.searchParams.get(number ? 'text' : 'body');
+    assert.match(message, /prueba gratis de 15 días.*sin tarjeta/);
+    assert.match(message, /Para continuar después se requiere un plan de pago/);
+    assert.doesNotMatch(message, /demo|demostraci[oó]n/i);
+    assert.match(message, /Nombre: Ana\nTeléfono: 3000000000\nPlan de interés: Profesional FE\nNecesidad: Inventario y caja/);
+  });
+}
+
+test('contact validates before preparing and invalidates a prepared message when inputs change', async () => {
+  const page = contact('573000000000');
+  page.fields[0].value = '  ';
+  await page.form.emit('submit');
+  assert.equal(page.ready.hidden, true);
+  assert.equal(page.document.activeElement, page.fields[0]);
+  assert.equal(page.fields[0].getAttribute('aria-invalid'), 'true');
+  await page.ready.emit('click');
+  assert.equal(page.opened.length, 0);
+  page.fields[0].value = 'Ana';
+  await page.form.emit('input', page.fields[0]);
+  await page.form.emit('submit');
+  assert.equal(page.ready.hidden, false);
+  page.fields[3].value = 'Otra consulta';
+  await page.form.emit('input', page.fields[3]);
+  assert.equal(page.ready.hidden, true);
+  assert.match(page.status.textContent, /Vuelve a preparar el mensaje/);
+  await page.ready.emit('click');
+  assert.equal(page.opened.length, 0, 'a stale prepared URL cannot be reused');
 });

@@ -84,6 +84,36 @@ mensajes de alta ni correo de verificación de registro. Sólo `purpose='signup'
 habilita esa guía; ausencia de contexto permanece neutra y la recuperación de
 períodos conserva su contrato. El retorno nunca autentica ni habilita acceso.
 
+## Oferta comercial pública
+
+La web ofrece únicamente 15 días gratis, sin tarjeta: una prueba por cuenta
+elegible. No afirma detectar a una persona entre distintas cuentas o alias.
+Para continuar después se requiere contratar un plan de pago; la prueba no se
+cobra ni renueva automáticamente. Los CTA conservan los seis códigos de plan
+y llevan a /registro. El formulario de contacto prepara consultas sobre la
+prueba en WhatsApp/correo, sólo abre el canal tras una acción explícita y no envía
+ni almacena los datos por su cuenta.
+
+Consumidores: registro/verificación de la API SaaS y correos del worker. El
+integrador mantiene la política de signup y los controles de abuso en backend;
+El modo público de backend se habilita con CUSTOMER_SIGNUP_PUBLIC_SINCE, fijado
+una vez por el integrador; esta revisión no decide elegibilidad ni modifica
+contratos, auth o checkout.
+Se conservan local_demo, los pagos Sandbox y las rutas canónicas. La página
+/pago/demo sigue disponible en astro dev; todo build estático publica en esa
+ruta sólo una redirección fija a /registro?plan=professional, sin reenviar
+parámetros ni cargar el controlador local. La protección no depende de Caddy.
+Los documentos legales, marca y diseño quedan fuera del cambio. La referencia
+comercial a demostraciones del centro legal (src/pages/legal/index.astro:15)
+queda señalada al integrador para resolver bajo autorización sobre legales.
+
+Las regresiones ejecutan el controlador real de contacto en VM (ambos canales,
+validación, foco y mensaje obsoleto) y auditan HTML/SEO/JSON-LD y enlaces del build.
+Validación de esta revisión en exportación limpia con Node24.22.1/pnpm11.25.0:
+Astro check sin errores/advertencias/hints, build y 264/264 pruebas aprobadas,
+con las cuatro variables públicas de staging (indexación/borradores=false).
+La evidencia local no acredita publicación, navegador ni una ejecución Linux.
+
 ## Prueba gratuita de 15 días
 
 Los registros nuevos usan la prueba canónica de la API: verificar correo devuelve

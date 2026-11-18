@@ -70,7 +70,7 @@ const related = solution.relatedSlugs
     <h2 id="demo-title">{solution.demo.heading}</h2>
     <p>{solution.demo.description}</p>
     <ul>{solution.demo.checks.map((check) => <li>{check}</li>)}</ul>
-    <p><a class="button" href="/#contacto">Agendar una demostración</a> <a class="button secondary" href={solution.registration.href}>{solution.registration.label}</a></p>
+    <p><a class="button" href={solution.registration.href} data-track="signup" data-track-location="content">{solution.registration.label}</a> <a class="button secondary" href="/#planes" data-track="plans" data-track-location="content">Comparar planes</a></p>
     <p>Antes de continuar, <a href="/#planes">compara el plan y sus condiciones</a>. Crear una cuenta inicia el registro; la activación del servicio requiere completar el proceso indicado.</p>
   </section>
 
