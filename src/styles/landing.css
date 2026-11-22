@@ -25,6 +25,7 @@
 .proof-strip p { display: grid; gap: 4px; margin: 0; padding: 26px clamp(14px, 3vw, 42px); border-left: 1px solid var(--line); }
 .proof-strip p:last-child { border-right: 1px solid var(--line); }
 .proof-strip strong { font-size: .95rem; }
+.quick-access { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; padding: 22px clamp(20px, 5vw, 76px); border-bottom: 1px solid var(--line); background: white; }
 .proof-strip span { color: var(--muted); font-size: .85rem; }
 .outcomes { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); }
 .outcomes article { padding: 30px 28px 12px 0; border-right: 1px solid var(--line); }

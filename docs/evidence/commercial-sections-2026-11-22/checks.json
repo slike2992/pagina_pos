@@ -1,0 +1,99 @@
+{
+  "date": "2026-11-22",
+  "browser": "Codex in-app",
+  "environment": "local review http://127.0.0.1:4325",
+  "whatsapp": "573219597077 confirmed by owner; official destination opened; no message sent",
+  "checks": [
+    {
+      "case": "users-permissions",
+      "heading": "Usuarios y permisos: cada persona con su responsabilidad",
+      "overflow": false,
+      "text": "Usuarios y permisos: cada persona con su responsabilidad\n\nCrea un usuario para cada integrante de tu equipo y asigna los accesos que necesita para trabajar. Cada persona inicia sesión con sus propias credenciales; no hace falta compartir la cuenta del administrador.\n\nDesde la administración de tu negocio puedes organizar los permisos y los accesos a sucursales y cajas. Las funciones y la cantidad de usuarios disponibles dependen de tu plan.\n\nDefine quién puede vender, operar caja, administrar inventario o consultar reportes.\nAsigna a cada persona las sucursales y cajas que le corresponden.\nRevisa y actualiza sus accesos cuando cambien sus responsabilidades.",
+      "top": 1741.84375,
+      "url": "http://127.0.0.1:4325/soluciones/ventas-y-caja/#usuarios-y-permisos",
+      "width": 1118
+    },
+    {
+      "case": "multibranch",
+      "heading": "Operación multisede: sucursales y cajas organizadas",
+      "overflow": false,
+      "targetTop": 103.578125,
+      "url": "http://127.0.0.1:4325/soluciones/ventas-y-caja/#operacion-multisede",
+      "width": 1118
+    },
+    {
+      "case": "kardex-desktop",
+      "caption": "Kardex real del POS con datos ficticios de una papelería de pruebas. Toca la imagen para ampliarla.",
+      "heading": "Sabes qué tienes, qué vendes y qué necesitas reponer",
+      "image": {
+        "alt": "Kardex de Cripton con fechas, productos, entradas, salidas y saldos por sucursal",
+        "loaded": true,
+        "naturalHeight": 438,
+        "naturalWidth": 779,
+        "width": 670.75
+      },
+      "overflow": false,
+      "targetTop": 103.796875,
+      "url": "http://127.0.0.1:4325/soluciones/inventario/#kardex",
+      "width": 1118,
+      "zoomLink": "/@fs/C:/Users/slike/Documents/Proyectos/pos_saas/artifacts/web-commercial-sections-20261122/src/assets/pos-kardex.jpg?origWidth=1280&origHeight=720&origFormat=jpg"
+    },
+    {
+      "case": "kardex-zoom",
+      "height": 720,
+      "loaded": true,
+      "width": 1280
+    },
+    {
+      "case": "payment-entry",
+      "hasLogin": true,
+      "heading": "Mi cuenta",
+      "overflow": false,
+      "url": "http://127.0.0.1:4325/cuenta",
+      "width": 390
+    },
+    {
+      "case": "users-mobile",
+      "headerBottom": 72,
+      "overflow": false,
+      "targetTop": 87.921875,
+      "url": "http://127.0.0.1:4325/soluciones/ventas-y-caja/#usuarios-y-permisos",
+      "width": 390
+    },
+    {
+      "case": "whatsapp",
+      "href": "https://wa.me/573219597077",
+      "destinationHeading": "Chatea en WhatsApp con el +57 321 9597077",
+      "formRecipient": "573219597077",
+      "messageSent": false
+    },
+    {
+      "case": "quick-access-mobile-final",
+      "links": [
+        {
+          "height": 51.59375,
+          "href": "https://wa.me/573219597077",
+          "label": "WhatsApp",
+          "left": 127.15625,
+          "right": 247.84375
+        },
+        {
+          "height": 51.59375,
+          "href": "/cuenta",
+          "label": "Pagos seguros con Wompi",
+          "left": 67.4375,
+          "right": 307.546875
+        },
+        {
+          "height": 51.59375,
+          "href": "mailto:servicioalcliente@cripton.com.co",
+          "label": "Soporte técnico",
+          "left": 107.140625,
+          "right": 267.84375
+        }
+      ],
+      "overflow": false,
+      "width": 390
+    }
+  ]
+}

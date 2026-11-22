@@ -1,5 +1,7 @@
 ---
 import type { GetStaticPaths } from 'astro';
+import { Picture } from 'astro:assets';
+import kardexScreenshot from '../../assets/pos-kardex.jpg';
 import EditorialLayout from '../../layouts/EditorialLayout.astro';
 import { solutions, type Solution } from '../../content/solutions';
 
@@ -31,10 +33,18 @@ const related = solution.relatedSlugs
   ]}
 >
   {solution.sections.map((section, index) => (
-    <section aria-labelledby={`solution-section-${index}`}>
+    <section id={section.id} aria-labelledby={`solution-section-${index}`}>
       <h2 id={`solution-section-${index}`}>{section.heading}</h2>
       {section.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
       {section.bullets && <ul>{section.bullets.map((bullet) => <li>{bullet}</li>)}</ul>}
+      {solution.slug === 'inventario' && section.id === 'kardex' && (
+        <figure class="product-screenshot">
+          <a href={kardexScreenshot.src} target="_blank" rel="noopener noreferrer" aria-label="Ampliar la captura del kardex de Cripton">
+            <Picture src={kardexScreenshot} alt="Kardex de Cripton con fechas, productos, entradas, salidas y saldos por sucursal" widths={[640, 960, 1280]} sizes="(max-width: 760px) calc(100vw - 40px), 780px" formats={['avif', 'webp']} fallbackFormat="webp" loading="lazy" decoding="async" />
+          </a>
+          <figcaption>Kardex real del POS con datos ficticios de una papelería de pruebas. Toca la imagen para ampliarla.</figcaption>
+        </figure>
+      )}
     </section>
   ))}
 
@@ -87,3 +97,10 @@ const related = solution.relatedSlugs
     <p><a href="/soluciones/">Ver todas las soluciones</a></p>
   </nav>
 </EditorialLayout>
+
+<style>
+  .product-screenshot { margin: 28px 0; }
+  .product-screenshot a { display: block; overflow: hidden; border: 1px solid var(--line); border-radius: 10px; }
+  .product-screenshot img { display: block; width: 100%; }
+  .product-screenshot figcaption { margin-top: 12px; color: var(--muted); font-size: .875rem; }
+</style>

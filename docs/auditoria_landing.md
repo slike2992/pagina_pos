@@ -33,11 +33,14 @@ posterior.
 
 ## Pendientes antes de producción
 
-1. Definir `PUBLIC_WHATSAPP_NUMBER` con el número comercial real.
-2. Confirmar precios, impuestos, términos del servicio y alcance de implementación.
-3. Configurar dominio público para convertir `og:image` y canonical en URLs absolutas.
-4. Definir analítica y consentimiento solo si existe una necesidad comercial aprobada.
-5. Diseñar el contrato de API y tratamiento de datos antes de persistir leads.
+WhatsApp quedó confirmado el 22 de noviembre de 2026: +57 321 959 7077,
+predeterminado en la portada y el formulario, con override opcional mediante
+`PUBLIC_WHATSAPP_NUMBER`. Su destino se comprobó en Codex sin enviar mensajes.
+
+1. Confirmar precios, impuestos, términos del servicio y alcance de implementación.
+2. Configurar dominio público para convertir `og:image` y canonical en URLs absolutas.
+3. Definir analítica y consentimiento solo si existe una necesidad comercial aprobada.
+4. Diseñar el contrato de API y tratamiento de datos antes de persistir leads.
 
 Estos pendientes son de configuración o decisión de negocio; no bloquean la
 revisión local ni implican crear una base de datos para la landing.

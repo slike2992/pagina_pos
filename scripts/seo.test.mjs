@@ -86,6 +86,10 @@ test('rendered navigation, assets and fragment targets resolve within the releas
     for (const link of tags(html, 'a')) {
       if (!link.href || /^(mailto:|tel:|https?:)/.test(link.href)) continue;
       const target = new URL(link.href.replace(/&amp;/g, '&'), `${SITE_URL}${route}`);
+      if (target.pathname.startsWith('/_astro/') && /\.(?:avif|webp|png|jpe?g)$/i.test(target.pathname)) {
+        await access(new URL(`${output}${target.pathname}`, root));
+        continue;
+      }
       const path = target.pathname.replace(/\/+$/, '') + '/';
       const content = htmlByPath.get(path);
       assert.ok(content, `missing route ${link.href} from ${route}`);

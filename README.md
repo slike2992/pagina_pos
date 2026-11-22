@@ -86,6 +86,21 @@ períodos conserva su contrato. El retorno nunca autentica ni habilita acceso.
 
 ## Oferta comercial pública
 
+La portada enlaza «Usuarios y permisos» y «Operación multisede» a sus secciones
+en `/soluciones/ventas-y-caja/`, con anclas estables. Ese recorrido explica
+usuarios propios, cajas asignadas, turnos, comprobantes y los requisitos de FE.
+Inventario describe productos, compras, proveedores, movimientos y ajustes;
+su kardex incluye una captura real con datos ficticios, optimizada por Astro
+y ampliable. No cambia las funciones ni los permisos del POS.
+
+Los accesos rápidos de portada reutilizan los canales existentes: WhatsApp usa
+el número comercial confirmado +57 321 959 7077, con override opcional mediante
+`PUBLIC_WHATSAPP_NUMBER`. El formulario comercial utiliza el mismo destinatario.
+«Pagos seguros con Wompi» abre `/cuenta`, donde se prepara el pago del plan
+con su sesión y suscripción. No se crea un checkout genérico ni se modifica
+el contrato de pagos. Soporte abre `servicioalcliente@cripton.com.co`.
+Validación y límites: [revisión de secciones comerciales](docs/QA_COMMERCIAL_SECTIONS_2026-11-22.md).
+
 La web ofrece únicamente 15 días gratis, sin tarjeta: una prueba por cuenta
 elegible. No afirma detectar a una persona entre distintas cuentas o alias.
 Para continuar después se requiere contratar un plan de pago; la prueba no se
@@ -190,7 +205,7 @@ o replay real. Ver [comandos y alcance](scripts/README.md).
 | --- | --- |
 | `PUBLIC_SAAS_API_URL` | API de registro, cuenta y pago; conservar separación de ambientes. |
 | `PUBLIC_POS_URL` | Destino del POS y SSO. |
-| `PUBLIC_WHATSAPP_NUMBER` | Número comercial con indicativo; si falta se prepara un correo a ventas. |
+| `PUBLIC_WHATSAPP_NUMBER` | Override del número comercial con indicativo; por defecto usa el confirmado `573219597077`. |
 | `PUBLIC_SITE_INDEXABLE` | `true` solo para un build público autorizado; ausente/false genera noindex y sitemap vacío. Dev siempre noindex. |
 | `PUBLIC_GOOGLE_SITE_VERIFICATION` | Token público opcional de Search Console, solo en portada. No sustituye el alta de la propiedad. |
 | `PUBLIC_GA_MEASUREMENT_ID` | ID público GA4 opcional. Vacío significa sin etiqueta ni aviso de analítica. |

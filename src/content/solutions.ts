@@ -5,6 +5,7 @@ export type SolutionSlug =
   | "facturacion-electronica";
 
 export interface SolutionSection {
+  id?: string;
   heading: string;
   paragraphs: readonly string[];
   bullets?: readonly string[];
@@ -46,17 +47,20 @@ export const solutions: readonly Solution[] = [
     decisionPrompt: "Necesito ordenar los cobros y entender cómo terminó cada turno.",
     sections: [
       {
-        heading: "Un turno comienza con una apertura",
+        id: "turnos-de-caja",
+        heading: "Seguimiento a los turnos de caja de tu equipo",
         paragraphs: [
-          "Antes de cobrar, el equipo necesita identificar la caja en la que va a trabajar y contar con una apertura activa. Cripton permite abrir y cerrar cajas, registrar movimientos y consultar el detalle y el historial de los turnos. Esto da un punto de partida para revisar la operación del día.",
-          "Define quién puede abrir, registrar movimientos y cerrar. Los permisos de cada persona ayudan a distribuir esas responsabilidades; tener acceso al sistema no significa que todos deban realizar las mismas acciones.",
+          "Cada cajero inicia sesión en Cripton con su propio usuario para abrir su turno. Durante el turno trabaja en la caja que tiene asignada y, al terminar, registra el cierre.",
+          "Así puedes consultar quién estuvo a cargo de cada caja, revisar las entradas y salidas de dinero y hacer seguimiento al historial de cada turno.",
         ],
       },
       {
-        heading: "Consulta lo vendido y el comprobante que corresponde",
+        id: "ventas-y-comprobantes",
+        heading: "Consulta tus ventas y comprobantes cuando lo necesites",
         paragraphs: [
-          "El flujo de venta registra productos, cantidades y medios de pago. Después puedes consultar la venta y sus documentos para revisar el detalle o volver a imprimir el comprobante correspondiente. Una venta y una factura electrónica tienen estados y requisitos propios: elegir un plan con facturación no sustituye la preparación del emisor.",
-          "Una devolución también debe quedar explicada. El módulo de ventas contempla notas crédito totales o parciales; la devolución de dinero depende de la operación y de los permisos. Si interviene una nota electrónica, su aceptación y los efectos sobre caja deben revisarse antes de dar el proceso por terminado.",
+          "Encuentra cada venta de tu negocio y consulta los productos vendidos, las cantidades y los medios de pago. Con Cripton puedes revisar sus comprobantes y volver a imprimirlos en el formato correspondiente.",
+          "La emisión de facturas electrónicas requiere un plan que incluya esta función y completar la configuración y habilitación del emisor. Los comprobantes POS y los documentos electrónicos conservan sus requisitos y estados propios.",
+          "También puedes consultar las notas crédito totales o parciales. La devolución de dinero y sus efectos sobre caja dependen del estado del documento, de la operación y de los permisos asignados.",
         ],
       },
       {
@@ -64,6 +68,28 @@ export const solutions: readonly Solution[] = [
         paragraphs: [
           "Al terminar el turno, revisa las ventas, los movimientos y el dinero disponible. Consultar el historial permite volver al turno que necesitas investigar, en lugar de mezclarlo con operaciones posteriores. Una diferencia requiere revisión: el sistema no determina por sí solo su causa.",
           "Por ejemplo, una salida de dinero no explica una reducción de ventas. Conviene revisar qué movimiento se registró, a qué operación corresponde y si hubo una devolución. Este es un criterio de trabajo para la prueba de 15 días, no un resultado garantizado para todos los negocios.",
+        ],
+      },
+      {
+        id: "usuarios-y-permisos",
+        heading: "Usuarios y permisos: cada persona con su responsabilidad",
+        paragraphs: [
+          "Crea un usuario para cada integrante de tu equipo y asigna los accesos que necesita para trabajar. Cada persona inicia sesión con sus propias credenciales; no hace falta compartir la cuenta del administrador.",
+          "Desde la administración de tu negocio puedes organizar los permisos y los accesos a sucursales y cajas. Las funciones y la cantidad de usuarios disponibles dependen de tu plan.",
+        ],
+        bullets: [
+          "Define quién puede vender, operar caja, administrar inventario o consultar reportes.",
+          "Asigna a cada persona las sucursales y cajas que le corresponden.",
+          "Revisa y actualiza sus accesos cuando cambien sus responsabilidades.",
+        ],
+      },
+      {
+        id: "operacion-multisede",
+        heading: "Operación multisede: sucursales y cajas organizadas",
+        paragraphs: [
+          "Organiza las ubicaciones de tu negocio como sucursales, con sus cajas y los usuarios autorizados para trabajar en cada una. Al ingresar al POS, cada persona utiliza una sucursal a la que tiene acceso.",
+          "Consulta las ventas, los turnos y las existencias por sucursal. Cuando necesites mover mercancía entre sedes, registra el traslado y su recepción para conservar el historial del movimiento.",
+          "La cantidad de sucursales y cajas, y las operaciones disponibles, dependen del plan contratado. Revisa esos límites antes de preparar una nueva sede.",
         ],
       },
     ],
@@ -101,22 +127,29 @@ export const solutions: readonly Solution[] = [
     title: "Software POS para control de inventario | Cripton Colombia",
     description: "Consulta existencias y movimientos, organiza productos y revisa compras, ajustes y traslados con Cripton. Evalúa el inventario que necesita tu comercio.",
     eyebrow: "Inventario",
-    heading: "Entiende qué tienes y por qué cambian tus existencias",
-    lead: "El stock es más útil cuando puedes seguir los movimientos que lo explican. Cripton permite trabajar con el catálogo, consultar existencias y revisar entradas y salidas para preparar la operación de tu comercio.",
+    heading: "Inventario y movimientos",
+    lead: "Administra tus productos, registra compras y ventas y consulta las cantidades disponibles. Mantén tu inventario organizado con cada operación registrada en Cripton.",
     cardTitle: "Inventario y movimientos",
     decisionPrompt: "Necesito saber qué tengo disponible y revisar entradas, salidas y diferencias.",
     sections: [
       {
-        heading: "Empieza por un catálogo que tu equipo reconozca",
+        heading: "Todo lo que necesitas para administrar tu inventario",
         paragraphs: [
-          "Un producto necesita una identificación consistente antes de venderse o recibirse. Cripton dispone de catálogo de productos, categorías e impuestos, con opciones de creación y edición según los permisos del usuario. Revisa referencias, códigos y precios para evitar que el equipo confunda artículos distintos.",
-          "Si hoy usas una hoja de cálculo o registros en papel, prepara una muestra y revisa cómo organizarla durante la puesta en marcha. La calidad de la información inicial importa: registrar un producto no demuestra que su cantidad coincida con el conteo físico.",
+          "Prepara tus referencias para encontrarlas al vender y consultar los movimientos que explican sus existencias.",
+        ],
+        bullets: [
+          "Registro de productos: organiza artículos, categorías, códigos, precios e impuestos.",
+          "Entradas y salidas: lleva el control de compras, ventas y movimientos de mercancía.",
+          "Historial de productos: consulta los movimientos registrados de cada artículo en el kardex.",
+          "Ajustes de inventario: actualiza las cantidades cuando la diferencia esté justificada y tengas los permisos necesarios.",
+          "Compras y proveedores: organiza el ingreso de mercancía, registra tus compras y revisa qué se está agotando.",
         ],
       },
       {
-        heading: "Consulta existencias junto con su historial",
+        id: "kardex",
+        heading: "Sabes qué tienes, qué vendes y qué necesitas reponer",
         paragraphs: [
-          "El inventario permite consultar stock y kardex, es decir, el historial de movimientos de un producto. Las compras, los ajustes y los traslados tienen operaciones diferenciadas. Esto ayuda a buscar la entrada o salida que explica un cambio, en lugar de corregir una cantidad sin investigar su origen.",
+          "Consulta las cantidades disponibles y abre el kardex para seguir las entradas, salidas y saldos de cada producto. Relaciona los movimientos con las compras, ventas, devoluciones, ajustes y traslados registrados.",
           "Una compra en borrador sirve para preparar la recepción; el movimiento de existencias ocurre al confirmarla. Separar preparación y confirmación ayuda a revisar cantidades y costos antes de afectar el stock. Las acciones disponibles dependen de las funciones habilitadas y de los permisos de la persona.",
         ],
       },
