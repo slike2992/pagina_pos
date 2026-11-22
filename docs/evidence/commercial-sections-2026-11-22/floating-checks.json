@@ -2,5 +2,56 @@
   "date": "2026-11-22",
   "browser": "Codex in-app",
   "profileStatus": "Owner confirmed WhatsApp Messenger; Business profile/name/photo configuration on phone pending",
-  "checks": []
+  "recordingMethod": "Transcription of the values returned by the Codex browser DOM observations; screenshots record the reviewed states.",
+  "checks": [
+    {
+      "case": "mobile-footer",
+      "url": "http://127.0.0.1:4325/soluciones/inventario/",
+      "viewport": { "width": 390, "height": 844 },
+      "position": "fixed",
+      "count": 1,
+      "href": "https://wa.me/573219597077",
+      "svg": true,
+      "rightGap": 20,
+      "bottomGap": 20,
+      "buttonWidth": 58,
+      "buttonTop": 766,
+      "footerPadding": "100px",
+      "footerTextBottom": 743.71875,
+      "scrollY": 6210,
+      "maxScroll": 6210,
+      "overflow": false,
+      "screenshot": "10-whatsapp-flotante-pie-movil.jpg"
+    },
+    {
+      "case": "mobile-top",
+      "url": "http://127.0.0.1:4325/soluciones/inventario/",
+      "viewport": { "width": 390, "height": 844 },
+      "position": "fixed",
+      "count": 1,
+      "href": "https://wa.me/573219597077",
+      "svg": true,
+      "rightGap": 20,
+      "bottomGap": 20,
+      "buttonWidth": 58,
+      "scrollY": 0,
+      "overflow": false,
+      "screenshot": "09-whatsapp-flotante-movil.jpg"
+    },
+    {
+      "case": "desktop-home",
+      "url": "http://127.0.0.1:4325/",
+      "viewport": { "width": 1227, "height": 713 },
+      "position": "fixed",
+      "count": 1,
+      "href": "https://wa.me/573219597077",
+      "svg": true,
+      "rightGap": 20,
+      "bottomGap": 20,
+      "buttonWidth": 58,
+      "scrollY": 0,
+      "overflow": false,
+      "screenshot": "08-whatsapp-flotante-escritorio.jpg"
+    }
+  ]
 }
