@@ -7,6 +7,7 @@ import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import SeoHead from "../components/SeoHead.astro";
 import { SITE_URL } from "../lib/seo";
+import { whatsappNumber } from "../content/contact";
 
 const formatCOP = (value: number) => new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(value);
 const planSaving = (plan: { monthly: string; annual: string }) => formatCOP(Number(plan.monthly.replace(/\D/g, "")) * 12 - Number(plan.annual.replace(/\D/g, "")));
@@ -15,8 +16,6 @@ const commercialEmail = "ventas@cripton.com.co";
 
 const seoTitle = "Software POS en Colombia: ventas e inventario | Cripton";
 const seoDescription = "Cripton POS: ventas, caja e inventario para comercios en Colombia. Prueba gratis 15 días, sin tarjeta; después, elige un plan de pago para continuar.";
-
-const whatsappNumber = (import.meta.env.PUBLIC_WHATSAPP_NUMBER?.trim() || "573219597077").replace(/\D/g, "");
 
 const modules = [
   { number: "01", title: "Ventas ágiles", text: "Registra productos, cantidades y medios de pago desde un flujo pensado para atender sin fricción." },
@@ -217,12 +216,7 @@ const siteSchema = {
         <p><strong>Acompañamiento real</strong><span>Configuración y puesta en marcha</span></p>
       </section>
 
-      <nav class="quick-access" aria-label="Contacto, pagos y soporte">
-        {whatsappNumber ? (
-          <a class="button secondary" href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer">WhatsApp</a>
-        ) : (
-          <a class="button secondary" href="#contacto">Contactar a ventas</a>
-        )}
+      <nav class="quick-access" aria-label="Pagos y soporte">
         <a class="button secondary" href="/cuenta" title="Gestiona los pagos de tu plan desde Mi cuenta">Pagos seguros con Wompi</a>
         <a class="button secondary" href="mailto:servicioalcliente@cripton.com.co">Soporte técnico</a>
       </nav>

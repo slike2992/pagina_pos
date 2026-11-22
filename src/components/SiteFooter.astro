@@ -1,6 +1,7 @@
 ---
 import Brand from "./Brand.astro";
 import ConsentPanel from "./ConsentPanel.astro";
+import FloatingWhatsApp from "./FloatingWhatsApp.astro";
 import { publicPageUrl, indexableSite } from "../lib/seo";
 const analyticsAvailable = indexableSite(import.meta.env.PROD, import.meta.env.PUBLIC_SITE_INDEXABLE) && import.meta.env.PUBLIC_ANALYTICS_REVIEWED === "true" && Boolean(publicPageUrl(Astro.url.pathname)) && /^G-[A-Z0-9]{5,15}$/.test(import.meta.env.PUBLIC_GA_MEASUREMENT_ID ?? "");
 ---
@@ -14,8 +15,9 @@ const analyticsAvailable = indexableSite(import.meta.env.PROD, import.meta.env.P
   <div class="footer-bottom"><span>© {new Date().getFullYear()} Cripton</span><span>Software POS web para comercios en Colombia.</span></div>
 </footer>
 <ConsentPanel />
+<FloatingWhatsApp />
 <style>
-  .site-footer { padding: 48px clamp(20px, 5vw, 76px) 24px; background: var(--ink); color: white; border-top: 1px solid #315567; }
+  .site-footer { padding: 48px clamp(20px, 5vw, 76px) 100px; background: var(--ink); color: white; border-top: 1px solid #315567; }
   .footer-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) repeat(3, minmax(0, 1fr)); gap: clamp(24px, 4vw, 56px); max-width: 1440px; margin: auto; }
   .footer-brand { --brand-name-width: 148px; }
   .footer-about p { max-width: 30ch; margin-top: 18px; color: #c2d6e1; font-size: .9rem; }

@@ -1,0 +1,30 @@
+---
+import WhatsAppIcon from "../assets/whatsapp.svg";
+import { whatsappNumber } from "../content/contact";
+---
+{whatsappNumber && (
+  <a class="whatsapp-float" href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp de Cripton" title="Escríbenos por WhatsApp">
+    <WhatsAppIcon width={32} height={32} fill="currentColor" aria-hidden="true" focusable="false" />
+  </a>
+)}
+
+<style>
+  .whatsapp-float {
+    position: fixed;
+    right: calc(20px + env(safe-area-inset-right, 0px));
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    z-index: 40;
+    display: grid;
+    place-items: center;
+    width: 58px;
+    height: 58px;
+    border: 2px solid white;
+    border-radius: 50%;
+    background: #25d366;
+    color: white;
+    box-shadow: 0 4px 18px rgb(5 24 40 / 24%);
+    text-decoration: none;
+  }
+  .whatsapp-float:hover { background: #128c7e; }
+  .whatsapp-float:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; box-shadow: 0 0 0 4px white; }
+</style>

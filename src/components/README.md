@@ -29,3 +29,8 @@ recibido. Véase el plan y las pruebas de consentimiento.
 Los estilos de componentes son locales. `base.css` contiene tokens y utilidades
 editoriales; `landing.css` reúne la portada con la paleta vigente. No añadir
 capas de sobrescritura por cada página.
+
+`FloatingWhatsApp.astro` se monta una sola vez junto al pie compartido. Su SVG
+es local y el destinatario se comparte con el formulario mediante
+`src/content/contact.ts`. El enlace no envía mensajes automáticamente ni cambia
+el nombre o la foto del perfil de WhatsApp.

@@ -45,3 +45,26 @@ La validación es local en `http://127.0.0.1:4325/`. No acredita publicación en
 staging/producción, envío por correo o WhatsApp, ni un pago nuevo de Wompi.
 El destino de WhatsApp se comprueba sin enviar conversaciones ni datos de
 formularios. La prueba no confirma tiempos de respuesta ni atención del canal.
+
+## Ajuste posterior: WhatsApp flotante
+
+- `FloatingWhatsApp.astro` se monta una vez desde el pie compartido. Se retira
+  el botón duplicado de la fila de portada; pagos y soporte conservan sus enlaces.
+- Botón circular de 58 × 58 px con el símbolo SVG local de WhatsApp; posición
+  fija a 20 px del borde derecho e inferior, más el área segura del dispositivo.
+  Nombre accesible, foco visible, apertura en otra pestaña y `noopener noreferrer`.
+- `src/content/contact.ts` concentra el destino confirmado del botón y formulario.
+  El botón queda debajo del panel de consentimiento y el pie reserva 100 px
+  inferiores para que su último texto no quede debajo del control.
+- Codex: revisados desplazamiento y cambio de página, escritorio y 390 px;
+  un solo botón, SVG presente y sin desbordamiento. En el final móvil el texto
+  del pie termina por encima del botón. Capturas 08–10 y `floating-checks.json`.
+- La revisión local conservaba el CSS antiguo del pie en la caché de Astro;
+  se reinició únicamente el daemon aislado 4325 y se comprobó el padding efectivo
+  de 100 px. No se reiniciaron servicios del POS.
+- El propietario confirmó que su número aún usa WhatsApp normal. La identidad
+  comercial de la página de destino no se configura con código de la web:
+  queda pendiente pasar/configurar el perfil Cripton en WhatsApp Business desde
+  el celular, con nombre, logo y foto visible para Todos. Referencias oficiales:
+  [perfil de empresa](https://faq.whatsapp.com/665179381840568/) y
+  [enlaces cortos y foto pública](https://faq.whatsapp.com/502291734918768/).

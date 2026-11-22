@@ -93,12 +93,22 @@ Inventario describe productos, compras, proveedores, movimientos y ajustes;
 su kardex incluye una captura real con datos ficticios, optimizada por Astro
 y ampliable. No cambia las funciones ni los permisos del POS.
 
-Los accesos rápidos de portada reutilizan los canales existentes: WhatsApp usa
-el número comercial confirmado +57 321 959 7077, con override opcional mediante
-`PUBLIC_WHATSAPP_NUMBER`. El formulario comercial utiliza el mismo destinatario.
+WhatsApp aparece como un único botón con su ícono, fijo en la esquina inferior
+derecha de las páginas que comparten el pie. Usa el número comercial confirmado
++57 321 959 7077, con override opcional mediante `PUBLIC_WHATSAPP_NUMBER`.
+`src/content/contact.ts` mantiene el mismo destinatario para botón y formulario.
+El pie reserva espacio para el botón; respeta el área segura del dispositivo y
+queda por debajo del panel de consentimiento. El ícono SVG es local, de Simple
+Icons (`https://github.com/simple-icons/simple-icons/blob/develop/icons/whatsapp.svg`).
+
+Los accesos de pagos y soporte permanecen en la portada.
 «Pagos seguros con Wompi» abre `/cuenta`, donde se prepara el pago del plan
 con su sesión y suscripción. No se crea un checkout genérico ni se modifica
 el contrato de pagos. Soporte abre `servicioalcliente@cripton.com.co`.
+El nombre y la foto que WhatsApp muestre al abrir el enlace dependen del perfil
+del número: la web no puede configurarlos mediante parámetros de URL. El número
+está actualmente en WhatsApp normal; configurar el perfil Cripton en WhatsApp
+Business y su foto pública queda a cargo del propietario desde su celular.
 Validación y límites: [revisión de secciones comerciales](docs/QA_COMMERCIAL_SECTIONS_2026-11-22.md).
 
 La web ofrece únicamente 15 días gratis, sin tarjeta: una prueba por cuenta
