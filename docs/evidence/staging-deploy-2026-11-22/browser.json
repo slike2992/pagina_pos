@@ -1,0 +1,63 @@
+{
+  "date": "2026-11-22",
+  "browser": "Codex in-app",
+  "checks": [
+    {
+      "case": "home",
+      "h1": "Software POS para comercios en Colombia.",
+      "heroReady": true,
+      "overflow": false,
+      "payment": "/cuenta",
+      "position": "fixed",
+      "robots": "noindex, follow",
+      "url": "https://staging.cripton.com.co/",
+      "whatsapp": "https://wa.me/573219597077"
+    },
+    {
+      "case": "users-permissions",
+      "hasCashierText": true,
+      "heading": "Usuarios y permisos: cada persona con su responsabilidad",
+      "overflow": false,
+      "top": 103.875,
+      "url": "https://staging.cripton.com.co/soluciones/ventas-y-caja/#usuarios-y-permisos"
+    },
+    {
+      "case": "multibranch",
+      "heading": "Operación multisede: sucursales y cajas organizadas",
+      "top": 103.75,
+      "url": "https://staging.cripton.com.co/soluciones/ventas-y-caja/#operacion-multisede"
+    },
+    {
+      "case": "kardex",
+      "heading": "Sabes qué tienes, qué vendes y qué necesitas reponer",
+      "loaded": true,
+      "naturalHeight": 438,
+      "naturalWidth": 779,
+      "overflow": false,
+      "source": "https://staging.cripton.com.co/_astro/pos-kardex.CvxlCF_3_ZTM3GX.avif",
+      "url": "https://staging.cripton.com.co/soluciones/inventario/#kardex"
+    },
+    {
+      "case": "home-mobile",
+      "bottomGap": 20,
+      "buttonCount": 1,
+      "footerPadding": "100px",
+      "height": 844,
+      "overflow": false,
+      "position": "fixed",
+      "rightGap": 20,
+      "svg": true,
+      "url": "https://staging.cripton.com.co/",
+      "width": 390
+    },
+    {
+      "case": "mobile-footer",
+      "buttonTop": 766,
+      "footerAboveButton": true,
+      "footerBottom": 743.6875,
+      "position": "fixed",
+      "url": "https://staging.cripton.com.co/"
+    }
+  ],
+  "consoleErrorCount": 0
+}

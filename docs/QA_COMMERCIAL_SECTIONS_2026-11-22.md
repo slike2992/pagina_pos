@@ -1,5 +1,9 @@
 # Secciones comerciales de la web · 2026-11-22
 
+**Estado actual:** cambios publicados en `https://staging.cripton.com.co/`.
+La sección «Publicación exclusiva en staging» cierra el despliegue; las
+observaciones locales siguientes conservan el alcance de la revisión inicial.
+
 Alcance: contenido y navegación de portada, ventas/caja e inventario. Base
 `a6a70b1` de `codex/pagina-pos-landing`; revisión aislada en
 `codex/web-commercial-sections-20261122` para conservar los cambios abiertos de
@@ -68,3 +72,33 @@ formularios. La prueba no confirma tiempos de respuesta ni atención del canal.
   el celular, con nombre, logo y foto visible para Todos. Referencias oficiales:
   [perfil de empresa](https://faq.whatsapp.com/665179381840568/) y
   [enlaces cortos y foto pública](https://faq.whatsapp.com/502291734918768/).
+
+## Publicación exclusiva en staging
+
+- Activada el **2026-11-22 18:21:45, America/Bogota**, desde el commit
+  `b597b2b591e8484fdc3f4589b44da801d39bc8a9`. Release estático
+  `/opt/cripton/web-staging/releases/b597b2b591e8`; anterior
+  `/opt/cripton/web-staging/releases/a6a70b1edf70` conservado para reversión.
+- Build desde el checkout limpio, sin incorporar los cambios ajenos abiertos
+  de marca o pago. Astro check/build y 265/265 pruebas aprobados con las URLs
+  de API/POS de staging, analítica desactivada, sin borradores y sin indexación.
+- Paquete y fuente versionada comprobados por SHA-256. Los 74 archivos del
+  estático pasan el verificador canónico existente de la VM. La fuente se
+  registró en el catálogo de la automatización de backups ya instalada, antes
+  de cambiar el enlace `current` de la web mediante rename atómico.
+- HTTPS 200 y bytes idénticos al manifiesto en portada, ventas/caja, inventario,
+  cuenta y registro. Certificados, DNS y configuración del proxy conservados.
+- Runtime SaaS `96821a28e90d`, PIDs y tiempos de inicio de API/worker/POS/edge
+  idénticos antes y después. Sin reinicios, migraciones ni cambios de POS,
+  Control o datos. No se crearon recursos ni se hicieron pagos o registros.
+- Codex en el dominio: portada e imágenes cargadas; ambos «Conocer el flujo»
+  llegan a sus explicaciones; kardex con el título solicitado y AVIF cargado;
+  WhatsApp fijo a 20 px en móvil, sin desbordamiento y sin tapar el pie. Sin
+  errores de consola observados. Se conserva la cuenta normal de WhatsApp.
+- Evidencia: `docs/evidence/staging-deploy-2026-11-22/deployment.json`,
+  `browser.json` y capturas 01–06. El recibo completo del operador permanece en
+  la VM; la copia versionada excluye detalles privados de configuración.
+
+Reversión: usar los bloqueos existentes de publicación y devolver únicamente
+`/opt/cripton/web-staging/current` al release anterior conservado. No requiere
+restaurar bases, modificar rutas del proxy ni reiniciar servicios.

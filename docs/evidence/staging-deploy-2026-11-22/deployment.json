@@ -1,0 +1,60 @@
+{
+  "environment": "staging",
+  "url": "https://staging.cripton.com.co/",
+  "sourceCommit": "b597b2b591e8484fdc3f4589b44da801d39bc8a9",
+  "previousRelease": "a6a70b1edf70",
+  "activeRelease": "b597b2b591e8",
+  "finishedUtc": "2026-11-22T23:21:45.098064+00:00",
+  "packageSha256": "cc1a10b64a4fde1c44e218115fdeca790fb04eaef4804e36ce510c8beced9b83",
+  "sourceArchiveSha256": "b2708e99e49fd2bf9c1a9287383f900c28a7cefcf26d075290b8566812167cad",
+  "verifiedFiles": 74,
+  "verifiedBytes": 1540378,
+  "manifestSha256": "ae1f1a200a1e4814749a5c5550282a653fee4e9a0a935463371a17471a063b99",
+  "https": [
+    {
+      "path": "/",
+      "status": 200,
+      "sha256": "6fe17644c30ec52c9f0303d47ea77efec60d84374f8cfaa6fa4673fe361e7d1a"
+    },
+    {
+      "path": "/soluciones/ventas-y-caja/",
+      "status": 200,
+      "sha256": "c599b90cebcde9db78f932cd0b232d3ed346d3618033861f64aab651a326160a"
+    },
+    {
+      "path": "/soluciones/inventario/",
+      "status": 200,
+      "sha256": "73dee0efb0cc85f8cb64417623664e34471364b9e4ca30e1c943839a416d8395"
+    },
+    {
+      "path": "/cuenta/",
+      "status": 200,
+      "sha256": "223bb2c81de9fbe7a32bd7a4110562f603a7b94c6ae0569dbe319bb76b27dedf"
+    },
+    {
+      "path": "/registro/",
+      "status": 200,
+      "sha256": "f2259a8c8dfe7804a5444ae0f93b4dc132b17853b3fd6f4cb478c1c534a1ee12"
+    }
+  ],
+  "indexable": false,
+  "checks": {
+    "runtimeReleaseUnchanged": true,
+    "apiWorkerPosEdgePidsAndStartTimesUnchanged": true,
+    "edgeConfigurationUnchanged": true,
+    "sourceRegisteredForExistingBackupAutomation": true
+  },
+  "restartedServices": [],
+  "migrationsRun": [],
+  "rollback": "Previous immutable web release retained; switch only web-staging/current under the existing activation locks.",
+  "validation": {
+    "astroCheck": "passed",
+    "build": "passed",
+    "webTests": {
+      "passed": 265,
+      "failed": 0
+    },
+    "buildPlatform": "Windows Node 24.22.1; static files served on Ubuntu after canonical manifest verification"
+  },
+  "limits": "No account creation, payment, POS or Control workflow was run or modified by this deployment."
+}
