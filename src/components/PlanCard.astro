@@ -1,0 +1,58 @@
+---
+interface Props {
+  plan: {
+    code: string;
+    name: string;
+    summary: string;
+    monthly: string;
+    annual: string;
+    users: string;
+    branches: string;
+    registers: string;
+    items: string;
+    features: readonly string[];
+    cta: string;
+    highlighted: boolean;
+    documents?: string;
+  };
+  saving: string;
+}
+
+const { plan, saving } = Astro.props;
+const previewFeatures = plan.documents
+  ? [plan.features[0], "Facturación electrónica incluida", plan.documents]
+  : plan.code === "professional"
+    ? [plan.features[0], "Inventario avanzado", "Reportes avanzados"]
+    : plan.features.slice(0, 3);
+const otherFeatures = plan.features.filter(feature => !previewFeatures.includes(feature));
+const capacities = [
+  { name: "Usuarios", value: plan.users, paths: plan.code.startsWith("basic")
+    ? ["M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z", "M4 21v-2a8 8 0 0 1 16 0v2H4Z"]
+    : ["M12 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z", "M2 21v-2a6 6 0 0 1 12 0v2", "M16 3a4 4 0 0 1 0 8", "M17 15a6 6 0 0 1 5 6"] },
+  { name: "Sucursales", value: plan.branches, paths: ["m3 9 2-6h14l2 6", "M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0", "M4 12v9h16v-9", "M9 21v-6h6v6"] },
+  { name: "Inventario", value: plan.items, paths: ["m12 2 10 5-10 5L2 7l10-5Z", "M2 7v10l10 5 10-5V7", "M12 12v10", "m7 4.5 10 5"] },
+];
+---
+
+<article class:list={["plan-card", { highlighted: plan.highlighted, "fe-card": !!plan.documents }]}>
+  {plan.highlighted && <span class="plan-badge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8v6a4 4 0 0 1-8 0V3Zm0 2H4v2a4 4 0 0 0 4 4m8-6h4v2a4 4 0 0 1-4 4m-4 2v5m-4 3h8m-6-3h4v3h-4" /></svg>Más vendida</span>}
+  <h4 class="plan-name">Plan {plan.name}</h4>
+  <p class="plan-summary">{plan.summary}</p>
+  <div class="price"><strong>{plan.monthly}</strong><span>COP / mes después de la prueba</span></div>
+  <dl class="plan-capacities">
+    {capacities.map(capacity => <div><dt class="sr-only">{capacity.name}</dt><dd><svg viewBox="0 0 24 24" aria-hidden="true">{capacity.paths.map(path => <path d={path} />)}</svg><span>{capacity.value}</span></dd></div>)}
+  </dl>
+  <ul class="check-list plan-preview">{previewFeatures.map(feature => <li>{feature}</li>)}</ul>
+  <div class="plan-actions">
+    {plan.highlighted && <a class="button plan-button primary" href={`/registro?plan=${plan.code}`} data-track="signup" data-track-location="plan" data-track-plan={plan.code} aria-label={plan.cta}>Probar gratis 15 días<span aria-hidden="true">→</span></a>}
+    <details class="plan-details">
+      <summary>Ver detalles<span class="sr-only"> de {plan.name}</span><span class="plan-details-indicator" aria-hidden="true">+</span></summary>
+      <div class="plan-details-body">
+        <dl class="plan-limits"><div><dt>Cajas incluidas</dt><dd>{plan.registers}</dd></div></dl>
+        {otherFeatures.length > 0 && <ul class="check-list">{otherFeatures.map(feature => <li>{feature}</li>)}</ul>}
+        <div class="annual-price"><strong>{plan.annual}</strong><span>COP / año después de la prueba</span><em>Ahorra {saving}</em></div>
+        {!plan.highlighted && <a class="button plan-button" href={`/registro?plan=${plan.code}`} data-track="signup" data-track-location="plan" data-track-plan={plan.code} aria-label={plan.cta}>Probar gratis 15 días</a>}
+      </div>
+    </details>
+  </div>
+</article>

@@ -1,0 +1,142 @@
+{
+  "date": "2026-11-23",
+  "url": "http://127.0.0.1:4325/#planes",
+  "interaction": [
+    {
+      "allButtonsInside": true,
+      "annual": "$499.000COP / año después de la pruebaAhorra $ 99.800",
+      "open": true,
+      "plan": "Plan Básico",
+      "signup": "/registro?plan=basic"
+    },
+    {
+      "allButtonsInside": true,
+      "annual": "$799.000COP / año después de la pruebaAhorra $ 159.800",
+      "open": true,
+      "plan": "Plan Profesional",
+      "signup": "/registro?plan=professional"
+    },
+    {
+      "allButtonsInside": true,
+      "annual": "$1.299.000COP / año después de la pruebaAhorra $ 259.800",
+      "open": true,
+      "plan": "Plan Empresarial",
+      "signup": "/registro?plan=enterprise"
+    },
+    {
+      "allButtonsInside": true,
+      "annual": "$699.000COP / año después de la pruebaAhorra $ 139.800",
+      "open": true,
+      "plan": "Plan Básico FE",
+      "signup": "/registro?plan=basic-fe"
+    },
+    {
+      "allButtonsInside": true,
+      "annual": "$999.000COP / año después de la pruebaAhorra $ 199.800",
+      "open": true,
+      "plan": "Plan Profesional FE",
+      "signup": "/registro?plan=professional-fe"
+    },
+    {
+      "allButtonsInside": true,
+      "annual": "$1.599.000COP / año después de la pruebaAhorra $ 319.800",
+      "open": true,
+      "plan": "Plan Empresarial FE",
+      "signup": "/registro?plan=enterprise-fe"
+    }
+  ],
+  "responsive": [
+    {
+      "capacityOverflow": false,
+      "cardCount": 6,
+      "columns": "265px",
+      "open": 0,
+      "pageWidth": 305,
+      "width": 320
+    },
+    {
+      "capacityOverflow": false,
+      "cardCount": 6,
+      "columns": "335px",
+      "open": 0,
+      "pageWidth": 375,
+      "width": 390
+    },
+    {
+      "capacityOverflow": false,
+      "cardCount": 6,
+      "columns": "676.219px",
+      "open": 0,
+      "pageWidth": 753,
+      "width": 768
+    },
+    {
+      "capacityOverflow": false,
+      "cardCount": 6,
+      "columns": "906.625px",
+      "open": 0,
+      "pageWidth": 1009,
+      "width": 1024
+    }
+  ],
+  "final": {
+    "cards": [
+      {
+        "button": "Probar gratis 15 días",
+        "height": 460,
+        "highlighted": false,
+        "href": "/registro?plan=basic",
+        "name": "Plan Básico",
+        "open": false
+      },
+      {
+        "badge": "Más vendida",
+        "button": "Probar gratis 15 días",
+        "height": 516,
+        "highlighted": true,
+        "href": "/registro?plan=professional",
+        "name": "Plan Profesional",
+        "open": false
+      },
+      {
+        "button": "Probar gratis 15 días",
+        "height": 460,
+        "highlighted": false,
+        "href": "/registro?plan=enterprise",
+        "name": "Plan Empresarial",
+        "open": false
+      },
+      {
+        "button": "Probar gratis 15 días",
+        "height": 482,
+        "highlighted": false,
+        "href": "/registro?plan=basic-fe",
+        "name": "Plan Básico FE",
+        "open": false
+      },
+      {
+        "badge": "Más vendida",
+        "button": "Probar gratis 15 días",
+        "height": 538,
+        "highlighted": true,
+        "href": "/registro?plan=professional-fe",
+        "name": "Plan Profesional FE",
+        "open": false
+      },
+      {
+        "button": "Probar gratis 15 días",
+        "height": 460,
+        "highlighted": false,
+        "href": "/registro?plan=enterprise-fe",
+        "name": "Plan Empresarial FE",
+        "open": false
+      }
+    ],
+    "viewport": {
+      "height": 713,
+      "pageWidth": 1179,
+      "width": 1194
+    },
+    "visibleTrialButtons": 2
+  }
+}

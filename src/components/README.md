@@ -34,3 +34,12 @@ capas de sobrescritura por cada página.
 es local y el destinatario se comparte con el formulario mediante
 `src/content/contact.ts`. El enlace no envía mensajes automáticamente ni cambia
 el nombre o la foto del perfil de WhatsApp.
+
+`PlanCard.astro` presenta las seis ofertas existentes de la portada con una
+vista compacta. Usuarios, sucursales, inventario y límites electrónicos siguen
+visibles; cajas, funciones adicionales y precio anual se consultan en un
+`details/summary` nativo, sin JavaScript. El registro conserva el código de cada
+plan. El botón visible dice «Probar gratis 15 días»; su nombre accesible identifica
+la oferta. Profesional tiene el énfasis y el rótulo comercial solicitado por el
+propietario, «Más vendida», sin añadir cifras, reseñas ni datos estructurados de
+popularidad. Precios y capacidades proceden del catálogo existente de la portada.
