@@ -1,0 +1,61 @@
+{
+  "environment": "staging",
+  "url": "https://staging.cripton.com.co/",
+  "sourceCommit": "defea13851ab599ba1bc8ed9697b1bea7d9acf13",
+  "previousRelease": "b597b2b591e8",
+  "activeRelease": "defea13851ab",
+  "finishedUtc": "2026-11-24T03:50:47.055674+00:00",
+  "packageSha256": "c474f0c4685174e093cbd198d2825f2e972056f2c232e4143988a9ab03e3b28f",
+  "sourceArchiveSha256": "037d1f25c25827a35ec8d713600051eb340ae216cc807a268697b684d06cc5a7",
+  "verifiedFiles": 74,
+  "verifiedBytes": 1548759,
+  "manifestSha256": "34745c729d377b5ae2f567626acbc23436720a506c6fcb4a45f0b7321adb0a72",
+  "https": [
+    {
+      "path": "/",
+      "status": 200,
+      "sha256": "6575adc7bca33563b4b5b9ede017f1426b743ef57be5aaacb5982de0a0bbe481"
+    },
+    {
+      "path": "/soluciones/ventas-y-caja/",
+      "status": 200,
+      "sha256": "c599b90cebcde9db78f932cd0b232d3ed346d3618033861f64aab651a326160a"
+    },
+    {
+      "path": "/soluciones/inventario/",
+      "status": 200,
+      "sha256": "73dee0efb0cc85f8cb64417623664e34471364b9e4ca30e1c943839a416d8395"
+    },
+    {
+      "path": "/cuenta/",
+      "status": 200,
+      "sha256": "223bb2c81de9fbe7a32bd7a4110562f603a7b94c6ae0569dbe319bb76b27dedf"
+    },
+    {
+      "path": "/registro/",
+      "status": 200,
+      "sha256": "f2259a8c8dfe7804a5444ae0f93b4dc132b17853b3fd6f4cb478c1c534a1ee12"
+    }
+  ],
+  "indexable": false,
+  "checks": {
+    "runtimeReleaseUnchanged": true,
+    "apiWorkerPosEdgePidsAndStartTimesUnchanged": true,
+    "edgeConfigurationUnchanged": true,
+    "sourceRegisteredForExistingBackupAutomation": true,
+    "nonHomepageHtmlByteIdentical": true
+  },
+  "restartedServices": [],
+  "migrationsRun": [],
+  "rollback": "Previous immutable web release retained; switch only web-staging/current under the existing activation locks.",
+  "validation": {
+    "astroCheck": "passed",
+    "build": "passed",
+    "webTests": {
+      "passed": 265,
+      "failed": 0
+    },
+    "buildPlatform": "Windows Node 24.22.1; static files served on Ubuntu after canonical manifest verification"
+  },
+  "limits": "No account creation, payment, POS or Control workflow was run or modified by this deployment."
+}

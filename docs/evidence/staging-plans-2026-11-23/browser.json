@@ -1,0 +1,63 @@
+{
+  "date": "2026-11-23",
+  "url": "https://staging.cripton.com.co/#planes",
+  "cards": [
+    {
+      "annual": "$499.000",
+      "button": "Probar gratis 15 días",
+      "href": "/registro?plan=basic",
+      "open": true,
+      "plan": "Plan Básico"
+    },
+    {
+      "annual": "$799.000",
+      "button": "Probar gratis 15 días",
+      "href": "/registro?plan=professional",
+      "open": true,
+      "plan": "Plan Profesional"
+    },
+    {
+      "annual": "$1.299.000",
+      "button": "Probar gratis 15 días",
+      "href": "/registro?plan=enterprise",
+      "open": true,
+      "plan": "Plan Empresarial"
+    },
+    {
+      "annual": "$699.000",
+      "button": "Probar gratis 15 días",
+      "href": "/registro?plan=basic-fe",
+      "open": true,
+      "plan": "Plan Básico FE"
+    },
+    {
+      "annual": "$999.000",
+      "button": "Probar gratis 15 días",
+      "href": "/registro?plan=professional-fe",
+      "open": true,
+      "plan": "Plan Profesional FE"
+    },
+    {
+      "annual": "$1.599.000",
+      "button": "Probar gratis 15 días",
+      "href": "/registro?plan=enterprise-fe",
+      "open": true,
+      "plan": "Plan Empresarial FE"
+    }
+  ],
+  "mobile": {
+    "badges": [
+      "Más vendida",
+      "Más vendida"
+    ],
+    "capacityOverflow": false,
+    "cardCount": 6,
+    "detailsClosed": true,
+    "icons": 18,
+    "pageWidth": 375,
+    "width": 390
+  },
+  "errors": [],
+  "viewportRestored": true,
+  "closedAtEnd": true
+}
