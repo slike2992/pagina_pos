@@ -20,6 +20,10 @@
 - Validación y límites: `QA_COOKIES_2026-11-23.md`. Antes de habilitar GA4 real
   sigue siendo necesaria la revisión del proveedor, propiedad, retención y
   tratamientos/transferencias correspondientes. Los flags continúan apagados.
+- Cierre: 272 pruebas y check/build aprobados; publicación estática final
+  `dda2d55d639f` en staging, 75 archivos verificados, sin reiniciar POS/Control.
+  Navegador en escritorio/móvil: persistencia, reapertura, scroll/guardado y
+  política correctos; selector de títulos aislado tras revisar el build real.
 
 ## 2026-11-17 — Índice informativo legal sin oferta de demostración
 

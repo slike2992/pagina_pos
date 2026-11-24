@@ -1,0 +1,66 @@
+{
+  "environment": "staging",
+  "url": "https://staging.cripton.com.co/",
+  "sourceCommit": "dda2d55d639f3c58b0d500f5b08dee2c5077a637",
+  "previousRelease": "89c5d2c8981b",
+  "activeRelease": "dda2d55d639f",
+  "finishedUtc": "2026-11-24T04:19:23.569172+00:00",
+  "packageSha256": "6e23acdefa0f8574ab66584f3ee25eb72e4f9d699e6f4fd4880cb3d5ef13ddae",
+  "sourceArchiveSha256": "83b6aa5f3e4ca2505e5dd9166c633c74bce865a71c8a0ddf896ed55373b21938",
+  "verifiedFiles": 75,
+  "verifiedBytes": 1523550,
+  "manifestSha256": "54b8be44eb59530557fc0dfffc2e785e012de5e4dc21de23d2492a01eb08c3e4",
+  "https": [
+    {
+      "path": "/",
+      "status": 200,
+      "sha256": "5f2bdb0626cd3f0bdc929c596df07b369c340fe2ecf1d3f2496c4c2ea895001a"
+    },
+    {
+      "path": "/soluciones/ventas-y-caja/",
+      "status": 200,
+      "sha256": "c5c58b71b21b901a6923f0adc0163461862406d0f14aded1cf93e5586517281d"
+    },
+    {
+      "path": "/soluciones/inventario/",
+      "status": 200,
+      "sha256": "44726af8119787b2d8293c22293765535a79a3336f1c6b0843983ec39b4901b5"
+    },
+    {
+      "path": "/cuenta/",
+      "status": 200,
+      "sha256": "c28bfe52ff16fd9f2d8db825446ce92d5bf25e0ccd08c0ef21fad69601d228ed"
+    },
+    {
+      "path": "/registro/",
+      "status": 200,
+      "sha256": "e10caf049e1965b36053904274cf8832eda53a69b883b397ab906647403fe0c5"
+    },
+    {
+      "path": "/legal/cookies/",
+      "status": 200,
+      "sha256": "10987ee0ee70b35201d8e4ead97c9dbbe3ede511e0909a3c81d637d8a3fc4cd6"
+    }
+  ],
+  "indexable": false,
+  "checks": {
+    "runtimeReleaseUnchanged": true,
+    "apiWorkerPosEdgePidsAndStartTimesUnchanged": true,
+    "edgeConfigurationUnchanged": true,
+    "sourceRegisteredForExistingBackupAutomation": true,
+    "noSetCookieOnSixWebResponses": true
+  },
+  "restartedServices": [],
+  "migrationsRun": [],
+  "rollback": "Previous immutable web release retained; switch only web-staging/current under the existing activation locks.",
+  "validation": {
+    "astroCheck": "passed",
+    "build": "passed",
+    "webTests": {
+      "passed": 272,
+      "failed": 0
+    },
+    "buildPlatform": "Windows Node 24.22.1; static files served on Ubuntu after canonical manifest verification"
+  },
+  "limits": "No account creation, payment, POS or Control workflow was run or modified by this deployment."
+}

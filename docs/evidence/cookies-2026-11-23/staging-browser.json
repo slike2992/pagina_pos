@@ -1,0 +1,27 @@
+{
+  "date": "2026-11-23",
+  "url": "https://staging.cripton.com.co/legal/cookies/",
+  "desktop": {
+    "acceptHidden": true,
+    "headingFont": "18.4px",
+    "measurementId": "",
+    "pageOverflow": false,
+    "plans": 6,
+    "visible": true
+  },
+  "mobile": {
+    "checkboxDisabled": true,
+    "contentHeight": 763,
+    "headingFont": "18.4px",
+    "pageWidth": 375,
+    "panelHeight": 598,
+    "providerTags": 0,
+    "width": 390
+  },
+  "choiceRememberedAfterReload": true,
+  "footerReopened": true,
+  "mobileSaveWorked": true,
+  "policyNavigationWorked": true,
+  "viewportRestored": true,
+  "consoleErrors": []
+}
