@@ -1,5 +1,26 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-23 — Transparencia de cookies y preferencias por finalidad
+
+- El aviso informativo y el acceso «Cookies y privacidad» se presentan en las
+  rutas editoriales también sin GA4, en local y staging. Sin proveedor solo
+  permiten confirmar almacenamiento necesario; no simulan aceptar seguimiento.
+- Se conserva el bloqueo de GA4 fuera del origen canónico, con query, en rutas
+  privadas y sin revisión/ID/flag público. Analítica requiere aceptación expresa;
+  GPC/DNT prevalecen. No se configura un proveedor ni se habilita medición real.
+- Preferencia local v2: decisión, fecha, vencimiento de 180 días, versión del
+  aviso y alcance del proveedor. No reutiliza autorizaciones anteriores ni las
+  de un proveedor distinto. Retirada y borrado entre pestañas detienen medición;
+  el rechazo no borra datos de registro/pago y funciona con storage bloqueado.
+- Consumidores: componentes compartidos de la web y página informativa de cookies.
+  Se conserva el contrato HTTP, catálogo, 15 días gratis, autenticación, POS y
+  Control; sin SQL ni migraciones. Los textos y hashes legales aceptados de
+  términos/privacidad permanecen vigentes e intactos. No es una nueva aceptación
+  contractual. El panel guarda un recibo local, no un registro central firmado.
+- Validación y límites: `QA_COOKIES_2026-11-23.md`. Antes de habilitar GA4 real
+  sigue siendo necesaria la revisión del proveedor, propiedad, retención y
+  tratamientos/transferencias correspondientes. Los flags continúan apagados.
+
 ## 2026-11-17 — Índice informativo legal sin oferta de demostración
 
 - Resuelve el pendiente comercial del bloque anterior con autorización expresa:

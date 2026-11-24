@@ -1,6 +1,7 @@
 // Only fixed commercial categories can leave the page. Never accept text fields,
 // email addresses, customer IDs, tokens, URLs, amounts or arbitrary labels.
-export const CONSENT_KEY = "cripton.analytics-consent.v1";
+export const CONSENT_KEY = "cripton.cookie-preferences.v2";
+export const CONSENT_VERSION = "2026-11-23";
 export const CONSENT_TTL = 180 * 24 * 60 * 60 * 1000;
 const actions = ["signup", "plans", "demo", "contact", "solution"] as const;
 const locations = ["header", "hero", "plan", "content", "contact", "footer"] as const;
@@ -15,13 +16,19 @@ export function commercialEvent(input: { action?: string; location?: string; pla
     ...(plans.includes(input.plan as Plan) ? { plan: input.plan as Plan } : {}),
   };
 }
-export function storedConsent(raw: string | null, now = Date.now()): "granted" | "denied" | null {
+export function consentRecord(choice: "granted" | "denied", measurementId = "", now = Date.now()) {
+  return { version: CONSENT_VERSION, scope: measurementId || "necessary-only", choice: measurementId ? choice : "denied", decidedAt: now, expiresAt: now + CONSENT_TTL };
+}
+export function storedConsent(raw: string | null, now = Date.now(), measurementId = ""): "granted" | "denied" | null {
   try {
     const value: unknown = JSON.parse(raw ?? "null");
     if (!value || typeof value !== "object") return null;
-    const { choice, expiresAt } = value as { choice?: unknown; expiresAt?: unknown };
-    if ((choice !== "granted" && choice !== "denied") || typeof expiresAt !== "number"
-      || !Number.isFinite(expiresAt) || expiresAt <= now || expiresAt > now + CONSENT_TTL) return null;
+    const { choice, expiresAt, decidedAt, version, scope } = value as Record<string, unknown>;
+    if ((choice !== "granted" && choice !== "denied") || (!measurementId && choice === "granted")
+      || version !== CONSENT_VERSION || scope !== (measurementId || "necessary-only")
+      || typeof decidedAt !== "number" || !Number.isFinite(decidedAt) || decidedAt > now
+      || typeof expiresAt !== "number" || !Number.isFinite(expiresAt) || expiresAt <= now
+      || expiresAt - decidedAt !== CONSENT_TTL) return null;
     return choice;
   } catch { return null; }
 }

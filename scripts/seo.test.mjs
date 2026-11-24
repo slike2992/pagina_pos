@@ -8,7 +8,7 @@ import test from 'node:test';
 import sharp from 'sharp';
 import config from '../astro.config.mjs';
 import { PUBLIC_PATHS, SITE_URL, publicPageUrl, indexableSite } from '../src/lib/seo.ts';
-import { commercialEvent, CONSENT_TTL, storedConsent } from '../src/lib/analytics.ts';
+import { commercialEvent, CONSENT_TTL, consentRecord, storedConsent } from '../src/lib/analytics.ts';
 
 const root = new URL('../', import.meta.url);
 const output = process.env.WEB_AUDIT_DIR ?? 'dist';
@@ -102,6 +102,21 @@ test('rendered navigation, assets and fragment targets resolve within the releas
   }
 });
 
+test('public pages expose honest privacy preferences even without an active analytics provider', async () => {
+  for (const route of ['/', '/soluciones/inventario/', '/legal/cookies/']) {
+    const html = await rendered(route);
+    assert.match(html, /id="analytics-preferences"/);
+    assert.match(html, /data-privacy-settings[^>]*hidden/);
+    assert.match(html, /Configurar cookies/);
+    assert.match(html, /data-analytics-unavailable/);
+    assert.match(html, /data-analytics-choice[^>]*disabled/);
+    const choices = tags(html, 'button').filter(button => button['data-consent']);
+    assert.equal(choices.length, 2);
+    assert.equal(choices[0].class, choices[1].class, 'accept and reject have equal visual prominence');
+    assert.doesNotMatch(html, /<script\b[^>]*src="https:\/\/(?:www\.)?(?:googletagmanager|google-analytics)\./);
+  }
+});
+
 test('plan prices match schema and annual saving is actual arithmetic, without invented popularity', async () => {
   const html = await rendered('/');
   const json = html.match(/<script\b[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/)?.[1];
@@ -142,7 +157,7 @@ test('analytics payload is allowlisted, cannot copy form fields, and consent exp
   assert.deepEqual(commercialEvent({ action: 'demo', location: 'contact', plan: 'private@example.invalid' }), { action: 'demo', location: 'contact' });
   assert.equal(commercialEvent({ action: 'private@example.invalid', location: 'content' }), null);
   const now = Date.now();
-  assert.equal(storedConsent(JSON.stringify({ choice: 'granted', expiresAt: now + CONSENT_TTL }), now), 'granted');
+  assert.equal(storedConsent(JSON.stringify(consentRecord('granted', 'G-LOCALQA123', now)), now, 'G-LOCALQA123'), 'granted');
   for (const raw of ['invalid', '{}', JSON.stringify({ choice: 'granted', expiresAt: now - 1 }), JSON.stringify({ choice: 'granted', expiresAt: now + CONSENT_TTL + 1 })]) assert.equal(storedConsent(raw, now), null);
 });
 

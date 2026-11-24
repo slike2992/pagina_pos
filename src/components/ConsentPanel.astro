@@ -4,32 +4,52 @@ const candidate = import.meta.env.PUBLIC_GA_MEASUREMENT_ID ?? "";
 const measurementId = indexableSite(import.meta.env.PROD, import.meta.env.PUBLIC_SITE_INDEXABLE) && import.meta.env.PUBLIC_ANALYTICS_REVIEWED === "true" && /^G-[A-Z0-9]{5,15}$/.test(candidate) && publicPageUrl(Astro.url.pathname) ? candidate : "";
 const canonical = publicPageUrl(Astro.url.pathname);
 ---
-{measurementId && <section id="analytics-preferences" class="consent-panel" aria-labelledby="analytics-title" data-measurement-id={measurementId} data-canonical={canonical} hidden>
-  <div><h2 id="analytics-title" tabindex="-1">Tú eliges si medimos las visitas</h2><p>La analítica opcional nos ayuda a entender qué información resulta útil. Solo se activa si la aceptas. Puedes cambiar tu elección desde el pie de página. <a href="/legal/cookies/">Ver cookies y medición</a>.</p><p data-privacy-signal hidden>Tu navegador solicita no realizar seguimiento; mantendremos la analítica desactivada.</p></div>
-  <div class="consent-actions"><button type="button" class="button secondary" data-consent="denied">Solo necesarias</button><button type="button" class="button" data-consent="granted">Aceptar analítica</button></div>
+{canonical && <section id="analytics-preferences" class="consent-panel" aria-labelledby="analytics-title" data-measurement-id={measurementId} data-canonical={canonical} hidden>
+  <div class="consent-copy">
+    <h2 id="analytics-title" tabindex="-1">Cookies y privacidad</h2>
+    <p>Utilizamos almacenamiento necesario para recordar tus preferencias y completar los procesos que inicias.</p>
+    <p data-analytics-available hidden>Solo si aceptas, Google Analytics medirá visitas y clics en las páginas informativas. Rechazarlo no limita el acceso a la web.</p>
+    <p data-analytics-unavailable>Actualmente la analítica opcional está desactivada. Esta web no carga cookies de publicidad.</p>
+    <p class="consent-links"><a href="/legal/cookies/">Qué guardamos y por cuánto tiempo</a> · <a href="/legal/privacidad/">Política de privacidad</a></p>
+    <p data-privacy-signal hidden>Tu navegador solicita no realizar seguimiento; mantendremos la analítica desactivada.</p>
+    <details class="consent-options">
+      <summary>Configurar cookies</summary>
+      <div class="consent-category"><strong>Necesarias <span>Siempre activas</span></strong><p>Recuerdan esta elección y, cuando los usas, los pasos del registro, acceso y pago. No autorizan seguimiento ni publicidad.</p></div>
+      <div class="consent-category"><label><input type="checkbox" data-analytics-choice disabled /> <strong>Analítica opcional</strong></label><p data-analytics-available hidden>Google Analytics: visitas y acciones comerciales, hasta 180 días. Puedes retirar el permiso en cualquier momento.</p><p data-analytics-unavailable>No disponible en este momento. No se activará ningún servicio al guardar tus preferencias.</p></div>
+      <p>No usamos cookies publicitarias. Puedes volver a este panel desde «Cookies y privacidad» en el pie de página.</p>
+      <button type="button" class="button secondary" data-consent-save>Guardar preferencias</button>
+    </details>
+  </div>
+  <div class="consent-actions"><button type="button" class="button secondary" data-consent="denied">Solo necesarias</button><button type="button" class="button secondary" data-consent="granted" hidden>Aceptar analítica</button></div>
 </section>}
 <script>
-  import { commercialEvent, CONSENT_KEY, CONSENT_TTL, storedConsent, analyticsVisitAllowed } from "../lib/analytics";
+  import { commercialEvent, CONSENT_KEY, CONSENT_TTL, consentRecord, storedConsent, analyticsVisitAllowed } from "../lib/analytics";
   type AnalyticsWindow = Window & { dataLayer?: unknown[]; gtag?: (...args: unknown[]) => void; [key: `ga-disable-${string}`]: boolean };
   const panel = document.querySelector<HTMLElement>("#analytics-preferences");
-  if (panel && !analyticsVisitAllowed(location.origin, location.search, panel.dataset.canonical ?? "")) {
-    panel.remove();
-    document.querySelectorAll<HTMLElement>("[data-privacy-settings]").forEach(button => { button.hidden = true; });
-  } else if (panel) {
-    const id = panel.dataset.measurementId!;
+  if (panel) {
+    const candidate = panel.dataset.measurementId ?? "";
+    const id = /^G-[A-Z0-9]{5,15}$/.test(candidate) && analyticsVisitAllowed(location.origin, location.search, panel.dataset.canonical ?? "") ? candidate : "";
     const canonical = panel.dataset.canonical!;
     const target = window as unknown as AnalyticsWindow;
     const privacySignal = (navigator as Navigator & { globalPrivacyControl?: boolean }).globalPrivacyControl === true || navigator.doNotTrack === "1";
+    const checkbox = panel.querySelector<HTMLInputElement>("[data-analytics-choice]")!;
+    const grant = panel.querySelector<HTMLButtonElement>('[data-consent="granted"]')!;
+    panel.querySelectorAll<HTMLElement>("[data-analytics-available]").forEach(el => { el.hidden = !id; });
+    panel.querySelectorAll<HTMLElement>("[data-analytics-unavailable]").forEach(el => { el.hidden = !!id; });
+    checkbox.disabled = !id || privacySignal;
+    grant.hidden = !id;
+    grant.disabled = !id || privacySignal;
     let allowed = false;
     let started = false;
     let scriptReady = false;
     let pageViewed = false;
     let previousFocus: HTMLElement | null = null;
     const remember = (choice: "granted" | "denied") => {
-      try { localStorage.setItem(CONSENT_KEY, JSON.stringify({ choice, expiresAt: Date.now() + CONSENT_TTL })); } catch { /* Preference works for this page even when storage is unavailable. */ }
+      try { localStorage.setItem(CONSENT_KEY, JSON.stringify(consentRecord(choice, id))); } catch { /* Preference works for this page even when storage is unavailable. */ }
     };
-    const readChoice = () => { try { return storedConsent(localStorage.getItem(CONSENT_KEY)); } catch { return null; } };
+    const readChoice = () => { try { return storedConsent(localStorage.getItem(CONSENT_KEY), Date.now(), id); } catch { return null; } };
     const clearCookies = () => {
+      try {
       for (const item of document.cookie.split(";")) {
         const name = item.split("=")[0]?.trim() ?? "";
         if (!/^_ga(?:_|$)/.test(name)) continue;
@@ -37,10 +57,11 @@ const canonical = publicPageUrl(Astro.url.pathname);
         const parts = location.hostname.split(".");
         for (let i = 0; i < parts.length - 1; i++) document.cookie = `${name}=; Max-Age=0; path=/; domain=.${parts.slice(i).join(".")}; SameSite=Lax`;
       }
+      } catch { /* Blocking browser cookies must not prevent rejecting analytics. */ }
     };
     const disable = () => {
       allowed = false;
-      target[`ga-disable-${id}`] = true;
+      if (id) target[`ga-disable-${id}`] = true;
       target.gtag?.("consent", "update", { analytics_storage: "denied", ad_storage: "denied", ad_user_data: "denied", ad_personalization: "denied" });
       document.querySelector("[data-cripton-analytics]")?.remove();
       if (started && !scriptReady) {
@@ -52,7 +73,7 @@ const canonical = publicPageUrl(Astro.url.pathname);
       clearCookies();
     };
     const enable = () => {
-      if (privacySignal || allowed) return;
+      if (!id || privacySignal || allowed) return;
       allowed = true;
       target[`ga-disable-${id}`] = false;
       target.dataLayer ??= [];
@@ -81,30 +102,36 @@ const canonical = publicPageUrl(Astro.url.pathname);
       focus?.focus({ preventScroll: true });
     };
     const choose = (choice: "granted" | "denied") => {
-      remember(choice);
-      if (choice === "granted" && !privacySignal) enable(); else disable();
+      const effectiveChoice = choice === "granted" && id && !privacySignal ? "granted" : "denied";
+      remember(effectiveChoice);
+      checkbox.checked = effectiveChoice === "granted";
+      if (effectiveChoice === "granted") enable(); else disable();
       close();
     };
     const show = () => {
       previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      checkbox.checked = allowed;
       panel.hidden = false;
       panel.querySelector<HTMLElement>("#analytics-title")?.focus();
     };
     if (privacySignal) {
       panel.querySelector<HTMLElement>("[data-privacy-signal]")!.hidden = false;
-      panel.querySelector<HTMLButtonElement>('[data-consent="granted"]')!.disabled = true;
       disable();
+      if (!readChoice()) panel.hidden = false;
     } else {
       const choice = readChoice();
-      if (choice === "granted") enable();
+      if (choice === "granted") { checkbox.checked = true; enable(); }
       else if (choice === "denied") disable();
       else { disable(); panel.hidden = false; }
     }
     panel.querySelectorAll<HTMLButtonElement>("[data-consent]").forEach(button => button.addEventListener("click", () => choose(button.dataset.consent as "granted" | "denied")));
-    document.querySelectorAll<HTMLButtonElement>("[data-privacy-settings]").forEach(button => button.addEventListener("click", show));
+    panel.querySelector<HTMLButtonElement>("[data-consent-save]")!.addEventListener("click", () => choose(checkbox.checked ? "granted" : "denied"));
+    document.querySelectorAll<HTMLButtonElement>("[data-privacy-settings]").forEach(button => { button.hidden = false; button.addEventListener("click", show); });
     window.addEventListener("storage", event => {
-      if (event.key !== CONSENT_KEY) return;
+      if (event.key !== CONSENT_KEY && event.key !== null) return;
       if (readChoice() === "granted" && !privacySignal) enable(); else disable();
+      checkbox.checked = allowed;
+      if (!readChoice()) panel.hidden = false;
     });
     document.addEventListener("click", event => {
       if (!allowed || !(event.target instanceof Element)) return;
@@ -119,6 +146,17 @@ const canonical = publicPageUrl(Astro.url.pathname);
   .consent-panel { position: fixed; inset: auto 20px 20px; z-index: 80; display: flex; align-items: center; gap: 28px; max-width: 1180px; max-height: calc(100svh - 40px); overflow: auto; margin-inline: auto; padding: 24px; border: 1px solid var(--green-2); border-radius: 12px; background: white; box-shadow: 0 12px 55px rgb(5 24 40 / 24%); }
   h2 { margin: 0 0 8px; font-size: 1.15rem; } p { margin: 0; max-width: 78ch; color: var(--muted); font-size: .88rem; }
   .consent-actions { display: flex; flex-wrap: wrap; gap: 12px; flex: none; }
+  .consent-actions .button { border-color: var(--green-2); color: var(--green-2); }
+  .consent-copy { min-width: 0; }
+  .consent-links { margin-top: 8px; }
+  .consent-options { margin-top: 10px; }
+  .consent-options summary { width: fit-content; min-height: 44px; padding-block: 10px; color: var(--green-2); font-size: .88rem; font-weight: 750; cursor: pointer; }
+  .consent-category { border-top: 1px solid var(--line); padding-block: 14px; }
+  .consent-category > strong, .consent-category label { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; font-size: .9rem; }
+  .consent-category span { color: var(--green-2); font-size: .75rem; }
+  .consent-category input { width: 20px; height: 20px; margin: 0; accent-color: var(--green-2); }
+  .consent-category label { min-height: 44px; }
+  .consent-options .button { margin-top: 14px; }
   @media (max-width: 1000px) { .consent-panel { align-items: flex-start; flex-direction: column; gap: 18px; } }
   @media (max-width: 560px) { .consent-panel { inset: auto 12px 12px; padding: 20px; } .consent-actions { width: 100%; } .consent-actions .button { flex: 1; font-size: .87rem; } }
 </style>
