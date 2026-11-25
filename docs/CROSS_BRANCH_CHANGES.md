@@ -1,5 +1,27 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-25 — Tipos Node declarados y recuperación de aceptación vencida
+
+- Sobre135c594: `@types/node` pasa a devDependency explícita `^22.15.30`;
+  pnpm11.25.0 actualiza el lock a22.20.5 y sus peers. Corrige el TS2591 de
+  `node:crypto` detectado por main en Ubuntu limpio, sin ambient any ni ignores.
+- Registro consume exclusivamente HTTP409 `signup_legal_acceptance_stale`
+  de la API6f004c4 para invalidar intento/clave/acceptedAt, desmarcar aceptación
+  y recargar el catálogo con `cache: no-store`. Conserva campos, presenta el
+  mensaje del servidor (incluida fecha/hora) como texto y exige aceptación manual.
+  Sin submit automático. Fallo de catálogo bloquea continuar; red, respuesta
+  ambigua,5xx y conflictos ajenos conservan la clave/cuerpo originales.
+- Portabilidad de pruebas: LF explícito sólo para el packet QA, cuyo SHA256 no
+  cambia; archivos históricos mantienen hashes de bytes. La comparación de las
+  fuentes09-01 admite exclusivamente la conversión EOL del checkout, siguiendo
+  `legal-review.test.mjs`. No se editan fuentes legales ni archivos históricos.
+- Validación local Windows/Node24.22.3: instalación aislada sin junction con
+  pnpm11.25.0 `--frozen-lockfile`,37/37 pruebas específicas (31 cliente y6 rutas),
+  Astro check71 archivos con0 errores/advertencias/hints. No se repite la suite
+  completa. Main debe acreditar el nuevo build Ubuntu; sin commit/deploy propios.
+- Sin migraciones ni cambio de catálogo, versiones, pagos o verificación de
+  correo. Detalles/comandos y límites: `SIGNUP_TRIAL_QA_2026-11-25.md`.
+
 ## 2026-11-25 — Documentos inmutables para registro de prueba QA en staging
 
 - Copia exacta de `pos_saas/contracts/legal/signup-trial-qa-2026-11-25.json`,

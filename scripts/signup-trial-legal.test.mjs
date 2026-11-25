@@ -74,14 +74,19 @@ test('QA selection requires exact explicit version and HTTPS staging origin; pro
     assert.throws(() => registrationLegalLinks({ PUBLIC_SITE_URL: 'https://staging.cripton.com.co', PUBLIC_REGISTRATION_LEGAL_VERSION: version }));
   }
 });
-test('canonical packet bytes are pinned and09-01 source/archive bytes remain exact', async () => {
+test('canonical packet and immutable archives retain exact bytes;09-01 sources match across checkout EOL', async () => {
   assert.equal(hash(await read('src/content/signup-trial-qa-2026-11-25.json')), sourceHash);
   assert.equal(packet.scope, 'staging_trial_qa'); assert.equal(packet.version, SIGNUP_TRIAL_QA_VERSION);
   assert.deepEqual(packet.documents.map(doc => [doc.type, doc.slug]), [['terms', 'terminos'], ['privacy', 'privacidad']]);
   const history = JSON.parse(await read('docs/legal/history/manifest.json'));
   for (const file of history.files) {
     assert.equal(hash(await read(`docs/legal/history/${file.path}`)), file.sha256);
-    if (file.path.startsWith('2026-09-01/')) assert.equal(hash(await read(file.source)), file.sha256, file.source);
+    if (file.path.startsWith('2026-09-01/')) {
+      // Match the existing legal-review check: archives pin raw bytes, while
+      // Git may convert normal source EOL between Windows and Linux checkouts.
+      const archived = (await read(`docs/legal/history/${file.path}`)).toString('utf8');
+      assert.equal((await read(file.source)).toString('utf8').replace(/\r\n/g, '\n'), archived.replace(/\r\n/g, '\n'), file.source);
+    }
   }
 });
 test('default rendered legal center and footer retain historical hrefs/version; QA build switches only explicit legal pointers', async () => {

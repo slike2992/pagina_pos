@@ -63,18 +63,60 @@ npm run test:web
 se retiran al terminar. La evidencia de HTML y configuración no sustituye el
 recorrido de aceptación en navegador, el catálogo SQL ni un despliegue coordinado.
 
-Validación local de este bloque: Astro check con0 errores/advertencias/hints y
+Validación inicial local de este bloque: Astro check con0 errores/advertencias/hints y
 542/542 pruebas web aprobadas, incluidas6 nuevas. Los builds reales cubren defaults,
 selector QA y rechazo del origen productivo; se mantuvieron los bytes protegidos.
 En el worktree compartido faltan los shims `astro` de `.bin`: se ejecutó la misma
 CLI instalada con `node node_modules/astro/bin/astro.mjs check` y `build`, sin
 reinstalar dependencias ni modificar el junction compartido.
 
+### Corrección posterior a135c594: instalación limpia y aceptación vencida
+
+La validación inicial con junction no acreditaba una instalación limpia. Main
+detectó TS2591 para `node:crypto` en Ubuntu: faltaba declarar `@types/node`.
+Ahora `package.json` declara `^22.15.30`; el lock generado con pnpm11.25.0 fija
+22.20.5 y `undici-types`6.21.0. No se añaden ambient any, ignores ni cambios de
+tsconfig. El requisito Node>=22.13.0 permanece igual.
+
+El cliente de registro consume HTTP409 `signup_legal_acceptance_stale` de
+API6f004c4. Sólo este rechazo explícito invalida el intento por vigencia legal:
+borra la clave y acceptedAt en memoria/storage, desmarca la casilla y reutiliza
+la carga de documentos con `cache: no-store`. Conserva los campos y exige revisar
+y aceptar manualmente de nuevo, incluso si las versiones no cambiaron. El mensaje
+del servidor se mantiene mediante `errorMessage` y `textContent`, para explicar
+también el reloj del equipo fuera de tolerancia. Si falla la recarga, no permite
+continuar con documentos anteriores. Errores de red, JSON ambiguo,5xx y conflictos
+ajenos conservan intento/clave/cuerpo para un reintento seguro. El tratamiento
+previo de `invalid_request` permanece igual. No modifica pagos ni verificación.
+
+Se fija `eol=lf` únicamente para la copia JSON QA, sin cambiar su SHA256. Los
+archivos históricos siguen comprobándose por bytes; las fuentes09-01 se comparan
+con su archivo permitiendo sólo CRLF/LF del checkout, igual que el test existente
+de revisión legal. Los bytes de las fuentes legales del worktree no se editaron.
+
+Validación de esta corrección en Windows con Node24.22.3: snapshot aislado con
+dependencias propias instaladas mediante pnpm11.25.0 `--frozen-lockfile`,
+`@types/node`22.20.5 resuelto dentro del snapshot,37/37 pruebas específicas
+(31 de cliente, incluidas4 nuevas;6 de rutas legales) y Astro check71 archivos
+con0 errores/advertencias/hints. Los builds de las6 pruebas verifican defaults,
+QA y rechazo del origen productivo. No se repitieron las542 pruebas completas.
+Esto no acredita Ubuntu: main debe repetir allí instalación/check/build con el
+nuevo lock. No hubo commit, servidor, registro real, SQL, publicación ni deploy.
+
+```sh
+pnpm --version # 11.25.0
+pnpm install --frozen-lockfile
+pnpm run check
+node --test scripts/form-feedback.test.mjs scripts/signup-trial-legal.test.mjs
+```
+
 Archivos del bloque: copia JSON, `src/lib/registration-legal.ts`,
 `src/lib/signup-trial-legal.ts`, la página versionada `[document].astro`,
 `SiteFooter.astro`, centro legal, pruebas `signup-trial-legal.test.mjs` y la
 adaptación acotada de `seo.test.mjs`, registro de test en `package.json`, README,
-este documento y CROSS web. Sin cambios en fuentes de registro/pago, marca,
+este documento y CROSS web. La corrección añade dependencia/lock, atributo LF
+acotado, recuperación en `src/pages/registro/index.astro` y sus pruebas reales
+de cliente en `scripts/form-feedback.test.mjs`. Sin cambios en pagos, marca,
 documentos09-01, borradores, SQL o código SaaS.
 
 ## Build y archivo para Main
@@ -89,6 +131,7 @@ export PUBLIC_SAAS_API_URL=https://api-staging.cripton.com.co
 export PUBLIC_POS_URL=https://pos-staging.cripton.com.co
 export PUBLIC_SITE_INDEXABLE=false
 export PUBLIC_LEGAL_DRAFT_PREVIEW=false
+pnpm install --frozen-lockfile
 node node_modules/astro/bin/astro.mjs check
 node node_modules/astro/bin/astro.mjs build
 # Elegir un archivo nuevo; no sobrescribir un release anterior.

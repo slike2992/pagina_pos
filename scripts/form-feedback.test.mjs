@@ -248,7 +248,7 @@ test('disabling an invalid control clears its feedback on validation', () => {
   assert.equal(page.fields[0].getAttribute('aria-invalid'), null);
 });
 
-async function signup({ ready = true, initialStorage = [], blockedStorage = false, transport, dev = false, documents = [
+async function signup({ ready = true, initialStorage = [], blockedStorage = false, transport, catalog, dev = false, documents = [
   { type: 'terms', version: '2026-09-01', contentUrl: '/legal/terminos' },
   { type: 'privacy', version: '2026-09-01', contentUrl: '/legal/privacidad' },
 ] } = {}) {
@@ -289,10 +289,10 @@ async function signup({ ready = true, initialStorage = [], blockedStorage = fals
     },
     fetch: async (url, options) => {
       calls.push({ url, options });
-      if (transport && (options || url.includes('/development/'))) return transport(url, options);
-      if (!options) return ready
+      if (url.endsWith('/v1/public/legal-documents')) return catalog ? catalog(url, options) : ready
         ? { ok: true, json: async () => ({ documents }) }
         : Promise.reject(new Error('offline fixture'));
+      if (transport && (options || url.includes('/development/'))) return transport(url, options);
       // Local stub only. Retain the failed attempt to verify retry idempotency.
       return { ok: false, json: async () => ({ error: { code: 'test_failure', message: 'Fallo simulado' } }) };
     },
@@ -470,6 +470,99 @@ test('creation retry preserves its key and legal acceptance after a lost respons
   reloaded.legal.checked=true;await reloaded.form.emit('submit');
   assert.equal(reloaded.posts()[0].options.headers['idempotency-key'],post.options.headers['idempotency-key']);
   assert.equal(reloaded.posts()[0].options.body,post.options.body);assert.equal(reloaded.storage.size,1);
+});
+
+test('stale legal acceptance clears a restored attempt, refreshes uncached documents, and requires manual acceptance', async () => {
+  const original = {
+    contactName: ' Ana ', email: 'ana@example.invalid', companyName: ' Tienda ', priceCode: 'professional',
+    legalAcceptance: { termsVersion: '2026-09-01', privacyVersion: '2026-09-01' },
+  };
+  const oldKey = 'restored-key-before-stale', oldTime = '2029-12-31T23:00:00.000Z';
+  const nextDocuments = ['terms', 'privacy'].map((type, index) => ({ type, version: '2026-11-25-prueba-qa',
+    contentUrl: `/legal/versiones/2026-11-25-prueba-qa/${index ? 'privacidad' : 'terminos'}/` }));
+  let reads = 0, posts = 0, release;
+  const page = await signup({ initialStorage: [['signup-draft', JSON.stringify(original)], ['signup-key', oldKey], ['signup-accepted-at', oldTime]],
+    catalog: () => ++reads === 1 ? reply(200, { documents: [
+      { type: 'terms', version: '2026-09-01', contentUrl: '/legal/terminos' },
+      { type: 'privacy', version: '2026-09-01', contentUrl: '/legal/privacidad' },
+    ] }) : new Promise(resolve => { release = resolve; }),
+    transport: async () => ++posts === 1 ? reply(409, { error: { code: 'signup_legal_acceptance_stale' } }) : reply(503, {}),
+  });
+  const values = page.fields.map(field => field.value);
+  page.legal.checked = true;
+  const submitting = page.form.emit('submit');
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(page.posts()[0].options.headers['idempotency-key'], oldKey);
+  assert.equal(JSON.parse(page.posts()[0].options.body).legalAcceptance.acceptedAt, oldTime);
+  assert.equal(page.storage.size, 0);
+  assert.equal(page.legal.checked, false); assert.equal(page.legal.disabled, true); assert.equal(page.submit.disabled, true);
+  await page.form.emit('submit'); assert.equal(page.posts().length, 1);
+  release(reply(200, { documents: nextDocuments })); await submitting;
+  assert.deepEqual(page.fields.map(field => field.value), values);
+  assert.equal(page.legal.checked, false); assert.equal(page.legal.disabled, false);
+  assert.match(page.status.textContent, /vuelve a aceptarlas/);
+  assert.equal(page.form.querySelector('#terms-link').href, 'https://web.example.invalid' + nextDocuments[0].contentUrl);
+  assert.equal(page.form.querySelector('#privacy-link').href, 'https://web.example.invalid' + nextDocuments[1].contentUrl);
+  assert.equal(reads, 2);
+  assert.ok(page.calls.filter(call => call.url.endsWith('/legal-documents')).every(call => call.options?.cache === 'no-store'));
+  await page.form.emit('submit'); assert.equal(page.posts().length, 1, 'No automatic submission or acceptance');
+  page.advance(30); page.legal.checked = true; await page.form.emit('submit');
+  const renewed = page.posts()[1];
+  assert.notEqual(renewed.options.headers['idempotency-key'], oldKey);
+  assert.deepEqual(JSON.parse(renewed.options.body), { ...original, legalAcceptance: {
+    termsVersion: nextDocuments[0].version, privacyVersion: nextDocuments[1].version, acceptedAt: '2030-01-01T00:00:30.000Z',
+  } });
+});
+
+test('clock-expired acceptance renews its key and timestamp even with unchanged documents or blocked storage', async () => {
+  for (const blockedStorage of [false, true]) {
+    let posts = 0;
+    const clockMessage = 'Revisa la fecha y hora de tu equipo y vuelve a aceptar las condiciones vigentes. <b>Texto del servidor</b>';
+    const page = await signup({ blockedStorage, transport: async () => ++posts === 2
+      ? reply(409, { error: { code: 'signup_legal_acceptance_stale', message: clockMessage } }) : Promise.reject(new Error('lost response')) });
+    page.legal.checked = true; await page.form.emit('submit');
+    page.advance(600); await page.form.emit('submit');
+    assert.equal(page.posts()[1].options.body, page.posts()[0].options.body);
+    assert.equal(page.posts()[1].options.headers['idempotency-key'], page.posts()[0].options.headers['idempotency-key']);
+    assert.equal(page.legal.checked, false); assert.equal(page.storage.size, 0);
+    assert.ok(page.status.textContent.includes(clockMessage));
+    assert.equal(page.status.children.length, 0, 'Server diagnostics remain plain text');
+    page.advance(1); page.legal.checked = true; await page.form.emit('submit');
+    assert.notEqual(page.posts()[2].options.headers['idempotency-key'], page.posts()[0].options.headers['idempotency-key']);
+    assert.equal(JSON.parse(page.posts()[2].options.body).legalAcceptance.acceptedAt, '2030-01-01T00:10:01.000Z');
+  }
+});
+
+test('failed or incomplete catalog refresh leaves stale acceptance disabled and keeps entered fields', async () => {
+  for (const refresh of [() => Promise.reject(new Error('offline')), () => reply(503, {}),
+    () => reply(200, { documents: [] }), () => reply(200, { documents: null })]) {
+    let reads = 0;
+    const page = await signup({ catalog: () => ++reads === 1 ? reply(200, { documents: [
+      { type: 'terms', version: '2026-09-01', contentUrl: '/legal/terminos' },
+      { type: 'privacy', version: '2026-09-01', contentUrl: '/legal/privacidad' },
+    ] }) : refresh(), transport: async () => reply(409, { error: { code: 'signup_legal_acceptance_stale' } }) });
+    page.fields[3].value = '3000000000'; const values = page.fields.map(field => field.value);
+    page.legal.checked = true; await page.form.emit('submit');
+    assert.equal(page.legal.checked, false); assert.equal(page.legal.disabled, true); assert.equal(page.submit.disabled, true);
+    assert.equal(page.storage.size, 0); assert.match(page.status.textContent, /Conservamos tus datos/);
+    assert.deepEqual(page.fields.map(field => field.value), values);
+    page.legal.checked = true; page.submit.disabled = false;
+    await page.form.emit('submit'); assert.equal(page.posts().length, 1);
+  }
+});
+
+test('ambiguous creation errors and unrelated conflicts preserve the original key, acceptance, and catalog', async () => {
+  for (const failure of [() => Promise.reject(new Error('network')), () => reply(503, { error: { code: 'unavailable' } }),
+    () => reply(409, { error: { code: 'idempotency_conflict' } }),
+    () => reply(400, { error: { code: 'signup_legal_acceptance_stale' } }),
+    () => ({ ok: false, status: 502, json: async () => { throw Error('invalid JSON'); } })]) {
+    const page = await signup({ transport: failure });
+    page.legal.checked = true; await page.form.emit('submit'); page.advance(600); await page.form.emit('submit');
+    assert.equal(page.posts()[1].options.headers['idempotency-key'], page.posts()[0].options.headers['idempotency-key']);
+    assert.equal(page.posts()[1].options.body, page.posts()[0].options.body);
+    assert.equal(page.calls.filter(call => call.url.endsWith('/legal-documents')).length, 1);
+    assert.equal(page.legal.checked, true); assert.equal(page.storage.size, 3);
+  }
 });
 
 const landing = await readFile(new URL('../src/pages/index.astro', import.meta.url), 'utf8');

@@ -4,3 +4,4 @@
 # Immutable legal archives preserve original bytes across Windows/Linux.
 /docs/legal/history/** -text whitespace=cr-at-eol
 /src/content/legal-review-2026-11-24.json text eol=lf
+/src/content/signup-trial-qa-2026-11-25.json text eol=lf
