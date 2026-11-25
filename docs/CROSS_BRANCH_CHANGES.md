@@ -1,4 +1,4 @@
-# Coordinación de contratos web / SaaS
+# Cambios transversales de la web comercial
 
 ## 2026-11-25 — Contratación por empresa y seguimiento de solicitudes
 
@@ -19,3 +19,421 @@
 - test:web438 aprobadas. Astro check/build por CLI instalado; navegador real y
   bandeja aún pendientes de reparación Windows1920. Sin despliegue ni aceptación
   productiva, con versiones/aceptaciones anteriores conservadas.
+
+## 2026-11-24 — Tres documentos jurídicos y coherencia fiscal
+
+- Revisión preparada de términos, privacidad y anexo de transmisión, a partir
+  de 2026-10-26. Identidad de proveedor natural comprobada y condiciones de soporte,
+  cancelación y salida aprobadas por el titular; no se activan sin verificar
+  mecanismos. JSON único compartido por preview y tres PDF versionados.
+- Historial inmutable con SHA256 de fuentes antiguas y baseline activo intacto;
+  no modifica el catálogo API, consentimientos, migraciones o registro. El preview
+  conserva noindex y protección frente a un release indexable. Sin vigencia.
+- Consumidores: web/editorial FE y revisión coordinada en POS Ayuda, Control y
+  correos de pago/renovación. Cliente cumple deber fiscal; Cripton su integración
+  y controles. Interno/Sandbox no equivalen a emisión productiva.
+- Compatibilidad: no cambia HTTP, precios, plan, pagos, consentimiento recurrente
+  ni autenticación. No se toca Brand ni el checkout demo modificados por el usuario.
+- Validación: 276 pruebas web, Astro check/build aprobados; tres PDF/22 páginas
+  revisados y 152 párrafos/elementos cotejados. Preview HTTP local200/noindex.
+  El navegador Codex falla antes de conectar (CreateProcessWithLogonW1920);
+  revisión interactiva pendiente. No se despliega al dominio en este bloque.
+- Pendientes reales y fuentes: `LEGAL_REVIEW_2026-11-24.md`. No se ofrece
+  inmunidad frente a errores propios ni certificación jurídica/productiva.
+
+## 2026-11-23 — Transparencia de cookies y preferencias por finalidad
+
+- El aviso informativo y el acceso «Cookies y privacidad» se presentan en las
+  rutas editoriales también sin GA4, en local y staging. Sin proveedor solo
+  permiten confirmar almacenamiento necesario; no simulan aceptar seguimiento.
+- Se conserva el bloqueo de GA4 fuera del origen canónico, con query, en rutas
+  privadas y sin revisión/ID/flag público. Analítica requiere aceptación expresa;
+  GPC/DNT prevalecen. No se configura un proveedor ni se habilita medición real.
+- Preferencia local v2: decisión, fecha, vencimiento de 180 días, versión del
+  aviso y alcance del proveedor. No reutiliza autorizaciones anteriores ni las
+  de un proveedor distinto. Retirada y borrado entre pestañas detienen medición;
+  el rechazo no borra datos de registro/pago y funciona con storage bloqueado.
+- Consumidores: componentes compartidos de la web y página informativa de cookies.
+  Se conserva el contrato HTTP, catálogo, 15 días gratis, autenticación, POS y
+  Control; sin SQL ni migraciones. Los textos y hashes legales aceptados de
+  términos/privacidad permanecen vigentes e intactos. No es una nueva aceptación
+  contractual. El panel guarda un recibo local, no un registro central firmado.
+- Validación y límites: `QA_COOKIES_2026-11-23.md`. Antes de habilitar GA4 real
+  sigue siendo necesaria la revisión del proveedor, propiedad, retención y
+  tratamientos/transferencias correspondientes. Los flags continúan apagados.
+- Cierre: 272 pruebas y check/build aprobados; publicación estática final
+  `dda2d55d639f` en staging, 75 archivos verificados, sin reiniciar POS/Control.
+  Navegador en escritorio/móvil: persistencia, reapertura, scroll/guardado y
+  política correctos; selector de títulos aislado tras revisar el build real.
+
+## 2026-11-17 — Índice informativo legal sin oferta de demostración
+
+- Resuelve el pendiente comercial del bloque anterior con autorización expresa:
+  sólo la frase orientativa de /legal/ cambia a prueba gratis de 15 días sin
+  tarjeta y planes de pago. No modifica documentos, versiones legales, textos
+  vinculantes ni enlaces de aceptación/privacidad. No requiere versionar legales.
+- Consumidores: personas que consultan los canales de ayuda y ventas. Sin cambios
+  HTTP/tipos, API, worker, SQL, permisos, runtime o checkout; sin migración ni
+  orden adicional de publicación. Brand.astro y pago/demo.astro ajenos intactos.
+- La auditoría semántica de HTML/SEO/JSON-LD sin demo cubre ahora todas las rutas
+  públicas, incluido el centro legal. Nueva regresión verifica su frase, canales,
+  enlaces documentales y versiones. Continúan los hashes de documentos aceptados.
+  Check/build y 265/265 pruebas locales en exportación limpia con Node24/pnpm11,
+  env staging noindex; bundle Linux final preparado, sin SSH/UI ni despliegue.
+
+## 2026-11-17 — Oferta pública única: 15 días gratis, sin tarjeta
+
+- Sustituye ofertas comerciales de demo por prueba gratis de 15 días: portada,
+  soluciones, guía, confianza, navegación/pie, metadatos, JSON-LD y mensaje
+  preparado de WhatsApp/correo. Continuar después requiere un plan de pago;
+  expresa el límite como una prueba por cuenta elegible, sin afirmar detección
+  de una persona entre alias. No promete gratuidad permanente ni repetición
+  ilimitada de pruebas.
+- Consumidores: API de registro/verificación y worker de correo, cuya política
+  de signup y protección contra abuso pertenecen al integrador. Sin cambios
+  HTTP/tipos, SQL, permisos, catálogo/precios, sesión, checkout legacy o flags
+  internos. Sin migración. El integrador habilita el modo público con
+  CUSTOMER_SIGNUP_PUBLIC_SINCE una sola vez en backend; no cambia rutas API.
+  Coordinar la publicación con esa política.
+- CTA de alta conservan /registro y los seis códigos de plan; sin nuevas rutas
+  públicas/canónicas. La página de pago local se conserva en astro dev; el hook
+  de producción publica en /pago/demo sólo una redirección fija al registro,
+  sin parámetros ni controlador local, también en staging noindex. Mantiene
+  pagos Sandbox/pruebas y local_demo; no son una oferta comercial.
+- Excluye trabajo ajeno en Brand.astro y pago/demo.astro, activos, diseño y legales.
+  Pendiente explícito fuera de alcance: frase comercial «planes y demostraciones»
+  en src/pages/legal/index.astro:15; el integrador debe autorizar su corrección.
+- Validación: suite Astro existente más regresiones sobre HTML real del build
+  (copy, SEO/JSON-LD, enlaces de alta y privacidad de la ruta local) y controlador
+  de contacto real en VM (WhatsApp/mailto sin envío automático, validación, foco,
+  invalidación de mensaje anterior). Exportación limpia: check sin diagnósticos,
+  build y 264/264 pruebas con Node24.22.1/pnpm11.25.0 y env staging noindex. Linux
+  se entrega como comandos reproducibles, sin SSH, UI ni despliegue en este bloque.
+
+## 2026-11-17 — PNG positivo para correo sobre fondo blanco
+
+- Añade sólo /brand/v1.0/cripton_horizontal_color_v1.0.png, exportación738×199
+  del SVG oficial del mismo nombre. Fuente SHA256:
+  dd240d31abb5c92d304904e94c305fe79cac0e8bcc55faef3121e68d0d9eec22.
+  PNG SHA256:90eaef34445c2344be5ae8900146c9b95d0b4f88d61c49049179ce1bfb154529.
+- Manual oficial: Cripton_Kit_Marca_v1_0/00_manual/Cripton_Manual_Texto_v1_0.md,
+  revisión1.1.0, apartados Correcciones, Fondos claros y Tabla de tamaños mínimos.
+  Conserva paths, proporción, espacios negativos, marino#051828 y cian#31CCD4.
+  PNG RGBA transparente: el fondo blanco uniforme corresponde al marco HTML
+  del correo, como exige el manual; no se integra un rectángulo al imagotipo.
+- Exportación reproducible: Sharp0.35.4/libvips8.18.6, density144, resize738×199
+  fit=contain/alpha0, sRGB con withIccProfile('srgb'), PNG compressionLevel9,
+  adaptiveFiltering=false,
+  palette=false/progressive=false. Redondeo de proporción inferior a un píxel.
+- Consumidor: plantilla común del worker SaaS. Publicar este recurso antes del
+  worker que lo referencia. URL y bytes del PNG reverso anterior se preservan.
+  Sin cambios de login, páginas, CSS, dependencias, API, SQL ni pagos.
+- Pruebas Sharp verifican formato, hashes, colores, transparencia, geometría
+  contra el vector y copia exacta en dist. La evidencia Linux del commit se
+  conserva en artifacts del integrador; esto no acredita visualización en Gmail.
+
+
+## 2026-11-16 — Logo raster para correo transaccional de Cripton
+
+- Añade únicamente public/brand/v1.0/cripton_horizontal_reverso_v1.0.png,
+  exportación PNG transparente 738×199 del SVG oficial del mismo nombre.
+  Source SHA256:1083a405fbe7f3755b4e8c3b4027821413733f60d86a1335293b25d6d9baa2ac.
+- Consumidor: marco HTML del worker SaaS. Usa el origen web ya configurado;
+  imagen pública sin cookies, token, destinatario o seguimiento. PNG conserva
+  proporción y marca; permite clientes de correo que no muestran SVG.
+- Publicar este recurso antes del worker que lo referencia. No cambia páginas,
+  formularios, precio, SEO, componentes de marca, SQL ni contratos HTTP.
+- Reenvío anterior aceptado en Codex: correo inicial y segundo mensaje reales
+  en la bandeja principal de santy.2992.2@gmail.com, desde notificaciones;
+  contador60s, recarga sin reiniciar espera, mismo enlace y acceso recibidos.
+  La recepción en santy.slike.2992@gmail.com fue confirmada por el propietario.
+  Evidencia de branding posterior se registra en pos_saas/docs/.
+
+## 2026-11-16 — Reenvío de verificación después de un minuto
+
+- Registro muestra recibo, contador60s y botón Reenviar correo. Usa POST
+  signup-intents/:id/resend-verification con email original e Idempotency-Key;
+  acepta202 genérico, respeta429 y preserva clave ante pérdida de respuesta.
+- Alta admite verificationEmail opcional (resendAvailableAt/retryAfterSeconds).
+  API antigua usa espera local conservadora; publicar API/borde de pos_saas
+  3f52263 antes de esta web.503 email_delivery_unavailable conserva formulario.
+- Recarga recupera sólo id/email/expiry/resendAt sin enviar automáticamente.
+  Migra recibos locales anteriores sin conservar su formulario completo. La
+  creación conserva su idempotencia previa ante recarga/fallo de red. Verificar
+  limpia sólo el recibo propio, después de validar el resultado de la API.
+- Enlace vencido permite volver al registro; corregir correo es explícito, sin
+  borrar la solicitud del servidor ni modificar pruebas, pagos o permisos.
+- Sin cambios de dependencias, marca, estilos globales, precios o páginas de pago.
+  Pruebas del controlador/timer, red, doble clic, recarga,503 y storage bloqueado;
+  aceptación del proveedor/bandeja y despliegue se registran en pos_saas/docs/
+  QA_SIGNUP_EMAIL_RESEND_2026-11-16.md.
+
+
+## 2026-11-15 — Texto de la prueba ya contratada
+
+- Mi cuenta usa el estado canónico `trial.status=converted` para sustituir la
+  invitación a contratar por orientación al período pagado de la suscripción,
+  conservando que contratar no activa la renovación automática. Las pruebas
+  abiertas mantienen su texto y los clientes sin trial no muestran ese bloque.
+- Corrección sólo de presentación: sin cambios de contrato HTTP, permisos, SQL,
+  API ni worker. No requiere migración ni orden de publicación adicional.
+- La aceptación real de conversión fue informada por el integrador (Activo,
+  vencimiento 15 de diciembre y confirmación de contratación). Esta corrección
+  se verifica con el controlador real en VM; navegador desplegado queda al
+  integrador. No se ejecutan CUA, pagos, proveedores ni despliegues en este bloque.
+- Node 24: 157/157 pruebas de cuenta (incluye conversión y actualización),
+  Astro check sobre 51 archivos sin errores, advertencias ni hints.
+
+## 2026-11-14 — Prueba gratuita canónica de 15 días
+
+- Registro/verificación consumen trial_setup sin checkout automático; legacy pagado conserva checkout. Mi cuenta valida trial nullable, fechas UTC/canConvert del servidor y no infiere un período pagado.
+- Contratación explícita con POST trial-checkout e idempotencia; retorno trial_conversion separado de signup. Prueba activa/expirada no habilita recuperación de deuda, cambio de plan o cobro recurrente. Member no recibe acciones de pago.
+- Landing/planes anuncian 15 días sin tarjeta/cobro automático, con precio posterior. JSON-LD mantiene precios pagados; sin afirmación de gratuidad permanente. Conservados Brand/demo ajenos.
+- API/worker/SQL029 y contratos deben publicarse primero desde pos_saas, incluida la ruta trial-checkout en el acceso HTTP del entorno. La web no crea ni extiende pruebas, modifica SSO o decide elegibilidad. Sin SQL, commit/deploy por este agente.
+- Validación Node 24: test:web 231/231, build:public y sus auditorías aprobados; Astro cero errores/advertencias/hints. Codex IAB local verificó trial_setup, cuenta activa/expirada y retorno trial_conversion con respuestas sintéticas. Viewport medido 393×852 en cuenta expirada; tarjeta, recuperación y cambio de plan ocultos. Sin DB/proveedor/correo; no equivale a aceptación de staging ni pago real. Pendiente recorrido integrado después del despliegue compatible.
+
+
+## 2026-11-10 — Publicación y aceptación externa de recuperación
+
+- Web c90569e publicada en codex/staging-signup-recovery e integrada mediante
+  fast-forward en codex/pagina-pos-landing, preservando trabajo local de marca.
+  Activa en staging después del runtime compatible SaaS 53a51fc4fb0d.
+- Build aislado Ubuntu: Node 24.22.2, lockfile congelado, 164/164 pruebas,
+  Astro check/build y HTML/SEO aprobados. El fallo Windows de parseCookie
+  anterior es del entorno de build; no se cambiaron dependencias para ocultarlo.
+- En navegador: período fallido/importe/referencia visibles; rechazo oficial
+  Sandbox y correo desde pagos; reintento aprobado con misma orden/checkout.
+  Actualizar retiró aviso/enlaces y mostró Activo. Retorno antiguo reconoció
+  la recuperación; login nuevo y SSO al mismo tenant abrieron Inicio del POS.
+- SQL confirma una adopción, una aprobación y un período paid. Fuente local
+  revoked/auto_renew=false, sin nuevos cargos recurrentes. Sin cambios de
+  migraciones, dependencias, CSS, marca, legales o indexación de staging.
+- Evidencia detallada: pos_saas/docs/QA_RENEWAL_CYCLE_2026-11-09.md. No acredita
+  producción, QR Bre-B, fallo ambiguo externo ni todos los módulos del POS.
+  Los apartados siguientes conservan la evidencia previa al despliegue.
+
+## 2026-11-10 — Aviso y recuperación del próximo período rechazado
+
+- Mi cuenta consume `renewalIssue?: {subscriptionPeriodId, status:'failed',
+  paymentStatus:'declined', periodStart, periodEnd, amountMinor, currency:'COP',
+  reference, recordedAt} | null` de GET `/v1/me/subscription`. Ausente/null
+  conserva compatibilidad; UUID, tipos, estados, fechas UTC reales/intervalo,
+  entero seguro positivo, moneda y referencia se validan antes de aplicar la
+  respuesta. Un detalle malformado no se convierte en estado confirmado.
+- El aviso separa el próximo período rechazado de la cobertura actual; muestra
+  importe con centavos, fechas UTC y referencia, y guía a recuperación/soporte.
+  Recuperación se consulta también en active con issue, con los roles existentes.
+  `blocked/not_due` indica no habilitado por servidor; ningún bloqueo se elude.
+- Oferta y checkout se contrastan con el rechazo revisado (importe, período,
+  referencia e ID de período). Conserva GET/POST e idempotencia existentes, sin
+  importe calculado ni endpoints nuevos. La API coordinada debe reutilizar la
+  misma orden tras rechazo definitivo incluso antes del corte y bloquear
+  pendientes/ambiguos/aprobados. No se decide ni confirma un pago en JavaScript.
+- Actualizar con `renewalIssue: null` retira aviso/datos y enlaces anteriores;
+  logout/401 actual también los limpian. Login, refresh y respuestas JSON/HTTP
+  tardías conservan aislamiento mediante generaciones y guardas de sesión.
+- Consumidores: portal web y API SaaS. Publicar primero API y su recuperación;
+  el contrato compartido/root lo documenta el integrador. Sin migraciones,
+  dependencias, CSS adicional, cambios de retorno de pago, términos o marca.
+- Validación Node24.22.1: 104/104 pruebas de cuenta (13 nuevas), 129/129 junto
+  al retorno y 157/157 de las cinco suites de lógica sin auditoría SEO. Astro
+  check: 46 archivos, cero errores/advertencias/hints. Build detenido en
+  prerender por `Named export 'parseCookie' not found` del módulo `cookie`,
+  incidencia Windows ya documentada; HTML/SEO final sin validar. No se alteran
+  dependencias para ocultarla. `git diff --check` aprobado.
+- Pruebas con DOM/HTTP/SDK simulados; ver [contrato y recorrido](SUBSCRIPTION_RECOVERY.md).
+  Aceptación con sesión en navegador, backend/proveedor y publicación quedan
+  para el padre. Checkout aislado `artifacts/web-qa-recovery`, sin commit ni push.
+  Coordinación root: control remoto intentado sin acceso; diagnóstico offline
+  alineado y referencias web locales sin entrantes, sin certificar fetch nuevo.
+
+## 2026-11-10 — Recuperación de checkout tras rechazo definitivo
+
+- El retorno distingue «Consultar de nuevo» (sólo lectura) de intentar otro
+  pago: indica abrir el enlace original de verificación del correo. No guarda
+  tokens ni checkout con datos personales en el almacenamiento de retorno,
+  ni crea una orden desde esa pantalla.
+- Requiere la corrección coordinada de resume-checkout en pos_saas: permitir
+  abandono sin pagos o sólo rechazos definitivos, conservar el mismo checkout
+  vigente y bloquear pendientes/ambiguos y cualquier aprobación histórica.
+  El endpoint, posesión del enlace y vencimientos se mantienen. Publicar y
+  validar API antes de este estático; no se acredita aún el ensayo externo.
+- Sin estilos, dependencias ni migraciones nuevas. Ubuntu: Astro check/build
+  y 151/151 pruebas aprobados. Web bcdb16b publicada y activada después del
+  runtime compatible ed0e7d1fb96a. El registro QA aún espera aceptación puntual
+  de términos: no se acredita rechazo Wompi ni reintento externo por estos tests.
+
+## 2026-11-10 — Actualización manual también para cuentas vigentes
+
+- Mi cuenta mueve el botón nativo «Actualizar suscripción» a sus acciones
+  generales, fuera de recovery. Reutiliza estilos, lectura autenticada de
+  suscripción y `/v1/me/tenants`, validación de la empresa activa y guardas
+  de token/generación. Fecha, estado y acciones se actualizan juntos después
+  de ambas lecturas; un fallo previo conserva la vista confirmada.
+- Progreso, resultado y error usan el status accesible visible de la cuenta.
+  El botón deshabilitado y `aria-busy` acompañan la guarda de duplicados.
+  Un 401 actual ejecuta el reset existente; respuestas/JSON/401 tardíos no
+  cambian un login posterior ni restauran controles de otra sesión. Permite
+  reintentar fallos GET sin recargar autenticación ni la página.
+- Exclusión con operaciones en curso: renovar/cancelar, SSO, preparación de
+  metadatos/SDK/POST de tarjeta y cotización/checkout de plan bloquean el
+  refresco. Mientras éste lee, sus botones/confirmaciones y consentimientos
+  quedan deshabilitados con guardas en handlers; no se ocultan por busy ni se
+  añaden estilos. `finally` restaura controles sólo en la sesión vigente,
+  conservando bloqueos previos de tarjeta ante resultados ambiguos.
+- Un widget reabrible sin callback de cierre queda superado por el refresco:
+  sus tokens tardíos no envían un POST y se puede abrir un intento nuevo.
+  Las respuestas antiguas de cambio de plan tampoco continúan checkout ni
+  liberan el bloqueo de un refresco posterior. Cancelar en vuelo conserva la
+  identidad de cuenta hasta aplicar su respuesta y cerrar el modal.
+- Consumidores: portal Mi cuenta y estático web. Compatible con las API
+  actuales; sin rutas nuevas, polling, cambios de permisos, migraciones,
+  llamadas al proveedor ni cobros. Recovery conserva su oferta e idempotencia.
+- Validación Node24: 116/116 pruebas de cuenta y retorno de pago; Astro check
+  sobre 46 archivos sin errores, advertencias ni hints. Los casos nuevos
+  cubren ubicación/nombre accesible, cuenta vigente con nuevo fin/acciones,
+  busy/duplicados, reset401, respuestas tardías y GET recuperable con reintento.
+  Ocho casos adicionales con HTTP/SDK diferidos prueban exclusión en ambos
+  sentidos, confirmación del modal, controles restaurados, reintentos y que
+  una operación vieja no desbloquee la sesión nueva. No llaman al proveedor.
+- Navegador local con Astro y HTTP sintético: cuenta activa actualiza el fin
+  de enero a febrero2030, muestra éxito, conserva el resumen ante503, permite
+  reintentar y vuelve al login/foco Correo ante401. SDK/proveedor deshabilitados;
+  no acredita aceptación backend ni cargo real. Sin commit ni deploy. El ciclo
+  UI de cancelar/reactivar y la evidencia backend continúan con el operador.
+  Revisión de exclusión en navegador: GET retrasado mantiene visibles y
+  deshabilitados plan, tarjeta, renovación y POS; al completarse recuperan su
+  disponibilidad anterior. No se ejecuta el ciclo real de cancelación/cobro.
+
+Cierre posterior de este bloque: commit 221c59b publicado y build aislado
+Ubuntu con Node 24.22.2/pnpm 11.25.0, Astro check/build sin incidencias y suite
+completa 151/151. Activado sólo dist en staging por enlace atómico, sin reiniciar
+API, POS o worker. Navegador real con QA Recurrencia: progreso y bloqueo temporal,
+«Suscripción actualizada», fin 10 de diciembre y cancelación preservados;
+controles restaurados. SQL conserva un pago y una orden REN. Runtime 8ae78d53ca20,
+cuatro servicios activos y edge HTTPS aprobado (21 variantes/26 preflights).
+La evidencia local sintética anterior se distingue de esta aceptación real.
+Informe compartido en pos_saas: docs/QA_RENEWAL_CYCLE_2026-11-09.md.
+## 2026-11-10 — Recuperación con sesión vencida
+
+- Seguimiento: una renovación anticipada ya pagada puede adelantar el inicio
+  del período. Cancelar/reactivar exige intervalo válido y fin vigente, sin
+  bloquear por inicio futuro: coincide con subscriptions.ts y conserva roles,
+  estados y guardas del servidor. Caso nuevo cubre +2h, fin +mes y expiración.
+
+- Un 401 de la sesión actual al releer suscripción, tenant, oferta o preparar
+  checkout utiliza el mismo reset de Cerrar sesión. Limpia resumen, acciones,
+  enlaces de pago y consentimientos, y presenta el login con un mensaje claro.
+- Una respuesta tardía de una sesión anterior no cierra el acceso posterior.
+  Errores 403 o temporales conservan la sesión y muestran el error existente.
+- Sólo cambia Mi cuenta y sus pruebas; no altera rutas, tokens, almacenamiento,
+  términos, precios, migraciones ni permisos. Casos nuevos verifican cada etapa,
+  cadenas detenidas, ausencia de acciones con contexto vencido y login posterior.
+  La construcción y aceptación desplegada se documentan en el repositorio SaaS.
+
+## 2026-11-09 — Acciones de cuenta coherentes con estado y período
+
+- Mi cuenta deshabilita «Abrir POS» para tenants fuera de active/restricted y
+  roles fuera del contrato de membresía. Retira href, marca aria-disabled y
+  conserva la guarda del handler contra eventos programáticos/duplicados.
+  No deniega por fecha vencida los estados grace/restricted que el servidor
+  permite; SSO y sus limitaciones siguen bajo autoridad del backend.
+- Cancelar/reactivar conserva roles y estado de cancelación; sólo ofrece las
+  acciones con período válido inicio <= ahora < fin. El handler vuelve a
+  comprobarlo al confirmar. Se explica el atraso junto al estado de la cuenta.
+- Actualizar recovery relee suscripción y la empresa activa mediante el GET
+  existente /v1/me/tenants. No reutiliza estado/rol antiguo ni acepta otro tenant.
+  SSO y cambios de renovación ignoran respuestas de otra sesión/vista.
+- Consumidores: web Mi cuenta y despliegue estático. Sin contratos nuevos,
+  migraciones, cambios de permisos, SDK, proveedor ni checkout. Pruebas VM de
+  estados, roles, fechas límite, ARIA y respuestas obsoletas; aceptación Linux
+  y navegador a cargo del operador. Ver [detalle](SUBSCRIPTION_RECOVERY.md).
+
+## 2026-11-09 — Recuperación manual desde el vencimiento anterior
+
+- Mi cuenta consume GET autenticado `/v1/me/subscription/recovery` y la variante
+  `{type:'recovery',subscriptionId,expectedPeriodStart}` del POST existente de
+  billing/checkout-sessions. Importes y períodos proceden del servidor. Reutiliza
+  un pendiente y conserva idempotencia ante respuesta incierta; otro período
+  requiere actualizar la oferta. No calcula fechas de cobro desde el nuevo pago.
+- Retorno: GET público de checkout incorpora `recovery` y cobertura actual.
+  Conserva polling acotado y espera `fulfilled`; un período aplicado que todavía
+  acaba en pasado muestra deuda pendiente y Mi cuenta, sin empresa lista,
+  contraseña inicial o SSO automático. Storage es opcional y no acredita pago.
+- Tarjeta: muestra gestión en estados vencidos ya admitidos por API. Conserva
+  helper Wompi, carga lazy, retry y los tres consentimientos del prerequisito.
+- Consumidores: publicar API y GET/HEAD/OPTIONS exactos del proxy antes de web;
+  los POST existentes y el payload de upgrade se conservan. Sin migraciones,
+  reglas de proveedor, precios ni cambios de SDK en este bloque frontend.
+- Pruebas de UI/contrato con DOM/HTTP/reloj simulados y Astro check. No equivalen
+  a aceptación de navegador, DB, cobro ni despliegue. Ver [detalle](SUBSCRIPTION_RECOVERY.md).
+
+## 2026-10-26 — Calidad de frontend y formularios
+
+- Consumidores: web/registro y despliegue comercial. Se conservan contratos HTTP,
+  payload, códigos de planes, aceptación jurídica e idempotencia de API. Sin SQL.
+- Validador accesible compartido; errores españoles y bloqueo del registro hasta
+  cargar catálogo legal. No envía datos por sí mismo ni modifica valores.
+- Hero AVIF con fallback WebP y presupuestos de peso en build:public. El hosting
+  debe servir todos los assets del build; no publicar sólo un HTML suelto.
+- No cambia configuración de analítica, indexación o versión de condiciones.
+- Evidencia y límites: [calidad](WEB_QUALITY_2026-10-26.md). No acredita pagos,
+  entregabilidad, Web Vitals reales ni certificación integral de accesibilidad.
+
+## 2026-10-26 — Descubrimiento, captación y preparación jurídica
+
+- Repositorio: `pagina_pos`, bloque `codex/web-growth-legal` desde `ad3f8c6`.
+- Consumidores: despliegue comercial, portal de registro/cuenta/pago y los chats
+  que mantengan contratos de API, correo, suscripciones y condiciones del SaaS.
+- Añade soluciones, guía, confianza y centro legal; header/footer compartidos y
+  estilos de marca centralizados. Las URL de cuenta, API, SSO y códigos de plan
+  se mantienen. No hay cambios HTTP del backend, permisos, datos ni migraciones.
+- **Cambio de build:** la indexación pública ahora exige
+  `PUBLIC_SITE_INDEXABLE=true`; usar `npm run build:public`. Preview/dev son
+  noindex y el sitemap de preview está vacío. Los despliegues estáticos deben
+  recibir el artefacto correcto, no solo cambiar variables después del build.
+- GA4 requiere ID público, `PUBLIC_ANALYTICS_REVIEWED=true`, build público,
+  consentimiento, origen HTTPS canónico y ruta editorial sin query; sin
+  ID no se carga etiqueta. No inicializar seguimiento en cuenta, tokens o pago.
+- Los artículos legales `2026-09-01` conservan contenido y versiones; la API
+  sigue siendo autoridad del catálogo. Tres borradores separados no tienen
+  vigencia ni producen aceptaciones. No actualizar hashes/filas de DB con el
+  baseline del artículo fuente. La adopción requiere nueva cadena versionada y
+  su propio cambio canónico, después de resolver datos y condiciones pendientes.
+- Los importes mensuales/anuales se mantienen. Ahorros corregidos por aritmética;
+  «Más elegido» pasa a recomendación editorial y se retira el cargo de arranque
+  de $150.000 no respaldado por el catálogo de referencia.
+- Validación y límites: [QA](QA_WEB_GROWTH_2026-10-26.md). No acredita despliegue,
+  indexación, audiencia conseguida, cobro real o dictamen jurídico.
+
+La coordinación del producto SaaS sigue en
+`pos_saas/docs/CROSS_BRANCH_COORDINATION.md`; su base es
+`feature/saas-foundation`. Este repositorio web tiene historial independiente.
+
+Compatibilidad con el plan de staging/marketing de `pos_saas` (base `adbde04`):
+no se anuncian cobros Bre-B ni entrega productiva acreditada. No se crea otro
+checkout. Las URL con query no inicializan esta analítica; coordinar una política
+de campañas UTM revisada antes de instrumentar atribución, sin datos personales.
+Para poner en vigencia los textos nuevos aún faltan decisiones y publicación
+versionada del control SaaS; los tres borradores no cambian la aceptación actual.
+
+## 2026-11-14 — Dependencias del build Astro aisladas
+
+Instalación pnpm congelada con nodeLinker: hoisted en pnpm-workspace.yaml. Evita resolver la
+versión de cookie del SaaS padre al prerenderizar. Sin cambios de grafo/lock,
+contrato, diseño ni ambiente. Compilación limpia y231 pruebas aprobadas; no
+equivale a aceptación integrada de staging.
+
+
+## 2026-11-17 — Acceso a Mi cuenta desde POS y visibilidad de contraseñas
+
+- Retorno con PKCE S256/estado y código single-use60s, sin Bearer persistido ni
+  cookies compartidas con Control. Destinos account/plans/fiscal y validación de
+  la sesión/empresa/rol original en API. Main POS requiere Control033, endpoints
+  portal-sso y `/auth/portal`; no equivale a un permiso de plataforma.
+- Ojito compartido para login/configuración y las dos formas de acceso heredado.
+  No cambia política ni contraseña. Formularios y pagos mantienen sus contratos.
+- Astro check sin errores y160 pruebas de cuenta/retorno aprobadas. Publicación,
+  navegación HTTPS y recepción de correos se documentan en el informe integrado
+  del POS; esta entrada no acredita esas comprobaciones todavía.
+- Cambios ajenos de Brand y pago/demo preservados fuera de este bloque.
