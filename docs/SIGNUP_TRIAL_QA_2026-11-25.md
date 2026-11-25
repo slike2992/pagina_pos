@@ -1,8 +1,25 @@
 # Documentos versionados del registro de prueba QA
 
+## Publicación posterior comprobada por Main
+
+Web7663c6867a33 (77 archivos) y SaaS6f004c4d8389 activos en staging. Instalación
+Ubuntu limpia con pnpm11.25.0/lock,37 pruebas específicas, Astro check sin errores
+y build22 páginas correctos. Catálogo adoptado2026-11-25 17:48:09.636 Bogotá.
+Codex Browser abrió registro, términos y privacidad: versión y huellas coinciden;
+la oferta15d ya no contradice el acceso.09-01, aceptaciones, contratos y política035
+se conservaron. El nuevo registro aún espera confirmación puntual del navegador;
+no se afirma alta, recepción de correo, contrato o pago por revisar las páginas.
+Evidencia de Main en `pos_saas/docs/QA_SIGNUP_LEGAL_CATALOG_2026-11-25.md`.
+
+Los artefactos revelaron CRLF en el packet SaaS frente a LF de la copia web. Se
+verificó igualdad completa del JSON, no se omitió contenido ni se sustituyó una
+huella: cada artefacto conserva su hash de bytes y cada documento la huella
+canónica especificada abajo. La fuente web conserva be97e5ef…; no asumir que
+un JSON formateado siempre tenga el mismo hash de archivo entre checkouts.
+
 La fuente canónica es `pos_saas/contracts/legal/signup-trial-qa-2026-11-25.json`.
-Se copió sin transformación a `src/content/signup-trial-qa-2026-11-25.json`:
-SHA256 de ambos archivos `be97e5efb921c9436532e9cf483d7d151d19693f1a8ba4b6c6f43ae28e6cc1df`.
+Su contenido se conserva íntegro en `src/content/signup-trial-qa-2026-11-25.json`:
+SHA256 del archivo web LF `be97e5efb921c9436532e9cf483d7d151d19693f1a8ba4b6c6f43ae28e6cc1df`.
 Versión `2026-11-25-prueba-qa`, scope `staging_trial_qa`, documentos `terms` y
 `privacy`. No editar la copia; una corrección posterior requiere coordinación de
 una nueva versión/fuente canónica, sin sustituir documentos aceptados.

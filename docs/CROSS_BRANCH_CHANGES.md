@@ -1,5 +1,19 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-25 — Publicación coordinada y páginas contrastadas en Codex Browser
+
+- Main activó web7663c68/SaaS6f004c4;77 archivos web verificados y fuente
+  registrada en la recuperación existente. Catálogo2026-11-25-prueba-qa adoptado
+ 22:48:09.636Z. Política035 y aceptaciones históricas conservan huella agregada.
+- Ubuntu limpio:37 específicos, Astro check0 y build22p. CUA real abrió registro,
+  términos/privacidad con versión y hashes concordantes. No nueva cuenta, correo,
+  contrato o pago aún: falta la aceptación puntual requerida por el navegador.
+- Diferencia EOL en fuente SaaS/web reconciliada por igualdad completa del JSON y
+  huella canónica, conservando los hashes de ambos artefactos. Sin editar09-01,
+  producción, POS, Control, DNS o recursos nuevos. Ver SIGNUP_TRIAL_QA_2026-11-25.md
+  y el informe/evidencia homónimos en pos_saas. Versiones documentales posteriores
+  no cambian el commit del estático servido ni requieren otro despliegue.
+
 ## 2026-11-25 — Tipos Node declarados y recuperación de aceptación vencida
 
 - Sobre135c594: `@types/node` pasa a devDependency explícita `^22.15.30`;
