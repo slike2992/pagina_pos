@@ -1,5 +1,26 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-24 — Tres documentos jurídicos y coherencia fiscal
+
+- Revisión preparada de términos, privacidad y anexo de transmisión, a partir
+  de 2026-10-26. Identidad de proveedor natural comprobada y condiciones de soporte,
+  cancelación y salida aprobadas por el titular; no se activan sin verificar
+  mecanismos. JSON único compartido por preview y tres PDF versionados.
+- Historial inmutable con SHA256 de fuentes antiguas y baseline activo intacto;
+  no modifica el catálogo API, consentimientos, migraciones o registro. El preview
+  conserva noindex y protección frente a un release indexable. Sin vigencia.
+- Consumidores: web/editorial FE y revisión coordinada en POS Ayuda, Control y
+  correos de pago/renovación. Cliente cumple deber fiscal; Cripton su integración
+  y controles. Interno/Sandbox no equivalen a emisión productiva.
+- Compatibilidad: no cambia HTTP, precios, plan, pagos, consentimiento recurrente
+  ni autenticación. No se toca Brand ni el checkout demo modificados por el usuario.
+- Validación: 276 pruebas web, Astro check/build aprobados; tres PDF/22 páginas
+  revisados y 152 párrafos/elementos cotejados. Preview HTTP local200/noindex.
+  El navegador Codex falla antes de conectar (CreateProcessWithLogonW1920);
+  revisión interactiva pendiente. No se despliega al dominio en este bloque.
+- Pendientes reales y fuentes: `LEGAL_REVIEW_2026-11-24.md`. No se ofrece
+  inmunidad frente a errores propios ni certificación jurídica/productiva.
+
 ## 2026-11-23 — Transparencia de cookies y preferencias por finalidad
 
 - El aviso informativo y el acceso «Cookies y privacidad» se presentan en las

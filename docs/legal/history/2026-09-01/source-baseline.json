@@ -1,0 +1,8 @@
+{
+  "version": "2026-09-01",
+  "description": "SHA256 of unchanged article source, not a replacement of the backend legal digest.",
+  "documents": {
+    "terminos": "2331b47288f4ff9c4d399c9086ad1fae36a4de80e0aa353f04a9a64dc994a1a3",
+    "privacidad": "cd2db68879b5d39ed5c0240833aba1e7afb5cc75edf87952da0dcfe80b17eba9"
+  }
+}

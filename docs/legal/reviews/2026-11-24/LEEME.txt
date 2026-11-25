@@ -1,0 +1,6 @@
+Documentos Cripton SaaS — revisión 2026-11-24
+
+Tres documentos preparados para revisión. No están vigentes ni cambian contratos anteriores.
+El cierre de cada PDF enumera las dependencias de adopción.
+El manifiesto permite verificar los PDF contra la fuente única versionada de la web.
+No se incluyen el RUT ni los acuerdos privados originales.

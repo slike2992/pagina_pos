@@ -1,0 +1,25 @@
+{
+  "description": "Archivo de fuentes; estos SHA256 NO sustituyen los digests del catálogo API.",
+  "files": [
+    {
+      "path": "2026-10-26/legal-drafts.ts.txt",
+      "source": "src/content/legal-drafts.ts",
+      "sha256": "e33af9ad3609a525e722b6a37ce1ce1c23310ce92d566b8c852f7c77dd273d65"
+    },
+    {
+      "path": "2026-09-01/terminos.astro.txt",
+      "source": "src/pages/legal/terminos.astro",
+      "sha256": "2e8f04191109b1de1f2604fa086e5e5a1baf5bb204796247d2375b4e136927d3"
+    },
+    {
+      "path": "2026-09-01/privacidad.astro.txt",
+      "source": "src/pages/legal/privacidad.astro",
+      "sha256": "47aaaa9a4af56f9d847e428adb50baef77e80a7f6c05a9ad67ec0f311d416a13"
+    },
+    {
+      "path": "2026-09-01/source-baseline.json",
+      "source": "scripts/legal-content-baseline.json",
+      "sha256": "2e1fa933b66e893c0847fe5e8845244ccc74c3a0f71872b32d77905069f61d1f"
+    }
+  ]
+}

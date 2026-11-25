@@ -270,6 +270,7 @@ export const solutions: readonly Solution[] = [
         heading: "Plan contratado y preparación para emitir",
         paragraphs: [
           "Cripton dispone de modalidades con facturación electrónica e integración con Factus. La disponibilidad comercial y la preparación para emitir son verificaciones diferentes: elegir el plan no autoriza automáticamente al emisor ni confirma que su configuración esté lista.",
+          "Si estás obligado a facturar electrónicamente, debes cumplir la emisión, validación y entrega exigidas por DIAN en la oportunidad legal. Un comprobante interno del POS o una prueba en Sandbox no reemplazan esa obligación; contratar un plan sin electrónica tampoco la elimina. Cripton responde por su integración y controles a cargo.",
           "La preparación se revisa por empresa y, cuando corresponde, por sucursal. Se necesitan datos del emisor, acceso propio al proveedor y numeración compatible con el ambiente. También deben estar preparados los datos de los productos y del cliente requeridos para el documento. Revisa tu caso con el equipo antes de iniciar la emisión.",
         ],
       },
