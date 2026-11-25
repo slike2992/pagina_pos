@@ -1,5 +1,23 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-25 — Subsanación de reclamos propios
+
+- Consumidor de pos_saas@17b2dee y Control038. Usa únicamente POST autenticado
+  `/v1/me/legal-support/cases/:caseId/completion`, versión e Idempotency-Key;
+  conserva borrador ante fallo/conflicto y obliga revisar el estado más reciente.
+- Requerimiento, subsanación y cierre conservan recibo original. El plazo es de
+  dos meses desde la notificación; la fecha mínima interna no aparece como un
+  vencimiento definitivo. El navegador no calcula ni reinicia plazos legales.
+- notificationProof opcional se presenta como declaración del operador, con
+  fecha/referencia en texto seguro; no acredita entrega independiente ni abre
+  enlaces aportados. Cierre no borra datos ni impide presentar otro reclamo.
+- Compatibilidad con casos anteriores sin claimCompletion. Se preservan sesión,
+  empresa activa, permisos, contratación, pagos y POS. Sin adjuntos de identidad.
+- 536 pruebas web aprobadas, incluyendo73 de soporte, Astro check/build correctos.
+  DOM y HTTP sintéticos; CUA, recepción real y dominio aún pendientes del bloqueo
+  Windows1920. No despliegue ni adopción de condiciones productivas.
+
+
 ## 2026-11-25 — Contratación por empresa y seguimiento de solicitudes
 
 - Consumidor de `pos_saas@bec4838`: GET/POST customer-contract, recibo privado y

@@ -37,6 +37,19 @@
   <section data-support-detail hidden aria-labelledby="support-detail-heading" tabindex="-1">
     <h4 id="support-detail-heading">Detalle de la solicitud</h4>
     <div data-support-detail-content></div>
+    <form data-support-completion-form hidden>
+      <fieldset data-support-completion-fields disabled>
+        <legend>Aclarar el reclamo</legend>
+        <div class="field">
+          <label for="support-completion-content">Información solicitada para completar tu reclamo</label>
+          <textarea id="support-completion-content" name="content" minlength="8" maxlength="8000" rows="6" autocomplete="off" aria-describedby="support-completion-help" required></textarea>
+          <p id="support-completion-help">Aporta sólo lo solicitado en el historial, entre 8 y 8.000 caracteres. El texto original se conserva. No envíes documentos de identidad, contraseñas, tokens ni códigos de verificación. No se admiten adjuntos.</p>
+        </div>
+        <button class="button" data-support-completion-send type="submit">Enviar aclaración del reclamo</button>
+      </fieldset>
+    </form>
+    <p data-support-completion-status role="status" aria-live="polite"></p>
+    <button class="button secondary" data-support-detail-refresh type="button">Actualizar este reclamo</button>
     <button class="button secondary" data-support-close type="button">Cerrar detalle</button>
   </section>
   <p class="support-guidance">Las fechas y los plazos son los informados por el servidor, mostrados en hora de Bogotá. Una prórroga sólo se muestra cuando está registrada. La indisponibilidad de este formulario no impide usar el POS ni administrar tu plan.</p>

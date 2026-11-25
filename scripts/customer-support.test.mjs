@@ -20,10 +20,10 @@ const plain = value => JSON.parse(JSON.stringify(value));
 function browser(options = {}) {
   const elements = new Map(), calls = [], navigations = [];
   const get = selector => { if (!elements.has(selector)) elements.set(selector, element()); return elements.get(selector); };
-  const document = { querySelector: get, createElement: () => element() };
-  function element() {
+  const document = { querySelector: get, createElement: tag => element(tag) };
+  function element(tag = "div") {
     const listeners = new Map(), attrs = new Map();
-    return { textContent: '', value: '', checked: false, hidden: false, disabled: false, children: [], dataset: {}, ownerDocument: document,
+    return { tagName: tag.toUpperCase(), textContent: '', value: '', checked: false, hidden: false, disabled: false, children: [], dataset: {}, ownerDocument: document,
       querySelector: get, reportValidity: () => true, reset() {}, focus() {}, showModal() {}, close() {},
       addEventListener(name, callback) { const callbacks = listeners.get(name) ?? []; callbacks.push(callback); listeners.set(name, callbacks); },
       async dispatch(name) { for (const callback of listeners.get(name) ?? []) await callback({ preventDefault() {} }); },
@@ -33,6 +33,9 @@ function browser(options = {}) {
   }
   const kind = element(), content = element(), form = get('[data-support-form]');
   form.elements = { namedItem: name => ({ kind, content })[name] }; form.reset = () => { kind.value = ''; content.value = ''; };
+  const completionContent = element(), completionForm = get('[data-support-completion-form]');
+  completionForm.elements = { namedItem: name => name === 'content' ? completionContent : null };
+  completionForm.reset = () => { completionContent.value = ''; };
   get('#account').dataset = { apiUrl: 'https://api.example.invalid', posUrl: 'https://pos.example.invalid' };
   let context = { accessToken: 'token-1', ...scope, session: {} }, keys = 0, logins = 0, unauthorized = 0;
   let tenant = { tenantId: id(1), name: 'Empresa 1', role: options.role ?? 'owner', status: 'active' };
@@ -57,6 +60,10 @@ function browser(options = {}) {
         if (call.method === 'POST') return options.post ? options.post(call, logins) : reply(receipt({ kind: JSON.parse(call.body).kind }));
         return options.list ? options.list(call, logins) : reply({ items: options.items ?? [], nextBefore: null });
       }
+      if (route.endsWith('/completion')) {
+        assert.equal(call.method, 'POST');
+        return options.completion ? options.completion(call, logins) : assert.fail('Unexpected claim completion');
+      }
       if (route.startsWith('/v1/me/legal-support/cases/')) return options.detail ? options.detail(call, logins) : reply(detail());
       assert.fail(`Unexpected request ${route}`);
     },
@@ -74,9 +81,10 @@ function browser(options = {}) {
   const helper = load('customer-support'); let controller;
   if (options.account) vm.runInContext(`(function(exports,require){${accountCode}\n})`, vmContext)({}, load);
   else controller = helper.bindCustomerSupport(get('#account'), { apiUrl: 'https://api.example.invalid', getContext: () => context, onUnauthorized: () => { unauthorized++; context = null; } });
-  return { helper, controller, calls, navigations, get, kind, content, get unauthorized() { return unauthorized; },
+  return { helper, controller, calls, navigations, get, kind, content, completionContent, get unauthorized() { return unauthorized; },
     setContext(value) { context = value; }, fill(type = 'support', value = 'Necesito ayuda con esta cuenta.') { kind.value = type; content.value = value; },
     async login() { await get('#login-form').dispatch('submit'); await flush(); },
+    async complete(value) { if (value !== undefined) completionContent.value = value; await completionForm.dispatch('submit'); await flush(); },
     async submit() { await form.dispatch('submit'); await flush(); },
     async click(action) { await get(`[data-action='${action}']`).dispatch('click'); await flush(); },
     async open(index = 0) { await get('[data-support-list]').children[index].children[0].dispatch('click'); await flush(); },
@@ -213,4 +221,266 @@ test('a malformed successful JSON response is reported and never leaves a fictit
   assert.ok(h.get('[data-support-status]').textContent.includes('No pudimos verificar'));
   assert.equal(h.get('[data-support-fields]').disabled, true); assert.equal(h.get('[data-support-refresh]').disabled, false);
   assert.equal(h.get('[data-support-created]').hidden, true);
+});
+
+const claimCompletion = (extra = {}) => ({ state: 'required', requiredAt: '2026-12-31T15:00:00Z', requirementDueAt: '2026-12-31T23:00:00Z', completionDeadlineExclusiveAt: '2027-03-02T05:00:00Z', completedAt: null, closedAt: null, initialDueAt: null, maximumDueAt: null, ...extra });
+const claim = (extra = {}) => summary({ receipt: receipt({ kind: 'data_claim', initialDueAt: '2027-01-25T23:00:00Z', maximumDueAt: '2027-02-04T23:00:00Z' }), status: 'in_progress', version: 2, claimCompletion: claimCompletion(), ...extra });
+const claimDetail = (extra = {}) => detail({ ...claim(), events: [
+  detail().events[0], { eventId: id(20), type: 'completion_required', occurredAt: claimCompletion().requiredAt, actorPrincipalId: id(6), message: 'Indica el dato concreto que necesitas corregir <img onerror=alert(1)>', dueAt: claimCompletion().completionDeadlineExclusiveAt },
+], ...extra });
+const completed = (extra = {}) => claim({ version: 3, dueAt: '2027-04-05T23:00:00Z', claimCompletion: claimCompletion({ state: 'completed', completedAt: '2027-03-12T15:00:00Z', initialDueAt: '2027-04-05T23:00:00Z', maximumDueAt: '2027-04-15T23:00:00Z' }), ...extra });
+const completedDetail = (extra = {}) => claimDetail({ ...completed(), events: [...claimDetail().events,
+  { eventId: id(21), type: 'claim_completed', occurredAt: completed().claimCompletion.completedAt, actorPrincipalId: id(2), message: 'Aclaración presentada una sola vez', dueAt: completed().dueAt }], ...extra });
+const closed = () => claim({ status: 'resolved', version: 3, resolvedAt: '2027-03-03T15:00:00Z', claimCompletion: claimCompletion({ state: 'closed_incomplete', closedAt: '2027-03-03T15:00:00Z' }) });
+const completions = h => h.calls.filter(call => call.url.endsWith('/completion'));
+
+// Both nullable terminal timestamps and absent metadata on historical cases are intentional.
+test('038 parses all three completion states while retaining legacy statuses and immutable receipt dates', () => {
+  const h = browser();
+  assert.equal(h.helper.readSupportSummary(summary(), scope).claimCompletion, undefined);
+  for (const value of [claim(), completed(), closed()]) {
+    const parsed = plain(h.helper.readSupportSummary(value, scope)); assert.deepEqual(parsed, value);
+    assert.deepEqual(parsed.receipt, claim().receipt);
+  }
+  for (const bad of [null, {}, claimCompletion({ state: 'invented' }), claimCompletion({ requiredAt: 'bad' }), claimCompletion({ completionDeadlineExclusiveAt: null }), claimCompletion({ completedAt: '2027-01-01T00:00:00Z' }), claimCompletion({ state: 'completed' }), claimCompletion({ state: 'closed_incomplete' })]) assert.throws(() => h.helper.readSupportSummary(claim({ claimCompletion: bad }), scope));
+  assert.throws(() => h.helper.readSupportSummary(summary({ claimCompletion: claimCompletion() }), scope));
+});
+
+test('required detail shows notification-based two-month rule and original reason without treating registration as a final deadline', async () => {
+  const h = browser({ items: [claim()], detail: () => reply(claimDetail()) }); await h.controller.refresh(); await h.open();
+  assert.equal(h.get('[data-support-completion-form]').hidden, false); assert.equal(h.get('[data-support-completion-send]').disabled, false);
+  const output = text(h.get('[data-support-detail-content]'));
+  for (const expected of ['dos meses de calendario desde la notificación', 'ni fija por sí solo la fecha definitiva', 'Requerimiento registrado', '31 de diciembre de 2026', 'El registro, recibo y texto originales se conservan', 'Indica el dato concreto', '<img onerror=alert(1)>', 'Contenido privado']) assert.ok(output.includes(expected), expected);
+  assert.equal(completions(h).length, 0);
+  const formMarkup = markup.match(/<form data-support-completion-form[\s\S]*?<\/form>/)[0];
+  for (const expected of ['minlength="8"', 'maxlength="8000"', 'documentos de identidad', 'contraseñas', 'tokens', 'No se admiten adjuntos']) assert.ok(formMarkup.includes(expected));
+  assert.equal(/Date\.now|setMonth|setDate|setInterval/.test(source), false);
+});
+
+test('explicit completion sends only content and expectedVersion to /completion and replaces UI only with server data', async () => {
+  let applied = false;
+  const h = browser({ items: [claim()], detail: () => reply(applied ? completedDetail() : claimDetail()), completion: () => { applied = true; return reply(completed()); } });
+  await h.controller.refresh(); await h.open(); await h.complete('  Quiero corregir el dato indicado.  ');
+  const call = completions(h)[0]; assert.ok(call.url.endsWith(`/${id(3)}/completion`));
+  assert.deepEqual(JSON.parse(call.body), { content: 'Quiero corregir el dato indicado.', expectedVersion: 2 });
+  assert.equal(call.headers.authorization, 'Bearer token-1'); assert.ok(call.headers['idempotency-key'].length >= 16);
+  assert.equal(call.cache, 'no-store'); assert.equal(call.credentials, 'omit');
+  assert.equal(h.get('[data-support-completion-form]').hidden, true); assert.equal(h.completionContent.value, '');
+  const output = text(h.get('[data-support-detail-content]'));
+  assert.ok(output.includes('Aclaración recibida')); assert.ok(output.includes('5 de abril de 2027')); assert.ok(output.includes('15 de abril de 2027'));
+  assert.ok(output.includes('25 de enero de 2027')); assert.ok(output.includes('Contenido privado'));
+  assert.equal((output.match(/Aclaración presentada una sola vez/g) ?? []).length, 1);
+  assert.equal(h.calls.some(call => call.url.endsWith('/complete')), false);
+});
+
+for (const input of ['', '       ', '1234567', 'a'.repeat(8001)]) test(`invalid completion length ${input.length} never sends a request`, async () => {
+  const h = browser({ items: [claim()], detail: () => reply(claimDetail()) }); await h.controller.refresh(); await h.open(); await h.complete(input); assert.equal(completions(h).length, 0);
+});
+
+test('completion accepts 8 and 8000 trimmed characters and rejects invalid expectedVersion before HTTP', () => {
+  const h = browser();
+  for (const length of [8, 8000]) assert.deepEqual(plain(h.helper.createClaimCompletion('  ' + 'a'.repeat(length) + '  ', 2)), { content: 'a'.repeat(length), expectedVersion: 2 });
+  for (const version of [0, -1, 1.5, '2', NaN]) assert.throws(() => h.helper.createClaimCompletion('Texto válido', version));
+});
+
+test('late completion is allowed while the server still reports required, without a client-time cutoff', async () => {
+  const old = claimCompletion({ requiredAt: '2000-01-01T15:00:00Z', requirementDueAt: '2000-01-03T23:00:00Z', completionDeadlineExclusiveAt: '2000-03-02T05:00:00Z' });
+  const h = browser({ items: [claim({ claimCompletion: old })], detail: () => reply(claimDetail({ claimCompletion: old })), completion: () => reply({}, 503) });
+  await h.controller.refresh(); await h.open(); await h.complete('Aclaración posterior al plazo.');
+  assert.equal(completions(h).length, 1); assert.ok(text(h.get('[data-support-detail-content]')).includes('incluso de forma tardía'));
+});
+
+test('ambiguous completion retry keeps the exact body/key, is single flight, and replay creates no duplicate history or new deadline', async () => {
+  const waiting = Promise.withResolvers(); let attempts = 0, applied = false;
+  const h = browser({ items: [claim()], detail: () => reply(applied ? completedDetail() : claimDetail()), completion: () => ++attempts === 1 ? waiting.promise : reply(completed()) });
+  await h.controller.refresh(); await h.open();
+  const first = h.complete('Datos complementarios del reclamo'), second = h.complete(); await flush(); assert.equal(completions(h).length, 1);
+  applied = true; waiting.resolve(reply({ code: 'legal_support_unavailable' }, 503)); await Promise.all([first, second]);
+  assert.equal(h.completionContent.value, 'Datos complementarios del reclamo'); await h.complete();
+  assert.equal(completions(h).length, 2); assert.equal(completions(h)[0].body, completions(h)[1].body);
+  assert.equal(completions(h)[0].headers['idempotency-key'], completions(h)[1].headers['idempotency-key']);
+  const output = text(h.get('[data-support-detail-content]')); assert.equal((output.match(/Aclaración presentada una sola vez/g) ?? []).length, 1);
+  assert.equal(/\b2 de marzo de 2027\b/.test(output), false); assert.ok(output.includes('5 de abril de 2027'));
+  assert.equal(h.helper.readSupportSummary(completed(), scope).claimCompletion.completionDeadlineExclusiveAt, claimCompletion().completionDeadlineExclusiveAt);
+  await h.complete('Otro intento no debe enviarse'); assert.equal(completions(h).length, 2);
+});
+
+test('409 refreshes the detail without automatic POST and retains draft/attempts until an explicit submission at the new version', async () => {
+  let version = 2, reads = 0;
+  const h = browser({ items: [claim()], detail: () => { reads++; return reply(claimDetail({ version })); }, completion: () => { version = 3; return reply({ code: 'legal_support_version_conflict' }, 409); } });
+  await h.controller.refresh(); await h.open(); await h.complete('Conserva mi aclaración al actualizar.');
+  assert.equal(reads, 2); assert.equal(completions(h).length, 1); assert.equal(h.completionContent.value, 'Conserva mi aclaración al actualizar.');
+  assert.ok(h.get('[data-support-completion-status]').textContent.includes('Conservamos tu borrador')); assert.equal(h.get('[data-support-completion-send]').disabled, false);
+  await h.complete(); assert.equal(completions(h).length, 2); assert.equal(JSON.parse(completions(h)[1].body).expectedVersion, 3);
+  assert.notEqual(completions(h)[0].headers['idempotency-key'], completions(h)[1].headers['idempotency-key']);
+  await h.complete(); assert.equal(completions(h)[1].headers['idempotency-key'], completions(h)[2].headers['idempotency-key']);
+});
+
+for (const terminal of [completed(), closed()]) test(`409 terminal ${terminal.claimCompletion.state} preserves a read-only draft and cannot resubmit`, async () => {
+  let conflict = false;
+  const h = browser({ items: [claim()], detail: () => reply(conflict ? claimDetail({ ...terminal }) : claimDetail()), completion: () => { conflict = true; return reply({ code: 'legal_support_completion_conflict' }, 409); } });
+  await h.controller.refresh(); await h.open(); await h.complete('Texto conservado después del conflicto.');
+  assert.equal(h.completionContent.value, 'Texto conservado después del conflicto.'); assert.equal(h.completionContent.readOnly, true);
+  assert.equal(h.get('[data-support-completion-send]').disabled, true); await h.complete(); assert.equal(completions(h).length, 1);
+  if (terminal.claimCompletion.state === 'closed_incomplete') assert.ok(text(h.get('[data-support-detail-content]')).includes('Puedes abrir un nuevo reclamo'));
+});
+
+test('failed 409 refresh disables stale submission, preserving the draft and key until explicit detail refresh recovers', async () => {
+  let reads = 0;
+  const h = browser({ items: [claim()], detail: () => ++reads === 2 ? reply({ code: 'legal_support_unavailable' }, 503) : reply(claimDetail()), completion: () => reply({ code: 'legal_support_version_conflict' }, 409) });
+  await h.controller.refresh(); await h.open(); await h.complete('Mantén este texto mientras recupero el caso.');
+  assert.equal(h.get('[data-support-completion-send]').disabled, true); assert.equal(h.completionContent.value, 'Mantén este texto mientras recupero el caso.');
+  await h.complete(); assert.equal(completions(h).length, 1);
+  await h.get('[data-support-detail-refresh]').dispatch('click'); await flush(); assert.equal(h.get('[data-support-completion-send]').disabled, false);
+  await h.complete(); assert.equal(completions(h).length, 2); assert.equal(completions(h)[0].headers['idempotency-key'], completions(h)[1].headers['idempotency-key']);
+});
+
+for (const value of [summary(), summary({ receipt: receipt({ kind: 'data_query' }) }), completed(), closed()]) test(`only a required own data_claim can POST completion (${value.receipt.kind}/${value.claimCompletion?.state ?? 'legacy'})`, async () => {
+  const h = browser({ items: [value], detail: () => reply(detail({ ...value })) }); await h.controller.refresh(); await h.open();
+  assert.equal(h.get('[data-support-completion-form]').hidden, true); await h.complete('Forzar envío no permitido'); assert.equal(completions(h).length, 0);
+});
+
+test('closed incomplete is procedural closure, preserves history and original text, and permits a separate new claim', async () => {
+  const value = claimDetail({ ...closed(), events: [...claimDetail().events, { eventId: id(22), type: 'closed_incomplete', occurredAt: closed().resolvedAt, actorPrincipalId: id(6), message: 'Decisión motivada sobre lo faltante', dueAt: null }] });
+  const h = browser({ items: [closed()], detail: () => reply(value) }); await h.controller.refresh(); await h.open();
+  const output = text(h.get('[data-support-detail-content]'));
+  for (const expected of ['sin decisión de fondo', 'no resuelve de fondo ni borra datos', 'Puedes abrir un nuevo reclamo', 'Contenido privado', 'Decisión motivada sobre lo faltante']) assert.ok(output.includes(expected));
+  h.fill('data_claim', 'Nuevo reclamo por una solicitud independiente'); await h.submit(); assert.equal(writes(h).length, 1); assert.equal(completions(h).length, 0);
+});
+
+for (const response of ['success', '409', '401']) test(`late completion ${response} after logout/new tenant cannot restore draft, state or perform an extra GET`, async () => {
+  const waiting = Promise.withResolvers();
+  const h = browser({ account: true, list: (_call, login) => reply({ items: login === 1 ? [claim()] : [], nextBefore: null }), detail: () => reply(claimDetail()), completion: () => waiting.promise });
+  await h.login(); await h.open(); const pending = h.complete('Aclaración privada del tenant anterior'); await flush();
+  await h.click('logout'); await h.login(); const count = h.calls.length;
+  waiting.resolve(response === 'success' ? reply(completed()) : { status: Number(response), ok: false, json() { assert.fail('Do not read stale response'); } }); await pending;
+  assert.equal(h.calls.length, count); assert.equal(h.completionContent.value, ''); assert.equal(h.get('[data-support-detail]').hidden, true);
+  assert.equal(h.get("[data-field='tenant-name']").textContent, 'Empresa 2'); assert.equal(h.get('.account-panel').hidden, false);
+});
+
+test('account refresh invalidates pending completion and a new login never reuses the old draft or key', async () => {
+  const waiting = Promise.withResolvers();
+  const h = browser({ account: true, items: [claim()], detail: () => reply(claimDetail()), completion: () => waiting.promise }); await h.login(); await h.open();
+  const pending = h.complete('Borrador anterior a la actualización'); await flush(); await h.click('refresh-recovery'); waiting.resolve(reply(completed())); await pending;
+  assert.equal(h.completionContent.value, ''); assert.equal(h.get('[data-support-detail]').hidden, true);
+  await h.open(); assert.equal(h.completionContent.value, '');
+});
+
+test('closing and reopening a case retains only its own draft and retry key, while reset erases both', async () => {
+  const h = browser({ items: [claim(), claim({ receipt: { ...claim().receipt, caseId: id(30) } })], detail: call => reply(claimDetail({ receipt: { ...claim().receipt, caseId: new URL(call.url).pathname.split('/').at(-1) } })), completion: () => reply({}, 503) });
+  await h.controller.refresh(); await h.open(); await h.complete('Borrador privado del primer caso');
+  await h.get('[data-support-close]').dispatch('click'); await h.open(1); assert.equal(h.completionContent.value, '');
+  await h.get('[data-support-close]').dispatch('click'); await h.open(); assert.equal(h.completionContent.value, 'Borrador privado del primer caso');
+  await h.complete(); assert.equal(completions(h)[0].headers['idempotency-key'], completions(h)[1].headers['idempotency-key']);
+  h.controller.reset(); await h.controller.refresh(); await h.open(); assert.equal(h.completionContent.value, ''); await h.complete('Borrador privado del primer caso');
+  assert.notEqual(completions(h)[1].headers['idempotency-key'], completions(h)[2].headers['idempotency-key']);
+});
+
+test('foreign details and foreign completion summaries never authorize or expose another account', async () => {
+  for (const mismatch of [{ tenantId: id(88) }, { principalId: id(88) }]) {
+    const h = browser({ items: [claim()], detail: () => reply(claimDetail({ receipt: { ...claim().receipt, ...mismatch } })) }); await h.controller.refresh(); await h.open();
+    await h.complete('Datos que no se deben enviar'); assert.equal(completions(h).length, 0);
+    const response = browser({ items: [claim()], detail: () => reply(claimDetail()), completion: () => reply(completed({ receipt: { ...claim().receipt, ...mismatch } })) });
+    await response.controller.refresh(); await response.open(); await response.complete('Aclaración sólo para mi propio reclamo');
+    assert.equal(response.calls.filter(call => call.method === 'GET' && new URL(call.url).pathname.endsWith(id(3))).length, 1);
+    assert.equal(response.completionContent.value, 'Aclaración sólo para mi propio reclamo');
+  }
+});
+
+test('replayed completion refreshes a later server version without resetting its extended deadline', async () => {
+  let submitted = false;
+  const later = completedDetail({ version: 4, dueAt: '2027-04-09T23:00:00Z', extendedAt: '2027-04-01T15:00:00Z' });
+  const h = browser({ items: [claim()], detail: () => reply(submitted ? later : claimDetail()), completion: () => { submitted = true; return reply(completed()); } });
+  await h.controller.refresh(); await h.open(); await h.complete('Aclaración cuyo recibo original se recupera');
+  const output = text(h.get('[data-support-detail-content]'));
+  assert.ok(output.includes('Versión: 4')); assert.ok(output.includes('9 de abril de 2027')); assert.ok(output.includes('5 de abril de 2027'));
+  assert.equal(/\b2 de marzo de 2027\b/.test(output), false); assert.equal(completions(h).length, 1);
+  await h.complete('No debe haber otra entrega'); assert.equal(completions(h).length, 1);
+});
+
+test('closing the detail during completion prevents a late response from reopening it or adding another request', async () => {
+  const waiting = Promise.withResolvers();
+  const h = browser({ items: [claim()], detail: () => reply(claimDetail()), completion: () => waiting.promise });
+  await h.controller.refresh(); await h.open(); const pending = h.complete('Texto de una entrega cuyo detalle cierro'); await flush();
+  await h.get('[data-support-close]').dispatch('click'); const count = h.calls.length;
+  waiting.resolve(reply(completed())); await pending;
+  assert.equal(h.calls.length, count); assert.equal(h.get('[data-support-detail]').hidden, true); assert.equal(h.completionContent.value, '');
+});
+
+test('current completion 401 clears the account and draft before JSON; foreign or changed-boundary responses cannot mark completion', async () => {
+  const h = browser({ account: true, items: [claim()], detail: () => reply(claimDetail()), completion: () => ({ ok: false, status: 401, json() { assert.fail('401 body is private'); } }) });
+  await h.login(); await h.open(); await h.complete('Aclaración de una sesión expirada');
+  assert.equal(h.get('.account-panel').hidden, true); assert.equal(h.completionContent.value, '');
+  for (const response of [completed({ receipt: { ...claim().receipt, caseId: id(98) } }), completed({ claimCompletion: { ...completed().claimCompletion, completionDeadlineExclusiveAt: '2099-01-01T00:00:00Z' } })]) {
+    const bad = browser({ items: [claim()], detail: () => reply(claimDetail()), completion: () => reply(response) }); await bad.controller.refresh(); await bad.open(); await bad.complete('Datos que no deben reemplazar la ventana original');
+    assert.equal(bad.completionContent.value, 'Datos que no deben reemplazar la ventana original'); assert.ok(bad.get('[data-support-completion-status]').textContent.includes('No pudimos verificar'));
+  }
+});
+
+const notificationProof = (extra = {}) => ({ type: 'operator_declaration', notificationAt: '2027-01-01T15:00:00.000Z', notificationEvidence: 'Radicado QA-038 del canal de atención', declaredByPrincipalId: id(6), declaredAt: '2027-03-03T15:00:00.000Z', closureNotBeforeAt: '2027-03-02T05:00:00.000Z', ...extra });
+const notifiedClosure = (proof = notificationProof()) => claimDetail({ ...closed(), events: [...claimDetail().events,
+  { eventId: id(23), type: 'closed_incomplete', occurredAt: closed().resolvedAt, actorPrincipalId: id(6), message: 'Motivo limpio del cierre por falta de información', dueAt: null, ...(proof === undefined ? {} : { notificationProof: proof }) }] });
+
+test('operator notification is optional on historical closure, never inferred from occurrence or requirement dates', async () => {
+  const legacy = claimDetail({ ...closed(), events: [{ eventId: id(23), type: 'closed_incomplete', occurredAt: closed().resolvedAt, actorPrincipalId: id(6), message: 'Cierre histórico con motivo limpio', dueAt: null }] });
+  const h = browser({ items: [closed()], detail: () => reply(legacy) }); await h.controller.refresh(); await h.open();
+  assert.equal(h.helper.readNotificationProof(undefined), undefined);
+  assert.equal(text(h.get('[data-support-detail-content]')).includes('Notificación declarada por operador'), false);
+  assert.ok(text(h.get('[data-support-detail-content]')).includes('Cierre histórico con motivo limpio'));
+});
+
+test('notification proof renders operator declaration, Bogota dates and a literal reference without automatic links or client inputs', async () => {
+  const reference = 'https://notificaciones.example.invalid/QA-038 <img src=x onerror=alert(1)>';
+  const value = notifiedClosure(notificationProof({ notificationEvidence: reference }));
+  const h = browser({ items: [closed()], detail: () => reply(value) }); await h.controller.refresh(); await h.open();
+  const parsed = plain(h.helper.readSupportDetail(value, scope, id(3)));
+  assert.deepEqual(parsed.events.at(-1).notificationProof, value.events.at(-1).notificationProof);
+  assert.equal(parsed.events.at(-1).message, 'Motivo limpio del cierre por falta de información');
+  const output = text(h.get('[data-support-detail-content]'));
+  for (const expected of ['Notificación declarada por operador', 'Fecha de notificación declarada', '1 de enero de 2027', '10:00 (Bogotá)', 'Referencia declarada: ' + reference, 'Declaración registrada', 'Cierre no antes de (según servidor)', '2 de marzo de 2027', 'no resuelve de fondo ni borra datos', 'desde la notificación del requerimiento', 'Registrar el requerimiento no prueba su notificación']) assert.ok(output.includes(expected), expected);
+  assert.equal(/entrega verificada|delivery verificada|notificación verificada/i.test(output), false);
+  const nodes = node => [node, ...node.children.flatMap(nodes)];
+  assert.ok(nodes(h.get('[data-support-detail-content]')).every(node => node.tagName !== 'A' && !Object.hasOwn(node, 'href')));
+  assert.equal(markup.includes('name="notification'), false); assert.equal(markup.includes('name="declared'), false); assert.equal(completions(h).length, 0);
+});
+
+for (const length of [8, 500]) test(`notification reference length ${length} is accepted without changing the original text`, () => {
+  const h = browser(); const proof = notificationProof({ notificationEvidence: 'R'.repeat(length) });
+  assert.deepEqual(plain(h.helper.readNotificationProof(proof)), proof);
+});
+
+for (const bad of [null, {}, notificationProof({ type: 'delivery_verified' }), notificationProof({ notificationAt: 'invalid' }), notificationProof({ notificationAt: null }), notificationProof({ declaredAt: '2027-03-03T10:00:00-05:00' }), notificationProof({ closureNotBeforeAt: '2027-03-02' }), notificationProof({ declaredByPrincipalId: 'invalid' }), notificationProof({ notificationEvidence: '1234567' }), notificationProof({ notificationEvidence: 'R'.repeat(501) }), notificationProof({ notificationEvidence: '   ' }), notificationProof({ notificationEvidence: 'Referencia\ncon salto' }), notificationProof({ notificationEvidence: 'Bearer private-secret' }), notificationProof({ notificationEvidence: 'password=private-secret' }), notificationProof({ notificationEvidence: 'https://example.invalid/reference?token=secret' })]) test(`malformed operator proof never enters the detail (${JSON.stringify(bad).slice(0, 110)})`, async () => {
+  const h = browser({ items: [closed()], detail: () => reply(notifiedClosure(bad)) });
+  assert.throws(() => h.helper.readSupportDetail(notifiedClosure(bad), scope, id(3)));
+  await h.controller.refresh(); await h.open();
+  assert.equal(h.get('[data-support-detail]').hidden, true); assert.equal(h.get('[data-support-detail-content]').children.length, 0);
+});
+
+test('an operator proof on a non-closure event is rejected and a late private notification cannot restore another tenant', async () => {
+  const h = browser();
+  assert.throws(() => h.helper.readSupportDetail(claimDetail({ events: [{ ...detail().events[0], notificationProof: notificationProof() }] }), scope, id(3)));
+  const waiting = Promise.withResolvers();
+  const late = browser({ account: true, list: (_call, login) => reply({ items: login === 1 ? [closed()] : [], nextBefore: null }), detail: () => waiting.promise });
+  await late.login(); const pending = late.open(); await flush(); await late.click('logout'); await late.login();
+  waiting.resolve(reply(notifiedClosure())); await pending;
+  assert.equal(late.get('[data-support-detail]').hidden, true); assert.equal(late.get('[data-support-detail-content]').children.length, 0);
+  assert.equal(late.get("[data-field='tenant-name']").textContent, 'Empresa 2');
+});
+
+test('an old requiredAt and its internal closure boundary never become the customer final deadline in rendered detail or history', async () => {
+  const completion = claimCompletion({ requiredAt: '2000-01-10T15:00:00Z', requirementDueAt: '2000-01-11T23:00:00Z', completionDeadlineExclusiveAt: '2000-03-11T05:00:00Z' });
+  const value = claimDetail({ claimCompletion: completion, events: [{ ...claimDetail().events.at(-1), occurredAt: completion.requiredAt, dueAt: completion.completionDeadlineExclusiveAt }] });
+  const h = browser({ items: [claim({ claimCompletion: completion })], detail: () => reply(value), completion: () => reply({}, 503) });
+  await h.controller.refresh(); await h.open();
+  const output = text(h.get('[data-support-detail-content]'));
+  assert.ok(output.includes('10 de enero de 2000')); assert.ok(output.includes('Indica el dato concreto'));
+  assert.ok(output.includes('dos meses de calendario desde la notificación')); assert.ok(output.includes('ni fija por sí solo la fecha definitiva'));
+  assert.equal(output.includes('11 de marzo de 2000'), false); assert.equal(output.includes(completion.completionDeadlineExclusiveAt), false);
+  assert.equal(/fecha límite exclusiva|antes de este instante/i.test(output), false);
+  assert.equal(h.get('[data-support-completion-send]').disabled, false);
+  const parsed = plain(h.helper.readSupportDetail(value, scope, id(3)));
+  assert.equal(parsed.claimCompletion.requiredAt, completion.requiredAt);
+  assert.equal(parsed.claimCompletion.completionDeadlineExclusiveAt, completion.completionDeadlineExclusiveAt);
+  assert.equal(parsed.events.at(-1).dueAt, completion.completionDeadlineExclusiveAt);
+  await h.complete('Aclaración pese a una referencia interna antigua'); assert.equal(completions(h).length, 1);
 });
