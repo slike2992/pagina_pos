@@ -6,6 +6,14 @@ Contratación por empresa y solicitudes de soporte/datos: ver
 contrato, el pago y la renovación automática son actos distintos; la web consume
 la autoridad de la API y no activa condiciones productivas al desplegarse.
 
+Registro de prueba QA versionado: [fuente, rutas y guard de staging](docs/SIGNUP_TRIAL_QA_2026-11-25.md).
+El opt-in `PUBLIC_REGISTRATION_LEGAL_VERSION=2026-11-25-prueba-qa` sólo se admite
+con `PUBLIC_SITE_URL=https://staging.cripton.com.co`; cambia los enlaces del pie
+y centro legal. Ausente conserva09-01. Las rutas QA se generan sólo en staging,
+con JSON copiado exactamente de SaaS y huella canónica visible. No modifica los
+documentos09-01, sus archivos históricos ni el flujo de registro; la API decide
+las versiones aplicables. Ejecutar `npm run check`, `npm run build` y `npm run test:web`.
+
 Sitio Astro del producto POS SaaS. El repositorio de la web es `pagina_pos`;
 POS, API, worker y Cripton Control pertenecen al repositorio `pos_saas`.
 La web genera HTML estático y consume la API SaaS en los flujos interactivos.

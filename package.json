@@ -12,7 +12,7 @@
     "check": "astro check",
     "preview": "astro preview",
     "astro": "astro",
-    "test:web": "node --test scripts/customer-contract.test.mjs scripts/customer-support.test.mjs scripts/seo.test.mjs scripts/consent.test.mjs scripts/form-feedback.test.mjs scripts/payment-result.test.mjs scripts/signup-resume.test.mjs scripts/account-payment-source.test.mjs scripts/account-plans.test.mjs scripts/portal-return.test.mjs scripts/legal-review.test.mjs",
+    "test:web": "node --test scripts/customer-contract.test.mjs scripts/customer-support.test.mjs scripts/seo.test.mjs scripts/consent.test.mjs scripts/form-feedback.test.mjs scripts/payment-result.test.mjs scripts/signup-resume.test.mjs scripts/account-payment-source.test.mjs scripts/account-plans.test.mjs scripts/portal-return.test.mjs scripts/legal-review.test.mjs scripts/signup-trial-legal.test.mjs",
     "qa:web": "astro check && astro build && npm run test:web",
     "build:public": "node scripts/build-public.mjs",
     "audit:performance": "node scripts/audit-performance.mjs"

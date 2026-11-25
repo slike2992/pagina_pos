@@ -1,10 +1,13 @@
 ---
 import EditorialLayout from "../../layouts/EditorialLayout.astro";
+import { registrationLegalLinks } from "../../lib/registration-legal";
+const legal = registrationLegalLinks({ PUBLIC_SITE_URL: import.meta.env.PUBLIC_SITE_URL,
+  PUBLIC_REGISTRATION_LEGAL_VERSION: import.meta.env.PUBLIC_REGISTRATION_LEGAL_VERSION });
 ---
 <EditorialLayout title="Centro legal: condiciones, privacidad y cookies" description="Consulta los términos y la política de privacidad de Cripton, conoce el uso de cookies y encuentra el canal para solicitudes sobre tus datos." eyebrow="Condiciones del servicio" heading="Información para decidir y ejercer tus derechos" lead="Consulta los documentos vinculados al registro y los canales de atención antes de crear tu cuenta.">
   <div class="content-grid">
-    <article class="content-card"><h2>Términos del servicio</h2><p>Acceso al sistema, uso de la cuenta, contratación y responsabilidades de la empresa.</p><p>Versión publicada: 2026-09-01.</p><a href="/legal/terminos/">Leer términos vigentes</a></article>
-    <article class="content-card"><h2>Política de privacidad</h2><p>Finalidades del tratamiento, datos necesarios para la cuenta, acceso y solicitudes del titular.</p><p>Versión publicada: 2026-09-01.</p><a href="/legal/privacidad/">Leer política vigente</a></article>
+    <article class="content-card"><h2>Términos del servicio</h2><p>Acceso al sistema, uso de la cuenta, contratación y responsabilidades de la empresa.</p><p>{legal.stagingTrialQa ? `Versión para prueba en staging: ${legal.version}.` : 'Versión publicada: 2026-09-01.'}</p><a href={legal.termsHref}>{legal.stagingTrialQa ? 'Leer términos de la prueba QA' : 'Leer términos vigentes'}</a></article>
+    <article class="content-card"><h2>Política de privacidad</h2><p>Finalidades del tratamiento, datos necesarios para la cuenta, acceso y solicitudes del titular.</p><p>{legal.stagingTrialQa ? `Versión para prueba en staging: ${legal.version}.` : 'Versión publicada: 2026-09-01.'}</p><a href={legal.privacyHref}>{legal.stagingTrialQa ? 'Leer privacidad de la prueba QA' : 'Leer política vigente'}</a></article>
     <article class="content-card"><h2>Cookies y medición</h2><p>Cómo funcionan las preferencias de analítica opcional y qué ocurre en las páginas de cuenta y pago.</p><a href="/legal/cookies/">Consultar cookies y preferencias</a></article>
     <article class="content-card"><h2>Seguridad y operación</h2><p>Accesos por empresa, permisos, responsabilidades y preguntas útiles antes de iniciar.</p><a href="/confianza/">Conocer el manejo de la información</a></article>
   </div>

@@ -8,6 +8,7 @@ import test from 'node:test';
 import sharp from 'sharp';
 import config from '../astro.config.mjs';
 import { PUBLIC_PATHS, SITE_URL, publicPageUrl, indexableSite } from '../src/lib/seo.ts';
+import { registrationLegalLinks } from '../src/lib/registration-legal.ts';
 import { commercialEvent, CONSENT_TTL, consentRecord, storedConsent } from '../src/lib/analytics.ts';
 
 const root = new URL('../', import.meta.url);
@@ -289,7 +290,8 @@ test('production build hook replaces only the generated local payment page and n
 });
 
 
-test('legal index guidance describes the trial and paid plans without changing accepted-document links or versions', async () => {
+test('legal index guidance preserves legacy links by default and follows the explicit staging legal selector', async () => {
+  const legal = registrationLegalLinks(process.env);
   const html = await rendered('/legal/');
   const main = html.match(/<main\b[^>]*>[\s\S]*?<\/main>/)[0];
   const paragraph = [...main.matchAll(/<p\b[^>]*>[\s\S]*?<\/p>/g)].map(([value]) => value).find(value => anchors(value).some(link => link.href === 'mailto:ventas@cripton.com.co'));
@@ -297,7 +299,7 @@ test('legal index guidance describes the trial and paid plans without changing a
   assert.match(textContent(paragraph), /prueba gratis de 15 días sin tarjeta y los planes de pago/);
   assert.doesNotMatch(textContent(main), /\bdemo\b|demostraci[oó]n|demostraciones/i);
   assert.deepEqual(anchors(paragraph).map(link => link.href), ['mailto:servicioalcliente@cripton.com.co', 'mailto:ventas@cripton.com.co']);
-  const documents = anchors(main).filter(link => ['Leer términos vigentes', 'Leer política vigente', 'Consultar cookies y preferencias'].includes(link.label));
-  assert.deepEqual(documents.map(link => new URL(link.href, SITE_URL).pathname), ['/legal/terminos/', '/legal/privacidad/', '/legal/cookies/']);
-  assert.equal((textContent(main).match(/Versión publicada: 2026-09-01/g) ?? []).length, 2);
+  const documents = anchors(main).filter(link => ['Leer términos vigentes', 'Leer política vigente', 'Leer términos de la prueba QA', 'Leer privacidad de la prueba QA', 'Consultar cookies y preferencias'].includes(link.label));
+  assert.deepEqual(documents.map(link => new URL(link.href, SITE_URL).pathname), [legal.termsHref, legal.privacyHref, '/legal/cookies/']);
+  assert.equal((textContent(main).match(legal.stagingTrialQa ? /Versión para prueba en staging: 2026-11-25-prueba-qa/g : /Versión publicada: 2026-09-01/g) ?? []).length, 2);
 });

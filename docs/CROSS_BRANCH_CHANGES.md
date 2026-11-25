@@ -1,5 +1,26 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-25 — Documentos inmutables para registro de prueba QA en staging
+
+- Copia exacta de `pos_saas/contracts/legal/signup-trial-qa-2026-11-25.json`,
+  versión2026-11-25-prueba-qa y scope staging_trial_qa; dos rutas estáticas bajo
+  `/legal/versiones/2026-11-25-prueba-qa/` con términos/privacidad del packet,
+  secciones completas y SHA256 de documento canónico compatible con contractDigest.
+- Opt-in PUBLIC_REGISTRATION_LEGAL_VERSION sólo para el host HTTPS staging exacto.
+  Pie y centro legal seleccionan esa versión; ausencia conserva09-01. Las rutas
+  versionadas se mantienen en staging al retirar el selector; producción no las
+  genera y rechaza el opt-in QA. Noindex/canonical/sitemap conservan su política.
+- Consumidores: enlaces informativos y URLs del catálogo de signup SaaS. Sin nuevo
+  HTTP ni cambio de registro, pagos, demo, planes, POS o admin. Main coordina
+  publicación/adopción SQL y deploy. No se adoptan los borradores de39 apartados.
+- Validación local:542/542 pruebas, Astro check0 errores/advertencias/hints y
+  builds de defaults/QA correctos, con rechazo de QA sobre origen productivo.
+- Términos/privacidad y archivo09-01 preservados byte por byte. Brand.astro y
+  pago/demo.astro ajenos no se incorporan. Pruebas del bloque cubren snapshots,
+  builds reales de variantes, huellas,15d, consultas y rechazo fuera de staging;
+  alcance/operación: `SIGNUP_TRIAL_QA_2026-11-25.md`. Navegador/adopción/deploy
+  corresponden al integrador; este bloque no los ejecuta.
+
 ## 2026-11-25 — Subsanación de reclamos propios
 
 - Consumidor de pos_saas@17b2dee y Control038. Usa únicamente POST autenticado
