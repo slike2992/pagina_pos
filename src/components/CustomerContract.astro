@@ -1,0 +1,91 @@
+---
+import { contractPartyLimits } from "../lib/customer-contract";
+const documentTypes = ["CC", "CE", "PASSPORT", "PPT"];
+---
+<section class="customer-contract" data-customer-contract hidden aria-labelledby="customer-contract-heading">
+  <h3 id="customer-contract-heading">Contratación del servicio</h3>
+  <p data-contract-status role="status" aria-live="polite"></p>
+  <div class="actions">
+    <button class="button secondary" type="button" data-contract-retry>Actualizar contrato</button>
+    <button class="button secondary" type="button" data-contract-receipt hidden>Ver constancia privada</button>
+  </div>
+  <dialog data-contract-dialog aria-labelledby="customer-contract-title" aria-describedby="customer-contract-intro">
+    <div class="contract-body">
+      <h2 id="customer-contract-title">Revisa tu contratación</h2>
+      <p id="customer-contract-intro">Tu prueba y el acceso permitido al POS continúan sin aceptar este contrato. Para pagar, revisa la oferta y los tres documentos completos.</p>
+      <div data-contract-offer></div>
+      <p data-contract-version class="contract-hash"></p>
+      <div data-contract-documents></div>
+      <form data-contract-form>
+        <fieldset>
+          <legend>Datos declarados del contratante</legend>
+          <p>Usamos tus datos declarados y el correo verificado <strong data-contract-email></strong>. No hacemos revisión documental ni verificamos oficialmente tu identidad. No necesitas subir documentos.</p>
+          <div class="contract-fields">
+            <div class="field"><label for="contract-kind">Tipo de persona</label><select id="contract-kind" name="kind" required><option value="natural">Persona natural</option><option value="legal">Persona jurídica</option></select></div>
+            <div class="field"><label for="contract-name" data-contract-name-label>Nombre completo</label><input id="contract-name" name="name" autocomplete="name" maxlength={contractPartyLimits.name} required /></div>
+            <div class="field"><label for="contract-document-type">Tipo de documento</label><select id="contract-document-type" name="documentType" required>{documentTypes.map(type => <option value={type}>{type === "PASSPORT" ? "Pasaporte" : type}</option>)}<option value="NIT" hidden disabled>NIT</option></select></div>
+            <div class="field"><label for="contract-document-number">Número de documento</label><input id="contract-document-number" name="documentNumber" maxlength={contractPartyLimits.documentNumber} required /></div>
+            <div class="field"><label for="contract-address">Dirección</label><input id="contract-address" name="address" autocomplete="street-address" maxlength={contractPartyLimits.address} required /></div>
+            <div class="field"><label for="contract-city">Ciudad</label><input id="contract-city" name="city" autocomplete="address-level2" maxlength={contractPartyLimits.city} required /></div>
+            <div class="field"><label for="contract-country">País</label><input id="contract-country" value="Colombia (CO)" readonly /></div>
+            <div class="field"><label for="contract-phone">Teléfono</label><input id="contract-phone" name="phone" type="tel" autocomplete="tel" maxlength={contractPartyLimits.phone} required /></div>
+          </div>
+        </fieldset>
+        <fieldset data-contract-representative hidden disabled>
+          <legend>Representante de la persona jurídica</legend>
+          <div class="contract-fields">
+            <div class="field"><label for="contract-representative-name">Nombre completo del representante</label><input id="contract-representative-name" name="representativeName" autocomplete="off" maxlength={contractPartyLimits.representativeName} required /></div>
+            <div class="field"><label for="contract-representative-type">Tipo de documento del representante</label><select id="contract-representative-type" name="representativeDocumentType" required>{documentTypes.map(type => <option value={type}>{type === "PASSPORT" ? "Pasaporte" : type}</option>)}</select></div>
+            <div class="field"><label for="contract-representative-number">Número de documento del representante</label><input id="contract-representative-number" name="representativeDocumentNumber" autocomplete="off" maxlength={contractPartyLimits.representativeDocumentNumber} required /></div>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Declaraciones para esta contratación</legend>
+          <label class="legal-check"><input type="checkbox" name="serviceTerms" required /> Acepto los términos del servicio incluidos arriba.</label>
+          <label class="legal-check"><input type="checkbox" name="dataProcessingAnnex" required /> Acepto el anexo de tratamiento de datos incluido arriba.</label>
+          <label class="legal-check"><input type="checkbox" name="ownDataAuthorization" required /> Autorizo el tratamiento de mis propios datos conforme a la autorización incluida arriba.</label>
+          <label class="legal-check"><input type="checkbox" name="adultAndAuthorized" required /> Declaro ser mayor de edad y tener facultades para contratar por mí o por la persona jurídica indicada.</label>
+          <label class="legal-check"><input type="checkbox" name="truthfulDeclaredIdentity" required /> Declaro que los datos de identidad y representación que proporciono son veraces.</label>
+          <p>Estas declaraciones no autorizan publicidad, débitos ni renovación automática. Aceptar registra el contrato; el pago requiere continuar al checkout y confirmarlo allí.</p>
+        </fieldset>
+        <button class="button" type="submit" data-contract-accept>Aceptar contrato y continuar al pago</button>
+      </form>
+      <section data-contract-evidence-section hidden aria-labelledby="contract-evidence-title">
+        <h3 id="contract-evidence-title">Constancia y evidencia privada</h3>
+        <p data-contract-acceptance></p>
+        <p>El JSON conserva la evidencia devuelta por el servidor, incluida la versión aceptada. Los documentos y la oferta aceptados se presentan arriba.</p>
+        <pre data-contract-evidence tabindex="0" aria-label="Evidencia JSON privada"></pre>
+        <button class="button secondary" type="button" data-contract-print>Imprimir constancia</button>
+      </section>
+      <p data-contract-dialog-status role="status" aria-live="polite"></p>
+      <button class="button secondary" type="button" data-contract-close>Volver a Mi cuenta</button>
+    </div>
+  </dialog>
+</section>
+<style>
+  .customer-contract{border-top:1px solid var(--line);padding-top:20px;min-width:0}
+  h3{font-size:1.1rem}p{line-height:1.6}button,input,select{font:inherit}
+  dialog{width:min(800px,calc(100% - 24px));max-height:90svh;margin:auto;padding:0;border:1px solid var(--line);border-radius:12px;color:var(--ink);background:var(--white);overflow:auto}
+  dialog::backdrop{background:rgb(5 24 40 / .65)}
+  .contract-body{padding:clamp(16px,4vw,32px);overflow-wrap:anywhere;font-size:1rem}
+  h2{font-size:1.6rem;line-height:1.2}.contract-hash{font-size:.875rem;overflow-wrap:anywhere}
+  form{display:grid;gap:20px}fieldset{min-width:0;margin:0;border:1px solid var(--line);border-radius:6px;padding:16px}legend{font-weight:750}
+  .contract-fields{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{min-width:0}.field label,.legal-check{font-size:1rem}
+  .field input,.field select{border-color:var(--line)}.legal-check{font-weight:400;line-height:1.5;margin-block:16px}
+  :global([data-contract-documents] details){margin-block:14px;border:1px solid var(--line);border-radius:6px;padding:14px}
+  :global([data-contract-documents] summary){cursor:pointer;font-weight:750;line-height:1.5}
+  :global([data-contract-documents] h3){font-size:1.1rem;margin:24px 0 10px}
+  :global([data-contract-documents] p),:global([data-contract-documents] li){white-space:pre-wrap;line-height:1.7}
+  :global([data-contract-offer] dl){display:grid;gap:10px}:global([data-contract-offer] dd){margin:0;font-weight:650}
+  pre{white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;font-size:.875rem;line-height:1.6;background:var(--paper);padding:16px}
+  [data-contract-dialog-status]{color:var(--coral)}[data-contract-close]{margin-top:16px}
+  @media(max-width:560px){.contract-fields{grid-template-columns:1fr}fieldset{padding:12px}}
+  @media print{
+    :global(body:has([data-contract-dialog][open]) *){visibility:hidden}
+    [data-contract-dialog][open],[data-contract-dialog][open] :global(*){visibility:visible}
+    [data-contract-dialog][open]{position:absolute;inset:0;display:block;width:100%;max-height:none;overflow:visible;border:0;margin:0;background:white}
+    .contract-body{padding:0;color:black}.contract-body button,form,[data-contract-dialog-status],#customer-contract-intro{display:none!important}
+    :global([data-contract-documents] details > *){display:block!important}
+    :global([data-contract-documents] details){border:0;padding:0}pre{background:white;padding:0}
+  }
+</style>

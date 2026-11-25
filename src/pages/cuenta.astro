@@ -1,5 +1,7 @@
 ---
 import FlowLayout from "../layouts/FlowLayout.astro";
+import CustomerContract from "../components/CustomerContract.astro";
+import CustomerSupport from "../components/CustomerSupport.astro";
 const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
 const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
 ---
@@ -35,6 +37,8 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         <p data-field="trial-guidance"></p>
         <button class="button" data-action="contract-trial" type="button" hidden disabled>Contratar plan</button>
       </section>
+      <CustomerContract />
+      <CustomerSupport />
       <section class="recovery-management" data-section="fiscal-onboarding" hidden aria-labelledby="fiscal-onboarding-heading">
         <h3 id="fiscal-onboarding-heading">Facturación electrónica</h3>
         <p data-field="fiscal-plan-guidance"></p>
@@ -142,6 +146,8 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
   </div>
 
   <script>
+    import { bindCustomerSupport } from "../lib/customer-support";
+    import { bindCustomerContract } from "../lib/customer-contract";
     import { createIdempotencyKey } from "../scripts/client-idempotency";
     import { prepareWompiSession } from "../lib/wompi-client";
     import { readSubscriptionTrial, readTrialCheckout, type SubscriptionTrial } from "../lib/subscription-trial";
@@ -151,7 +157,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
 
     type Tenant = { tenantId: string; tenantKey: string; name: string; status: string; role: string };
     import { beginPortalReturn, readPortalReturn, validatePortalLogin } from "../lib/portal-return";
-    type LoginResult = { accessToken: string; expiresAt: string; principal: { displayName: string }; tenant: Tenant };
+    type LoginResult = { accessToken: string; expiresAt: string; principal: { principalId: string; displayName: string }; tenant: Tenant };
     type Subscription = { subscriptionId: string; status: string; plan: { code: string; name: string }; price: { amountMinor: number; currency: string; billingInterval: string }; currentPeriodStart: string | null; currentPeriodEnd: string | null; cancelAtPeriodEnd: boolean; renewalIssue?: RenewalIssue | null; pendingChange?: unknown; trial?: SubscriptionTrial | null };
     type PaymentSourceConfig = { publicKey: string; widgetScriptUrl: string; fraudScriptUrl: string; acceptance: { token: string; permalink: string }; personalDataAuthorization: { token: string; permalink: string } };
     type PaymentSource = { type: "card" | "nequi"; displayHint: string | null; recurringConsentAt: string };
@@ -230,6 +236,24 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     let catalogOwner: { token: string; tenantId: string; subscriptionId: string; currency: string; billingInterval: string; planCode: string } | null = null;
     let reviewedPlan: { target: string; subscription: Subscription; login: LoginResult; token: string; pendingId?: string } | null = null;
 
+    const customerContract = bindCustomerContract(root, {
+      apiUrl,
+      getContext: () => accessToken && accountLogin && currentSubscription && !subscriptionRefreshing
+        && ["owner", "admin", "billing"].includes(accountLogin.tenant.role)
+        ? { accessToken, tenantId: accountLogin.tenant.tenantId, subscriptionId: currentSubscription.subscriptionId,
+          session: currentSubscription, canContract: Boolean(hasOpenTrial() && currentSubscription.trial?.canConvert) }
+        : null,
+      onUnauthorized: () => resetAccount("La sesión no es válida o expiró. Vuelve a iniciar sesión."),
+      onContinue: () => startTrialCheckout(true),
+    });
+    const customerSupport = bindCustomerSupport(root, {
+      apiUrl,
+      getContext: () => accessToken && accountLogin?.principal.principalId && currentSubscription && !subscriptionRefreshing
+        ? { accessToken, tenantId: accountLogin.tenant.tenantId, principalId: accountLogin.principal.principalId,
+          session: currentSubscription }
+        : null,
+      onUnauthorized: () => resetAccount("La sesión no es válida o expiró. Vuelve a iniciar sesión."),
+    });
     const field = (name: string) => root.querySelector<HTMLElement>(`[data-field='${name}']`)!;
     const messageFrom = (body: unknown, fallback: string) => typeof body === "object" && body && "error" in body
       ? (body as { error?: { message?: string } }).error?.message ?? fallback
@@ -391,6 +415,8 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       loginForm.hidden = true;
       panel.hidden = false;
       void refreshPlanCatalog();
+      void customerContract.refresh();
+      void customerSupport.refresh();
     };
 
     const refreshPlanCatalog = async () => {
@@ -466,6 +492,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       recoveryRefresh.disabled = true;
       recoveryRefresh.setAttribute("aria-busy", "true");
       if (refreshSubscription) {
+        customerContract.reset(); customerSupport.reset();
         subscriptionRefreshing = true;
         // An overlay without a cancellation callback is reopenable. Refresh
         // supersedes that idle attempt so its later token cannot submit.
@@ -557,6 +584,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         if (isCurrent()) {
           recoveryBusy = false;
           subscriptionRefreshing = false;
+          if (refreshSubscription) { void customerContract.refresh(); void customerSupport.refresh(); }
           if (refreshSubscription) sourceControls.forEach((control, index) => { control.disabled = sourceDisabled[index]; });
           renderAccountActions();
           recoveryRefresh.setAttribute("aria-busy", "false");
@@ -683,6 +711,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
 
     loginForm.addEventListener("submit", async (event) => {
       event.preventDefault();
+      customerContract.reset(); customerSupport.reset();
       const generation = ++loginGeneration;
       const isCurrent = () => generation === loginGeneration;
       const button = loginForm.querySelector<HTMLButtonElement>("button[type='submit']")!;
@@ -1063,16 +1092,19 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     posLink.addEventListener("click", (event) => openPos(event));
     fiscalSetupButton.addEventListener("click", (event) => openPos(event, true));
 
-    trialContract.addEventListener("click", async () => {
+    const startTrialCheckout = async (afterAcceptance = false) => {
       if (subscriptionRefreshing || planBusy || !accessToken || !accountLogin || !currentSubscription
         || !hasOpenTrial() || !currentSubscription.trial?.canConvert || trialContract.hidden) return;
       const token = accessToken, login = accountLogin, subscription = currentSubscription;
       const isCurrent = () => token === accessToken && login === accountLogin && subscription === currentSubscription;
       planBusy = true;
-      if (!trialCheckoutKey) trialCheckoutKey = createIdempotencyKey();
+      if (afterAcceptance && !customerContract.canContinue()) { planBusy = false; return; }
       renderAccountActions();
       let navigating = false;
       try {
+        if (!afterAcceptance && !await customerContract.beforeCheckout()) return;
+        if (!isCurrent() || !customerContract.canContinue()) return;
+        if (!trialCheckoutKey) trialCheckoutKey = createIdempotencyKey();
         const response = await fetch(`${apiUrl}/v1/me/subscription/trial-checkout`, {
           method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json", "idempotency-key": trialCheckoutKey },
           body: JSON.stringify({ subscriptionId: subscription.subscriptionId }),
@@ -1091,8 +1123,10 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       } finally {
         if (isCurrent()) { planBusy = navigating; renderAccountActions(); }
       }
-    });
+    };
+    trialContract.addEventListener("click", () => startTrialCheckout());
     const resetAccount = (message = "") => {
+      customerContract.reset(); customerSupport.reset();
       loginGeneration++;
       catalogGeneration++;
       catalogBusy = false; planCatalog = null; catalogOwner = null; reviewedPlan = null;
@@ -1160,6 +1194,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     const resumePortalSession = async () => {
       const url = new URL(location.href);
       if (!url.searchParams.has("from") && !new URLSearchParams(url.hash.slice(1)).has("portal-ticket")) return;
+      customerContract.reset(); customerSupport.reset();
       const generation = ++loginGeneration;
       const isCurrent = () => generation === loginGeneration;
       loginForm.hidden = true;

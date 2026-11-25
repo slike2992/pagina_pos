@@ -1,5 +1,11 @@
 # Cripton — web comercial y portal de acceso
 
+Contratación por empresa y solicitudes de soporte/datos: ver
+[flujo y validación](docs/CUSTOMER_CONTRACTS_2026-11-25.md) y
+[compatibilidad con SaaS](docs/CROSS_BRANCH_CHANGES.md). La prueba gratuita, el
+contrato, el pago y la renovación automática son actos distintos; la web consume
+la autoridad de la API y no activa condiciones productivas al desplegarse.
+
 Sitio Astro del producto POS SaaS. El repositorio de la web es `pagina_pos`;
 POS, API, worker y Cripton Control pertenecen al repositorio `pos_saas`.
 La web genera HTML estático y consume la API SaaS en los flujos interactivos.

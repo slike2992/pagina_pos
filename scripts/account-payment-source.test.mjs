@@ -256,6 +256,8 @@ async function account(options = {}) {
     if (name === '../scripts/client-idempotency') return idempotency;
     if (name === '../lib/wompi-client') return { prepareWompiSession: h.prepareWompiSession };
     if (name === '../lib/subscription-recovery') return recovery;
+    if (name === '../lib/customer-support') return { bindCustomerSupport: () => ({ reset() {}, refresh() {} }) };
+    if (name === '../lib/customer-contract') return { bindCustomerContract: () => ({ reset() {}, refresh() {}, beforeCheckout: async () => true, canContinue: () => true }) };
     if (name === '../lib/account-plans') return h.module(plansCode);
     if (name === '../lib/subscription-upgrade') return h.module(upgradeCode, name => assert.fail(name));
     if (name === '../lib/subscription-trial') return h.module(trialCode, name => assert.fail(name));

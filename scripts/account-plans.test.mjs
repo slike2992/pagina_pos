@@ -1,3 +1,6 @@
+// Register the contract regressions through the existing test:web entrypoint.
+import './customer-contract.test.mjs';
+import './customer-support.test.mjs';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
@@ -131,6 +134,8 @@ function browser(options = {}) {
   const checkoutReturn = run(returnCode);
   const recovery = run(recoveryCode, name => name === './checkout-return' ? checkoutReturn : assert.fail(name));
   run(accountCode, name => {
+    if (name === '../lib/customer-support') return { bindCustomerSupport: () => ({ reset() {}, refresh() {} }) };
+    if (name === '../lib/customer-contract') return { bindCustomerContract: () => ({ reset() {}, refresh() {}, beforeCheckout: async () => true, canContinue: () => true }) };
     if (name === '../lib/account-plans') return run(plansCode);
     if (name === '../lib/subscription-upgrade') return run(upgradeCode);
     if (name === '../lib/subscription-trial') return run(trialCode);

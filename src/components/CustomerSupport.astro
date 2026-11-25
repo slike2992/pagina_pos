@@ -1,0 +1,57 @@
+<section class="customer-support" data-customer-support hidden aria-labelledby="customer-support-heading">
+  <h3 id="customer-support-heading">Soporte y derechos sobre tus datos</h3>
+  <p>Consulta y crea tus propias solicitudes de esta empresa. Cada usuario conserva acceso a sus casos desde su cuenta.</p>
+  <p>También puedes escribir a <a href="mailto:servicioalcliente@cripton.com.co">servicioalcliente@cripton.com.co</a> para soporte o a <a href="mailto:legal@cripton.com.co">legal@cripton.com.co</a> para solicitudes sobre tus datos.</p>
+  <p data-support-status role="status" aria-live="polite"></p>
+  <button class="button secondary" data-support-refresh type="button">Actualizar mis solicitudes</button>
+  <form data-support-form>
+    <fieldset data-support-fields disabled>
+      <legend>Nueva solicitud</legend>
+      <div class="field">
+        <label for="support-kind">Tipo de solicitud</label>
+        <select id="support-kind" name="kind" required>
+          <option value="">Selecciona un tipo</option>
+          <option value="support">Soporte del servicio</option>
+          <option value="data_query">Consulta sobre mis datos</option>
+          <option value="data_claim">Reclamo sobre mis datos</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="support-content">Descripción</label>
+        <textarea id="support-content" name="content" minlength="8" maxlength="8000" rows="6" autocomplete="off" aria-describedby="support-content-help" required></textarea>
+        <p id="support-content-help">Describe lo necesario para atenderte, entre 8 y 8.000 caracteres. No envíes contraseñas, tokens, códigos de verificación, documentos de identidad ni datos completos de tarjetas. Este formulario no admite adjuntos.</p>
+      </div>
+      <button class="button" data-support-create type="submit">Enviar solicitud</button>
+    </fieldset>
+  </form>
+  <section data-support-created hidden aria-labelledby="support-created-heading">
+    <h4 id="support-created-heading">Recibo de tu solicitud</h4>
+    <div data-support-created-receipt></div>
+  </section>
+  <section aria-labelledby="support-cases-heading">
+    <h4 id="support-cases-heading">Mis solicitudes</h4>
+    <p data-support-empty hidden>Aún no tienes solicitudes registradas en esta empresa.</p>
+    <ul data-support-list></ul>
+    <button class="button secondary" data-support-more type="button" hidden>Ver solicitudes anteriores</button>
+  </section>
+  <section data-support-detail hidden aria-labelledby="support-detail-heading" tabindex="-1">
+    <h4 id="support-detail-heading">Detalle de la solicitud</h4>
+    <div data-support-detail-content></div>
+    <button class="button secondary" data-support-close type="button">Cerrar detalle</button>
+  </section>
+  <p class="support-guidance">Las fechas y los plazos son los informados por el servidor, mostrados en hora de Bogotá. Una prórroga sólo se muestra cuando está registrada. La indisponibilidad de este formulario no impide usar el POS ni administrar tu plan.</p>
+</section>
+<style>
+  .customer-support{border-top:1px solid var(--line);padding-top:20px;min-width:0;overflow-wrap:anywhere}
+  h3{font-size:1.1rem}h4{font-size:1rem}p{line-height:1.6}form{margin-block:20px}
+  fieldset{display:grid;gap:16px;min-width:0;padding:16px;border:1px solid var(--line);border-radius:6px}legend{font-weight:750}
+  .field{display:grid;gap:6px}.field label{font-size:1rem}.field select,.field textarea{width:100%;min-height:48px;padding:10px 12px;border:1px solid var(--line);border-radius:5px;color:var(--ink);background:var(--white);font:inherit}
+  textarea{resize:vertical}.field p,.support-guidance{font-size:.875rem;color:var(--muted)}button{font:inherit}
+  [data-support-list]{display:grid;gap:16px;padding-left:20px}
+  :global([data-support-list] button){text-align:left;white-space:normal}
+  :global([data-support-created-receipt] dl),:global([data-support-detail-content] dl){display:grid;gap:10px}
+  :global([data-support-created-receipt] dd),:global([data-support-detail-content] dd){margin:0;font-weight:650}
+  :global([data-support-detail-content] p),:global([data-support-detail-content] li){white-space:pre-wrap;line-height:1.6}
+  [data-support-detail],[data-support-created]{margin-block:20px;border:1px solid var(--line);border-radius:6px;padding:16px}
+  [data-support-status][data-state="error"]{color:var(--coral)}
+</style>
