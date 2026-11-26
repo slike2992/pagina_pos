@@ -14,6 +14,57 @@ con JSON copiado exactamente de SaaS y huella canónica visible. No modifica los
 documentos09-01, sus archivos históricos ni el flujo de registro; la API decide
 las versiones aplicables. Ejecutar `npm run check`, `npm run build` y `npm run test:web`.
 
+El acuerdo mínimo previo al POS consume `operationalAccess` y `canAccept` de
+`GET /v1/me/customer-contract` (API/Control039). «Abrir POS» consulta ese estado
+sin caché; el representante revisa y acepta el acuerdo gratuito mediante el POST
+existente y se vuelve a comprobar el estado antes de solicitar SSO. Un miembro
+pendiente recibe orientación para que acepte el representante. Un error o DTO
+operativo ausente/inválido bloquea ese acceso y conserva Mi cuenta; la aplicación
+POS y la API aplican además sus propios controles de acceso operativo.
+
+Se reutiliza `CustomerContract` con intenciones separadas: aceptar para abrir POS
+no inicia checkout; «Contratar plan» sigue usando `trial.canConvert` y permite
+comprar desde el primer minuto o los días2/4, conservando el saldo de prueba que
+confirma el servidor. La aceptación no confirma pago ni autoriza renovación.
+Los datos declarados y el token permanecen en memoria y se limpian al salir o
+cambiar de sesión/empresa; las respuestas anteriores no reanudan una acción.
+
+Las copias canónicas nuevas son `contracts/legal/staging-minimum-2026-11-25.json`
+(tres documentos, versión2026-11-25-minimo-qa, consumidos por la API) y
+`contracts/legal/signup-minimum-qa-2026-11-25.json` (dos documentos públicos,
+versión2026-11-25-prueba-minima-qa). No editar sus textos desde web. El selector
+`PUBLIC_REGISTRATION_LEGAL_VERSION=2026-11-25-prueba-minima-qa`, sólo con el origen
+HTTPS exacto de staging, unifica enlaces de privacidad en pie, centro legal,
+cookies y ConsentPanel. Las nuevas URLs son
+`/legal/versiones/2026-11-25-prueba-minima-qa/{terminos,privacidad}/`; las anteriores
+siguen disponibles. La ausencia del selector conserva los defaults09-01.
+
+El aviso de cookies mantiene versión2026-11-23 y su decisión independiente de
+registro, encargo y contrato. Los plazos30/90 del nuevo texto parten de la
+terminación registrada;90 días es un umbral para evaluar y ejecutar una baja
+manual controlada con sus comprobaciones, nunca un borrado automático.
+El objetivo SQL de siete días es condicional a custodia
+y restauración; no es un máximo universal para todos los respaldos. Web presenta
+la fuente y la evidencia del servidor; no ejecuta por mostrarla una exportación,
+supresión o actuación sobre una reclamación. Esta versión es de staging y no
+adopta por sí sola un contrato productivo. Main coordina publicación y adopción.
+
+Validación local de este bloque (Windows, Node24.22.3, pnpm11.25.0): instalación
+frozen aislada sin junction, Astro check73 archivos con0 errores/advertencias/hints
+y build24 páginas;588/588 pruebas completas aprobadas tras recopiar ambos packets
+definitivos. Cubren aceptación gratuita seguida de relectura y un único SSO,
+miembros, estado ausente/inválido, respuestas tardías, compra en días0/2/4,
+subsecciones contractuales completas y coherencia de enlaces/versiones públicas.
+Los SHA256 de archivo de las copias exactas son
+`b5c69ad10f804c640d80317173a7d0022b86918f12677eea835488ae6d616ac8`
+(acuerdo) y `bf5fad10b5b1b845b4a01de19efd07796f6853f5febc08e2c3e18e81ee87379a`
+(registro). Las huellas visibles de documentos se calculan sobre JSON canónico,
+no sobre esos archivos formateados. Web no modifica la prosa canónica ni los
+documentos/rutas anteriores. Los nuevos packets están preparados, sin adopción
+legal ni aceptaciones nuevas en esta validación; el build y despliegue coordinados
+en Ubuntu corresponden a main.
+No se usó CUA, servidor, SQL, proveedores ni despliegue en este bloque.
+
 Sitio Astro del producto POS SaaS. El repositorio de la web es `pagina_pos`;
 POS, API, worker y Cripton Control pertenecen al repositorio `pos_saas`.
 La web genera HTML estático y consume la API SaaS en los flujos interactivos.

@@ -5,3 +5,5 @@
 /docs/legal/history/** -text whitespace=cr-at-eol
 /src/content/legal-review-2026-11-24.json text eol=lf
 /src/content/signup-trial-qa-2026-11-25.json text eol=lf
+/contracts/legal/staging-minimum-2026-11-25.json -text whitespace=cr-at-eol
+/contracts/legal/signup-minimum-qa-2026-11-25.json -text whitespace=cr-at-eol

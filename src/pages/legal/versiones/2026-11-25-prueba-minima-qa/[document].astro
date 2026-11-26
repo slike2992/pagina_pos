@@ -1,0 +1,50 @@
+---
+import type { GetStaticPaths } from 'astro';
+import EditorialLayout from '../../../../layouts/EditorialLayout.astro';
+import { isSignupTrialQaSite, registrationLegalLinks, SIGNUP_MINIMUM_QA_VERSION, SIGNUP_TRIAL_QA_VERSION } from '../../../../lib/registration-legal';
+import { signupMinimumLegalPacket, signupMinimumLegalDocuments, type SignupMinimumLegalDocument } from '../../../../lib/signup-minimum-legal';
+
+export const getStaticPaths: GetStaticPaths = () => {
+  registrationLegalLinks({ PUBLIC_SITE_URL: import.meta.env.PUBLIC_SITE_URL,
+    PUBLIC_REGISTRATION_LEGAL_VERSION: import.meta.env.PUBLIC_REGISTRATION_LEGAL_VERSION });
+  if (!isSignupTrialQaSite(import.meta.env.PUBLIC_SITE_URL)) return [];
+  return signupMinimumLegalDocuments.map(document => ({ params: { document: document.slug }, props: { document } }));
+};
+interface Props { document: SignupMinimumLegalDocument; }
+const { document } = Astro.props;
+const prefix = `/legal/versiones/${SIGNUP_MINIMUM_QA_VERSION}`;
+---
+<EditorialLayout
+  title={`${document.title} · ${signupMinimumLegalPacket.version}`}
+  description={`${document.title}. Versión ${signupMinimumLegalPacket.version}, exclusiva de la prueba de registro en staging.`}
+  eyebrow={`Versión ${signupMinimumLegalPacket.version} · QA staging`}
+  heading={document.title}
+  lead={signupMinimumLegalPacket.notice}
+  breadcrumbs={[{ name: 'Centro legal', href: '/legal/' }]}
+  noindex={true}
+>
+  <aside class="callout" aria-labelledby="legal-version-scope">
+    <h2 id="legal-version-scope">Registro de prueba en staging</h2>
+    <p>El registro identifica los documentos que corresponden a tu prueba. Esta página no cambia tus aceptaciones anteriores ni habilita un servicio productivo.</p>
+    <p>Versión: <strong>{signupMinimumLegalPacket.version}</strong>. Alcance: <code>{signupMinimumLegalPacket.scope}</code>.</p>
+    <p>SHA256 del documento en JSON canónico: <code data-legal-document-sha256>{document.sha256}</code>.</p>
+  </aside>
+  <nav aria-labelledby="legal-version-contents">
+    <h2 id="legal-version-contents">Contenido del documento</h2>
+    <ol>{document.sections.map(section => <li><a href={`#${section.id}`}>{section.heading}</a></li>)}</ol>
+  </nav>
+  <article class="legal-copy" data-registration-legal-copy data-legal-type={document.type}>
+    {document.sections.map(section => <section aria-labelledby={section.id}>
+      <h2 id={section.id}>{section.heading}</h2>
+      {section.paragraphs.map(paragraph => <p>{paragraph}</p>)}
+    </section>)}
+  </article>
+  <aside class="callout" aria-labelledby="legal-version-related">
+    <h2 id="legal-version-related">Documentos de esta versión</h2>
+    <ul>{signupMinimumLegalDocuments.filter(item => item.slug !== document.slug).map(item => <li><a href={`${prefix}/${item.slug}/`}>{item.title}</a></li>)}</ul>
+    <p>Versiones anteriores: <a href={`/legal/versiones/${SIGNUP_TRIAL_QA_VERSION}/terminos/`}>términos de la prueba QA anterior</a> y <a href={`/legal/versiones/${SIGNUP_TRIAL_QA_VERSION}/privacidad/`}>su privacidad</a>; <a href="/legal/terminos/">términos 2026-09-01</a> y <a href="/legal/privacidad/">privacidad 2026-09-01</a>.</p>
+  </aside>
+</EditorialLayout>
+<style>
+  [data-legal-document-sha256] { overflow-wrap: anywhere; }
+</style>

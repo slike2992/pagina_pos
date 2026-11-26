@@ -214,6 +214,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     let changeIdempotencyKey = "";
     let checkoutIdempotencyKey = "";
     let trialCheckoutKey = "";
+    let posSetupIntent = false;
     let paymentSourceConfig: PaymentSourceConfig | null = null;
     let paymentSourceBusy = false;
     let paymentSourceAttempt = "";
@@ -239,12 +240,13 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     const customerContract = bindCustomerContract(root, {
       apiUrl,
       getContext: () => accessToken && accountLogin && currentSubscription && !subscriptionRefreshing
-        && ["owner", "admin", "billing"].includes(accountLogin.tenant.role)
+        && ["owner", "admin", "billing", "member"].includes(accountLogin.tenant.role)
         ? { accessToken, tenantId: accountLogin.tenant.tenantId, subscriptionId: currentSubscription.subscriptionId,
-          session: currentSubscription, canContract: Boolean(hasOpenTrial() && currentSubscription.trial?.canConvert) }
+          session: currentSubscription, canContract: ["owner", "admin", "billing"].includes(accountLogin.tenant.role) }
         : null,
       onUnauthorized: () => resetAccount("La sesión no es válida o expiró. Vuelve a iniciar sesión."),
       onContinue: () => startTrialCheckout(true),
+      onOperate: () => openPos(null, posSetupIntent, true),
     });
     const customerSupport = bindCustomerSupport(root, {
       apiUrl,
@@ -299,6 +301,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
             : "Tu prueba gratuita está activa. Las fechas son las confirmadas por el servidor.";
       field("trial-guidance").textContent = !trial ? "" : trial.status === "converted"
         ? "Consulta las fechas de tu período pagado en la suscripción. La contratación no activa la renovación automática."
+        : trial.status === "active" ? "Puedes contratar ahora, sin esperar al vencimiento. Si pagas durante la prueba conservas el tiempo gratis restante. La prueba no se cobra ni renueva automáticamente."
         : "La prueba no se cobra ni renueva automáticamente. Para continuar, contrata el plan de esta empresa mediante el pago seguro.";
       trialContract.hidden = !trial || !hasOpenTrial() || !trial.canConvert || !accountLogin
         || !["owner", "admin", "billing"].includes(accountLogin.tenant.role);
@@ -1052,19 +1055,27 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         if (isCurrent()) { renewalBusy = false; renderAccountActions(); }
       }
     });
-    const openPos = async (event: Event, setup = false) => {
-      event.preventDefault();
+    const openPos = async (event: Event | null, setup = false, afterAcceptance = false) => {
+      event?.preventDefault();
       if (subscriptionRefreshing || posBusy || !canOpenPos() || posLink.getAttribute("aria-disabled") === "true") return;
       if (setup && (fiscalSetupButton.hidden || fiscalSetupButton.disabled)) return;
+      if (afterAcceptance && !customerContract.canOperate()) return;
+      if (!afterAcceptance) posSetupIntent = setup;
       const token = accessToken;
       const login = accountLogin;
-      const isCurrent = () => token === accessToken && login === accountLogin;
+      const subscription = currentSubscription;
+      const isCurrent = () => token === accessToken && login === accountLogin && subscription === currentSubscription;
       posBusy = true;
       let navigating = false;
       renderAccountActions();
       accountStatus.textContent = setup ? "Abriendo la configuración fiscal del POS…" : "Abriendo el POS…";
       accountStatus.dataset.state = "";
       try {
+        if (!afterAcceptance && !await customerContract.beforeOperation()) {
+          if (isCurrent()) accountStatus.textContent = "Revisa el estado del acuerdo de datos antes de abrir el POS. Mi cuenta sigue disponible.";
+          return;
+        }
+        if (!isCurrent() || !customerContract.canOperate()) return;
         const response = await fetch(`${apiUrl}/v1/auth/pos-sso`, {
           method: "POST",
           headers: { authorization: `Bearer ${token}` }
@@ -1158,6 +1169,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       recoveryStatus.dataset.state = "";
       clearRecoveryLinks();
       posBusy = false;
+      posSetupIntent = false;
       renewalBusy = false;
       currentSubscription = null;
       renderAccountActions();

@@ -1,5 +1,31 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-25 — Encargo previo al POS y documentos mínimos de staging
+
+- Consumidor de API/Control039: GET existente `customer-contract` incorpora
+  `operationalAccess` y `canAccept`. «Abrir POS» consulta sin caché; representante
+  acepta por POST existente, relee el estado y sólo entonces solicita SSO. No
+  inicia checkout en esa intención. Miembros consultan estado y reciben guía;
+  datos operativos ausentes/inválidos o errores bloquean SSO sin cerrar Mi cuenta.
+  Publicar coordinadamente la API compatible y la web; la API/POS aplican el gate.
+- El contrato comercial conserva su intención separada y `trial.canConvert`;
+  compra habilitada desde el primer minuto y días2/4, conservando el saldo gratis.
+  Se muestran las subsecciones completas del paquete, incluidas las de proveedores.
+  Tokens/datos declarados en memoria; cambio de sesión/empresa invalida respuestas.
+- Dos packets copiados exactamente desde SaaS en `contracts/legal`: acuerdo
+  2026-11-25-minimo-qa y registro2026-11-25-prueba-minima-qa. Nuevo selector/rutas
+  de registro sólo en HTTPS staging. Pie, centro, cookies y ConsentPanel comparten
+  privacidad seleccionada; aviso de cookies2026-11-23 conserva su decisión propia.
+  Documentos/rutas anteriores intactos. Sin modificar esquema ni adoptar políticas
+  desde web; main coordina migración/publicación/adopción y CROSS SaaS.
+- Plazos30/90 desde terminación registrada;90 días habilita revisión y depuración
+  manual controlada. Objetivo SQL de siete días condicional a custodia/restauración,
+  sin prometer un máximo universal ni ejecución por pulsar un botón.
+- Validación final Windows/Node24.22.3: instalación frozen aislada pnpm11.25.0,
+  check73 archivos con0 errores/advertencias/hints, build24 páginas y588/588 pruebas.
+  Evidencia/copia exacta en README. Sin commit de Brand/demo, CUA, SQL, proveedores,
+  deploy ni nuevas aceptaciones legales; main acredita publicación y recorrido real.
+
 ## 2026-11-25 — Publicación coordinada y páginas contrastadas en Codex Browser
 
 - Main activó web7663c68/SaaS6f004c4;77 archivos web verificados y fuente

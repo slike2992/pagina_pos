@@ -1,5 +1,9 @@
 ---
 import { publicPageUrl, indexableSite } from "../lib/seo";
+import { registrationLegalLinks } from "../lib/registration-legal";
+import { CONSENT_VERSION } from "../lib/analytics";
+const legal = registrationLegalLinks({ PUBLIC_SITE_URL: import.meta.env.PUBLIC_SITE_URL,
+  PUBLIC_REGISTRATION_LEGAL_VERSION: import.meta.env.PUBLIC_REGISTRATION_LEGAL_VERSION });
 const candidate = import.meta.env.PUBLIC_GA_MEASUREMENT_ID ?? "";
 const measurementId = indexableSite(import.meta.env.PROD, import.meta.env.PUBLIC_SITE_INDEXABLE) && import.meta.env.PUBLIC_ANALYTICS_REVIEWED === "true" && /^G-[A-Z0-9]{5,15}$/.test(candidate) && publicPageUrl(Astro.url.pathname) ? candidate : "";
 const canonical = publicPageUrl(Astro.url.pathname);
@@ -10,7 +14,7 @@ const canonical = publicPageUrl(Astro.url.pathname);
     <p>Utilizamos almacenamiento necesario para recordar tus preferencias y completar los procesos que inicias.</p>
     <p data-analytics-available hidden>Solo si aceptas, Google Analytics medirá visitas y clics en las páginas informativas. Rechazarlo no limita el acceso a la web.</p>
     <p data-analytics-unavailable>Actualmente la analítica opcional está desactivada. Esta web no carga cookies de publicidad.</p>
-    <p class="consent-links"><a href="/legal/cookies/">Qué guardamos y por cuánto tiempo</a> · <a href="/legal/privacidad/">Política de privacidad</a></p>
+    <p class="consent-links"><a href="/legal/cookies/">Cookies: aviso {CONSENT_VERSION}</a> · <a href={legal.privacyHref}>Privacidad del registro: versión {legal.version}</a></p>
     <p data-privacy-signal hidden>Tu navegador solicita no realizar seguimiento; mantendremos la analítica desactivada.</p>
     <details class="consent-options">
       <summary>Configurar cookies</summary>

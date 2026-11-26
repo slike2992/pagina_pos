@@ -1,0 +1,474 @@
+{
+  "version": "2026-11-25-minimo-qa",
+  "scope": "staging_qa",
+  "notice": "Acuerdo mínimo de servicio y encargo para pruebas en staging. Permite ensayar la aceptación antes del acceso operativo y la compra anticipada en Wompi Sandbox. No adopta condiciones productivas ni habilita emisión fiscal ante DIAN.",
+  "documents": [
+    {
+      "slug": "terminos",
+      "title": "Términos y condiciones del servicio Cripton SaaS — simulación staging 2026-11-25",
+      "sections": [
+        {
+          "id": "ambito-simulacion",
+          "heading": "Ámbito de esta aceptación de pruebas",
+          "paragraphs": [
+            "Acuerdo mínimo de servicio y encargo para pruebas en staging. Permite ensayar la aceptación antes del acceso operativo y la compra anticipada en Wompi Sandbox. No adopta condiciones productivas ni habilita emisión fiscal ante DIAN.",
+            "Los textos siguientes permiten verificar la aceptación electrónica, la identificación declarada, la privacidad y el soporte. Los plazos y prestaciones se comprueban con datos de pruebas; cualquier referencia a contratación y pagos se simula en Wompi Sandbox. El contrato productivo requiere una publicación posterior expresa y no se adopta por esta simulación.",
+            "Cripton registra los datos declarados por quien actúa y la verificación de su correo. No se revisan copias de cédula, RUT ni representación, ni se afirma una comprobación oficial de identidad. Quien acepta declara ser mayor de edad, tener facultades suficientes y aportar información veraz."
+          ]
+        },
+        {
+          "id": "partes-y-contratacion",
+          "heading": "1. Partes y contratación",
+          "paragraphs": [
+            "Jonathan Santiago Murcia Peña, persona natural, identificado con NIT 1014234769-1, con domicilio en Bogotá D.C., Colombia, y dirección de notificaciones CL 78 C 130 55 T 4 507, Bogotá D.C., Colombia, es el proveedor del servicio identificado comercialmente como Cripton. Contacto: +57 321 959 7077; legal@cripton.com.co para asuntos legales y privacidad; servicioalcliente@cripton.com.co para soporte.",
+            "El cliente es la persona natural o jurídica identificada en la orden de servicio y en el espacio de su negocio, denominado empresa o tenant. Quien actúe en su nombre declara tener facultades para contratar e instruir el tratamiento de datos. Los cajeros y demás usuarios autorizados no se convierten por ello en contratantes.",
+            "La orden identifica al cliente, empresa, plan, prestaciones, límites, periodicidad, precio total, impuestos aplicables, fecha y alcance de activación. Estos términos, el anexo de tratamiento por cuenta del cliente y las condiciones particulares identificadas integran el contrato. La política de privacidad informa el tratamiento propio de Cripton; no es una autorización genérica para cualquier uso.",
+            "La aceptación electrónica exige una manifestación expresa, informada y verificable. Se conservan los textos completos, su versión y huella, la identidad declarada, la empresa, la oferta y las fechas del servidor, conforme a la Ley 527 de 1999. La aceptación por el representante habilitado del servicio y del anexo de encargo debe preceder al acceso operativo del nuevo comercio, también durante la prueba gratuita. Aceptar no ordena un cobro, no activa renovación automática ni sustituye el consentimiento de los titulares del comercio. Se mantienen los contratos y aceptaciones anteriores."
+          ]
+        },
+        {
+          "id": "alcance-del-servicio",
+          "heading": "2. Servicio y límites del plan",
+          "paragraphs": [
+            "Cripton permite gestionar ventas, inventario, caja, usuarios y reportes a través de la web. Solo se incluyen las prestaciones y cuotas del plan y la orden aceptados; una publicidad o demostración no debe ofrecer funciones inexistentes. No se transfieren código fuente ni equipos, ni se incluyen asesoría tributaria, desarrollos o migraciones especiales sin acuerdo expreso.",
+            "El registro elegible ofrece una prueba gratuita de 15 días, sin tarjeta ni cobro automático. El plazo comienza cuando el espacio queda aprovisionado y disponible; Mi cuenta muestra las fechas. Al terminar sin contratar, el acceso operativo se restringe: el fin de la prueba no genera deuda ni autoriza un débito. La verificación del correo y los controles contra abuso se mantienen.",
+            "El cliente puede contratar desde que su prueba está activa: al minuto de empezar, al segundo o cuarto día o en cualquier otro momento, sin esperar al vencimiento. Pagar durante la prueba conserva el tiempo restante: el primer período pagado comienza al finalizarla; si el pago se aprueba después, comienza al aprobarse. La elegibilidad se aplica según los controles de cuenta; no se promete una prueba nueva por cada empresa o alias de correo.",
+            "Cada empresa tiene su propia suscripción y cobertura. Un correo puede administrar varias empresas, pero pagar una no habilita las demás. Varias sucursales dentro de una empresa consumen los límites de su propio plan. Se comprueban empresa y alcance antes de cada pago, cambio de plan y acceso al POS.",
+            "La disponibilidad del espacio se informa en el flujo de alta y puede depender del aprovisionamiento. La habilitación de facturación electrónica es un procedimiento adicional; no se promete activación fiscal instantánea por crear la cuenta o pagar. Los ambientes de desarrollo, staging y Sandbox no son la prestación productiva ni acreditan un pago real."
+          ]
+        },
+        {
+          "id": "cuentas-y-uso",
+          "heading": "3. Cuentas, permisos y uso permitido",
+          "paragraphs": [
+            "El cliente mantendrá información veraz y actualizada, asignará accesos individuales y permisos mínimos y retirará usuarios que ya no deban operar. Protegerá credenciales, dispositivos y factores de autenticación y comunicará incidentes de acceso. Cripton aplicará los controles de autorización, aislamiento y seguridad que le corresponden.",
+            "Las funciones disponibles resultan de la suscripción, las habilitaciones de plataforma y los permisos del negocio. Un administrador del POS no puede conceder una capacidad que la plataforma o el plan no autorice. El panel de administración de Cripton es un plano independiente del administrador del negocio.",
+            "El cliente responderá por sus instrucciones y las de usuarios facultados, sin atribuirle automáticamente un uso derivado de una falla de seguridad imputable a Cripton. Se documentarán cambios sensibles; no se podrán eludir cuotas, acceder a otras empresas ni introducir contenidos ilícitos o maliciosos."
+          ],
+          "items": [
+            "Usar el servicio para actividades lícitas y aportar información cuyo tratamiento esté permitido.",
+            "No acceder a otro tenant, eludir permisos, introducir código malicioso o interferir con la operación.",
+            "No compartir accesos de administración de plataforma con usuarios del negocio ni usar datos reales en pruebas sin justificación y protección adecuadas."
+          ]
+        },
+        {
+          "id": "facturacion-electronica",
+          "heading": "4. Facturación electrónica mediante Factus",
+          "paragraphs": [
+            "El cliente determina, con asesoría competente cuando la necesite, si está obligado a facturar y qué documento corresponde a cada operación. Si debe facturar electrónicamente, cumplirá la generación, transmisión para validación, expedición y entrega al adquirente en la oportunidad y condiciones exigidas por el Estatuto Tributario, la Resolución DIAN 000227 de 2025, sus modificaciones y anexos aplicables. El uso del software no permite omitir o aplazar discrecionalmente una obligación fiscal.",
+            "Antes de emitir en Producción debe contar con RUT actualizado, habilitación del facturador y modo de operación, autorizaciones y rangos vigentes y correctamente asociados, identidad del emisor y sucursal, credenciales y demás requisitos aplicables. Tener un plan con electrónica o ver un indicador local de disponibilidad no acredita esas autorizaciones. Un plan sin electrónica tampoco dispensa de facturar por una solución legalmente habilitada.",
+            "El cliente verificará la operación, identidad y datos exigibles del adquirente, productos, conceptos, cantidades, impuestos, descuentos, fecha y medio de pago. No se exigirán al comprador datos o documentos adicionales a los permitidos para facturar. Corresponde al cliente la veracidad material y el tratamiento tributario que instruya; Cripton responde por ejecutar correctamente las prestaciones e integración a su cargo.",
+            "La confirmación por un usuario autorizado instruye a Cripton para procesar y transmitir técnicamente el documento mediante la integración configurada, consultar estados y realizar recuperaciones o reintentos seguros sobre la misma operación. Esta instrucción no autoriza operaciones ajenas, duplicados ni el uso de credenciales de otro emisor o ambiente. El cliente revisará rechazos, pendientes, respuesta de validación y entrega al adquirente; una pantalla de venta guardada o un pago aprobado no prueba emisión fiscal.",
+            "Los documentos internos denominados POS por la aplicación no son por ese nombre una factura electrónica ni un Documento Equivalente Electrónico validado por DIAN. Sandbox sirve para pruebas y familiarización y no reemplaza la emisión productiva. Una validación técnica DIAN no certifica la realidad económica ni la corrección sustancial de todos los impuestos.",
+            "Las correcciones, devoluciones y anulaciones seguirán el documento y mecanismo fiscal que corresponda, por ejemplo una nota crédito vinculada cuando proceda. No se eliminará un documento electrónico aceptado para reemplazarlo por otro sin trazabilidad. PDF, XML, identificadores, rangos y estados conservarán su empresa, emisor y ambiente de origen, incluso al reimprimir, cambiar de plan o mover datos a una base dedicada.",
+            "Ante indisponibilidad se identificará si el inconveniente es del emisor, integración, proveedor o DIAN y se aplicará el procedimiento de contingencia legal que corresponda a esa causa, con documentos, autorizaciones y transmisiones posteriores dentro de los plazos aplicables. Un ticket interno no se presenta como contingencia válida por sí mismo. El cliente avisará a soporte y conservará evidencia; Cripton diagnosticará y escalará las fallas de su ámbito. No se promete una herramienta de contingencia aún no verificada.",
+            "La integración contratada utiliza servicios de FACTUS S.A.S., NIT 901724254-1. Cripton mantiene la relación comercial y el soporte del cliente y responde por su software e integración; la intervención de Factus no traslada toda atención al cliente final. Se verificará la habilitación vigente del proveedor tecnológico que intervenga antes de ofrecer emisión productiva. Cripton no se presenta como la DIAN ni como proveedor tecnológico habilitado propio sin acreditación.",
+            "El cliente conservará los documentos y soportes por los términos legalmente exigibles para su caso y podrá solicitar las salidas acordadas. Ni cancelar el SaaS ni un plazo comercial de conservación elimina deberes fiscales. La retención ofrecida por un tercero no constituye por sí sola un archivo fiscal garantizado por Cripton."
+          ]
+        },
+        {
+          "id": "precio-y-pagos",
+          "heading": "5. Precio, Wompi y renovación",
+          "paragraphs": [
+            "Antes de pagar se mostrarán plan, empresa, período cubierto, precio total en COP, impuestos y cargos aplicables. La condición tributaria del proveedor se aplicará según su situación legal vigente; no se afirma una exención general del SaaS. Los cambios de precio, cuotas o plan se comunicarán con su fecha y efectos antes de ser exigibles, sin alterar retroactivamente lo pagado ni imponer prestaciones no consentidas.",
+            "Wompi procesa los medios de pago habilitados. Sus formularios y autorizaciones son distintos del contrato Cripton. La aprobación verificada y conciliada determina el pago; el retorno del navegador o un correo no sustituyen esa confirmación. Un estado pendiente o incierto se consulta antes de reintentar para evitar cargos duplicados. No se solicitarán números completos de tarjeta ni códigos de seguridad por correo o soporte.",
+            "La renovación automática solo se activa con autorización específica y comprobable sobre empresa, plan, importe o regla de cálculo, periodicidad y fuente registrada. Aceptar estos términos, verificar el correo o iniciar la prueba no la autoriza. El titular puede revocarla en Mi cuenta; cambiar la tarjeta no equivale a pagar un período vencido ni a consentir nuevos cargos distintos de los informados.",
+            "Si se rechaza un cobro se comunicará la empresa, período e importe afectados y un acceso seguro a Mi cuenta para consultar, pagar ese período o sustituir la fuente de futuras renovaciones. Los reintentos deberán conservar la conciliación e identidad de la obligación. No se garantiza acceso operativo mientras la cobertura esté vencida ni se cobrará otra vez un período confirmado como pagado.",
+            "Para una suscripción pagada que vence, la recuperación mantiene la continuidad: cada período pendiente comienza en el vencimiento anterior. Si transcurrieron varios períodos puede ser necesario regularizar más de uno para recuperar cobertura; se mostrarán sus fechas e importe antes de confirmar cada pago. Esta regla no genera deuda por terminar la prueba gratuita y no sustituye el primer período de conversión descrito en la cláusula 2. La continuidad solo se aplica a obligaciones válidamente pactadas y causadas: no acredita por sí sola una deuda ni autoriza cobros de períodos no contratados o servicios no prestados imputables a Cripton.",
+            "Los avisos de cobro y las comunicaciones comerciales respetarán canales autorizados, horarios, periodicidad y restricciones aplicables, incluida la Ley 2300 de 2023 cuando corresponda. Las alertas de seguridad y comunicaciones necesarias del servicio se identificarán por su verdadera finalidad; no se disfrazará cobranza o publicidad como aviso técnico."
+          ]
+        },
+        {
+          "id": "soporte-y-continuidad",
+          "heading": "6. Soporte y continuidad",
+          "paragraphs": [
+            "Soporte: servicioalcliente@cripton.com.co y WhatsApp +57 321 959 7077, de lunes a viernes de 08:00 a 18:00, hora de Colombia, salvo festivos. La respuesta inicial se dará dentro de un día hábil de atención desde recibir la solicitud. Es un plazo de primera atención, no una promesa de solución en un día ni soporte permanente 24/7.",
+            "La solicitud incluirá empresa, módulo, momento y descripción del problema, evitando contraseñas o datos innecesarios. Se confirmará su recepción o referencia y se comunicarán avances relevantes. Los incidentes fiscales o de seguridad se priorizarán por impacto; se escalarán al tercero correspondiente sin liberar a Cripton de su seguimiento.",
+            "Cripton aplicará medidas razonables y verificables de seguridad, respaldo, recuperación y gestión de cambios. Informará mantenimientos previstos y atenderá interrupciones de su ámbito. No se pacta un porcentaje de disponibilidad ni un tiempo máximo de recuperación no comprobado. La conectividad, equipos e impresoras del cliente y servicios externos tienen límites que se evaluarán según la causa, sin exoneración automática.",
+            "Los correos transaccionales utilizan el remitente asociado a su finalidad. Aceptación por Microsoft u otro transporte no equivale a recepción o lectura. Se gestionarán fallos conocidos y reenvíos disponibles sin revelar si una cuenta ajena existe. El canal de soporte permite verificar un problema de acceso sin enviar credenciales por correo."
+          ]
+        },
+        {
+          "id": "datos-y-confidencialidad",
+          "heading": "7. Datos y confidencialidad",
+          "paragraphs": [
+            "El proveedor es responsable del tratamiento cuando decide finalidades para administrar cuentas, la relación comercial y la seguridad propia. Sobre datos personales operativos del comercio actuará como encargado cuando los trate por su cuenta e instrucciones, conforme al anexo de tratamiento.",
+            "El comercio conserva sus facultades sobre su información y respetará los derechos de los titulares. Alojar registros no transfiere su propiedad al proveedor ni autoriza publicidad, venta de bases o usos ajenos al servicio.",
+            "Las partes protegerán la información confidencial y limitarán su uso al propósito autorizado. El deber subsistirá mientras conserve ese carácter, sin impedir entregas exigidas por ley ni el ejercicio de derechos.",
+            "El anexo de tratamiento por cuenta del cliente integra este acuerdo desde su aceptación, aun sin pago. El servidor comprueba su aceptación por empresa antes de conceder el acceso operativo de la cohorte a la que se exige; una sesión de un empleado no puede sustituir al representante. Los cambios de precio no borran una aceptación de encargo ni facultan una finalidad adicional. El acuerdo no acredita por sí solo la licitud de cada dato que introduzca el comercio."
+          ]
+        },
+        {
+          "id": "propiedad-intelectual",
+          "heading": "8. Software y propiedad intelectual",
+          "paragraphs": [
+            "El software, las marcas y los componentes pertenecen a sus respectivos titulares. El proveedor acreditará los derechos o autorizaciones necesarios para ofrecerlos. El pago otorga una licencia de acceso limitada, no exclusiva y no transferible, para el comercio y sus usuarios autorizados durante el periodo y alcance contratado, sin cesión de derechos patrimoniales ni entrega del código fuente. No autoriza revender el servicio; las excepciones legales y licencias de terceros se respetan.",
+            "Las restricciones de copia, distribución o explotación respetarán las excepciones legales y las licencias de terceros. No se exige renunciar a los derechos sobre datos o contenidos propios."
+          ]
+        },
+        {
+          "id": "suspension-y-terminacion",
+          "heading": "9. Suspensión, cancelación y terminación",
+          "paragraphs": [
+            "El cliente puede cancelar futuras renovaciones desde Mi cuenta o solicitarlo por soporte con verificación de identidad y facultades. La cancelación no exige justificar falta de uso. Conserva el acceso durante el período efectivamente pagado, salvo suspensión legítima por otra causa, y no autoriza cargos posteriores no consentidos.",
+            "No se concede una devolución comercial proporcional por simple falta de uso de un período ya pagado. Esta condición se subordina al retracto, reversión, garantías, devoluciones legalmente exigibles y las que procedan por incumplimiento imputable a Cripton; no es una renuncia general a reembolsos.",
+            "La suspensión se limitará a causas objetivas como cobertura vencida, uso ilícito acreditado, riesgo de seguridad o mandato legal. Se informarán causa, alcance y mecanismo de atención y, cuando proceda, oportunidad de corregir. Una urgencia de seguridad o mandato puede exigir actuación inmediata. No se impondrá pérdida automática de todos los datos por un solo pago fallido.",
+            "La terminación puede derivar de cancelación al final del período, acuerdo, incumplimiento esencial no subsanado cuando proceda o causa legal. Suspensión de acceso, cancelación de renovación, terminación contractual y supresión de datos son actuaciones distintas. Subsisten confidencialidad, derechos de titulares, obligaciones de pago válidamente causadas y conservación legal pertinente."
+          ]
+        },
+        {
+          "id": "salida-y-conservacion",
+          "heading": "10. Exportación y conservación",
+          "paragraphs": [
+            "Los 30 y 90 días son plazos comerciales de salida del espacio del negocio y comienzan en la fecha de terminación registrada, no por cerrar una pestaña, cancelar una renovación o simplemente vencer la prueba. Durante los 30 días calendario siguientes, el representante autorizado puede solicitar exportación de los datos operativos disponibles. Una solicitud oportuna continúa hasta ser atendida aunque su entrega exceda esa ventana. Se verifican empresa, identidad, alcance y medio seguro; no se entregan datos de otros comercios, secretos ni código.",
+            "Los datos operativos se conservan durante 90 días calendario desde la terminación registrada para el cierre y recuperación controlada. Cumplido ese umbral se revisan las condiciones de baja y se ejecuta mediante el procedimiento privado la supresión o anonimización de lo que no tenga fundamento específico de conservación, registrando fecha, alcance y excepciones; no es un temporizador de borrado automático. Una solicitud de supresión anterior se evalúa conforme a la ley. Obligaciones fiscales, reclamaciones, exportaciones oportunas aún sin entregar y preservaciones identificadas pueden impedir una baja concreta; deben registrarse motivo, categorías, acceso restringido y revisión. No se promete borrar indiscriminadamente toda evidencia comercial, contractual, de seguridad o de derechos al día 90 ni conservarla indefinidamente sin justificación.",
+            "Los respaldos sirven exclusivamente para recuperación y tienen acceso restringido. En staging se ha configurado un objetivo de rotación de siete días para cadenas SQL, sujeto a custodia externa cifrada e independiente y a pruebas de restauración válidas. Si faltan esas pruebas o está pausada la copia externa, no se elimina una cadena necesaria para recuperar; se registra la excepción y se revisa su retiro seguro. Ese objetivo no es un plazo máximo universal de borrado de todas las copias. Las imágenes, las claves, la web y los diarios de bajas tienen inventarios y ciclos propios; las claves necesarias se mantienen mientras exista evidencia cifrada que deba conservarse.",
+            "Una restauración debe reaplicar el diario de bajas y las restricciones vigentes antes de habilitar acceso, para no reactivar datos suprimidos. La conservación de copias no permite un nuevo uso comercial de los datos. El comercio puede solicitar información sobre el estado de su salida, entrega, supresión y excepciones mediante los canales de privacidad y soporte."
+          ]
+        },
+        {
+          "id": "responsabilidad",
+          "heading": "11. Obligaciones y responsabilidad",
+          "paragraphs": [
+            "Cada parte responderá por sus obligaciones y daños imputables conforme al contrato y a la ley, limitando la reparación a los daños acreditados y legalmente atribuibles a su incumplimiento, según causalidad, previsibilidad cuando sea exigible y circunstancias del caso, sin reducir reparaciones obligatorias. El comercio revisará operaciones y configuraciones; el proveedor prestará diligentemente el servicio y atenderá los incidentes de su ámbito.",
+            "Los fallos de equipos, conectividad o terceros pueden afectar la operación, pero no exoneran automáticamente al proveedor. También se examinarán su selección, configuración, integración y gestión de la incidencia.",
+            "No se establece un tope económico ni se excluye toda pérdida de datos o interrupción. Una limitación futura requerirá revisión de proporcionalidad y legalidad y no amparará dolo, culpa grave, obligaciones irrenunciables ni impedirá derechos de los titulares."
+          ]
+        },
+        {
+          "id": "reclamaciones-y-consumo",
+          "heading": "12. Reclamaciones y derechos aplicables",
+          "paragraphs": [
+            "Los asuntos legales, privacidad y reclamaciones se recibirán en legal@cripton.com.co o en la dirección física de la cláusula 1. Se dejará constancia, se verificará lo necesario y se dará respuesta motivada dentro del término aplicable. Soporte y pago tendrán seguimiento aunque los alias compartan buzón. Una reclamación no autoriza represalias ni condiciona derechos legales al pago de conceptos discutidos.",
+            "La condición de consumidor depende de la finalidad de la adquisición y la ley; no se excluye solo por usar NIT o por denominar el contrato empresarial. Cuando exista relación de consumo se respetarán información, garantía legal, reclamación directa y demás derechos. La reclamación directa de consumo se responderá dentro de quince días hábiles, cuando ese término resulte aplicable.",
+            "Si procede retracto por contratación a distancia, su ejercicio se somete al término general de cinco días hábiles y las reglas y excepciones del artículo 47 de la Ley 1480 de 2011. El inicio de un servicio con acuerdo del consumidor se evaluará con evidencia y no se presume renuncia por crear una cuenta. Cuando el retracto sea procedente se devolverán las sumas sin descuentos o retenciones indebidos dentro del máximo de quince días calendario, conforme a la norma y su interpretación constitucional vigente.",
+            "La reversión del pago por los supuestos legales —por ejemplo fraude, operación no solicitada o servicio no recibido, defectuoso o distinto— es diferente de cancelar la renovación. Se atenderá la reclamación y el trámite ante los participantes del pago dentro de los términos aplicables, incluido el de cinco días hábiles para reclamar y notificar cuando corresponda. No se sustituye ese derecho por un saldo de consumo obligatorio."
+          ]
+        },
+        {
+          "id": "cambios-y-ley",
+          "heading": "13. Versiones y ley aplicable",
+          "paragraphs": [
+            "Rige la legislación colombiana. Las partes pueden intentar una solución directa sin impedir acudir a la SIC, otras autoridades o jueces competentes. No se impone arbitraje obligatorio ni un foro que suprima derechos legales.",
+            "Las modificaciones se identificarán en una versión nueva y se comunicarán con antelación razonable según su impacto; los cambios que necesiten aceptación o autorización no se aplicarán por silencio o simple publicación. Las condiciones previamente aceptadas conservarán su evidencia, alcance temporal y posibilidad de consulta.",
+            "Esta versión de staging se aplica a los actos que la identifiquen expresamente desde su publicación y adopción registrada. No modifica los documentos ni aceptaciones anteriores. Si una estipulación no pudiera aplicarse, las demás subsistirán en cuanto sea legalmente posible, sin reducir derechos irrenunciables."
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "privacidad",
+      "title": "Política de tratamiento de datos personales Cripton — simulación staging 2026-11-25",
+      "sections": [
+        {
+          "id": "identidad-y-alcance",
+          "heading": "1. Identidad y alcance",
+          "paragraphs": [
+            "Jonathan Santiago Murcia Peña, persona natural, identificado con NIT 1014234769-1, con domicilio en Bogotá D.C., Colombia, y dirección de notificaciones CL 78 C 130 55 T 4 507, Bogotá D.C., Colombia, es el proveedor del servicio identificado comercialmente como Cripton. Contacto: +57 321 959 7077; legal@cripton.com.co para asuntos legales y privacidad; servicioalcliente@cripton.com.co para soporte.",
+            "El responsable del tratamiento propio es Jonathan Santiago Murcia Peña, quien atiende personalmente los asuntos de protección de datos mediante legal@cripton.com.co y su dirección de notificaciones. Esta política comprende datos de personas naturales vinculadas al registro, contratación, soporte, seguridad y relación comercial de Cripton.",
+            "Los registros empresariales pueden contener datos personales de representantes, empleados y contactos. No pierden su protección por estar asociados a una empresa. El tratamiento por cuenta del comercio se rige además por las instrucciones lícitas y el anexo correspondiente."
+          ]
+        },
+        {
+          "id": "dos-roles",
+          "heading": "2. Responsable de la cuenta y encargado del comercio",
+          "paragraphs": [
+            "El operador será responsable cuando decida finalidades para gestionar registro, contactos, relación comercial, cobro y seguridad propia de la plataforma.",
+            "El comercio será responsable de los datos de sus clientes, empleados, proveedores y demás personas que incorpore al POS para sus actividades. Cripton actuará como encargado al alojarlos, organizarlos, consultarlos, transmitirlos o respaldarlos por cuenta del comercio, conforme al anexo de tratamiento.",
+            "Los roles dependen de decisiones y actividades efectivas. Reutilizar información operativa para fines propios no queda cubierto por denominarse encargado: requeriría analizar su licitud y la información al titular."
+          ]
+        },
+        {
+          "id": "categorias-y-origen",
+          "heading": "3. Datos y fuentes",
+          "paragraphs": [
+            "El alta recibe nombre, correo, nombre de empresa, teléfono cuando se facilita y plan. La contratación y administración pueden requerir identificación del titular o representante, contacto de facturación y evidencia de sus facultades. Los datos provienen del titular, representante o usuarios autorizados, y de los servicios que confirman verificación, pago y operación.",
+            "Se generan identificadores de cuenta y empresa, estados y fechas de suscripción, órdenes, períodos, importes, referencias y estados de pago, aceptaciones y comunicaciones. Los registros técnicos de acceso y seguridad, como fecha, dirección IP y acciones relevantes cuando se recolecten, tienen finalidad de prevención de abuso, diagnóstico y trazabilidad, con acceso y conservación limitados.",
+            "Los datos operativos aportados por cada comercio pueden incluir identificación y contacto de compradores, proveedores y empleados; operaciones y documentos comerciales o fiscales vinculados a personas. Su pertinencia depende de la operación y del módulo, no de que exista un campo disponible. Cripton no solicita por soporte contraseñas, códigos MFA ni códigos de seguridad de tarjetas."
+          ]
+        },
+        {
+          "id": "finalidades",
+          "heading": "4. Finalidades del tratamiento propio",
+          "paragraphs": [
+            "El tratamiento propio se limita a finalidades informadas y sustentadas en autorización previa cuando se exija o en una excepción legal específica. No se invoca el contrato como permiso general de uso. Son finalidades:"
+          ],
+          "items": [
+            "Administrar registros, verificación de correo, prueba de 15 días, accesos y contacto con el titular o representante.",
+            "Gestionar planes, cobertura por empresa, órdenes, cobros consentidos, conciliaciones y comunicaciones transaccionales pertinentes.",
+            "Atender soporte, consultas, reclamos y solicitudes de privacidad, conservando la evidencia necesaria para su seguimiento.",
+            "Prevenir abuso, acceso indebido y fraude, investigar incidentes y mantener el servicio con datos técnicos pertinentes.",
+            "Cumplir obligaciones concretas y formular, ejercer o defender reclamaciones, limitando categorías y duración a su fundamento."
+          ]
+        },
+        {
+          "id": "autorizacion-y-elecciones",
+          "heading": "5. Autorización y elecciones",
+          "paragraphs": [
+            "Antes de recolectar datos se informan identidad y contacto del responsable, tratamiento y finalidades, derechos y forma de consultar esta política. Cuando se requiere autorización se solicita una manifestación previa, expresa e informada susceptible de consulta posterior. Se conserva la versión del aviso y evidencia de la decisión; el silencio o una casilla premarcada no bastan.",
+            "La aceptación del contrato, la autorización de datos, el consentimiento para publicidad y la autorización de cobros recurrentes tienen objetos diferentes. Pueden presentarse en un flujo coordinado, pero cada decisión debe ser identificable y no se presume una de otra. Los datos necesarios para prestar el servicio se explican; los usos opcionales no se imponen como condición.",
+            "La publicidad, si se habilita, requiere elección específica y voluntaria y un mecanismo sencillo para retirarla. Los avisos necesarios de seguridad, acceso, pagos y estado del servicio se distinguen de campañas. Se respetan canales y restricciones de contacto aplicables. No se venden bases ni se reutilizan datos operativos para publicidad o entrenamiento de modelos por esta política."
+          ]
+        },
+        {
+          "id": "proveedores-y-destinatarios",
+          "heading": "6. Proveedores y destinatarios",
+          "paragraphs": [
+            "Se comunica únicamente la información necesaria a destinatarios identificados para cada operación. Un proveedor que decide finalidades propias no se denomina encargado por conveniencia. Antes de adoptar esta revisión se completará el registro de entidades contratadas, ubicaciones, operaciones posteriores y mecanismos; esa verificación es una condición de publicación y no una autorización indeterminada."
+          ],
+          "subsections": [
+            {
+              "heading": "Alojamiento y comunicaciones: Microsoft",
+              "paragraphs": [
+                "La infraestructura de staging utiliza Azure y el correo transaccional Microsoft 365. Pueden tratarse identificadores, información alojada, direcciones, contenido y metadatos del mensaje según el servicio. La comercialización del buzón mediante GoDaddy no equivale a que todos los datos del POS se entreguen a GoDaddy. Las entidades contractuales y ubicaciones de alojamiento, respaldo, correo y soporte deberán constar en el registro aplicable al entorno productivo."
+              ]
+            },
+            {
+              "heading": "Pagos de suscripción: Wompi",
+              "paragraphs": [
+                "El pagador facilita a Wompi los datos requeridos por su formulario y autorizaciones. Cripton recibe los identificadores, estados y referencias necesarios para conciliar y, en recurrencia consentida, la referencia tokenizada de la fuente. La pantalla de pago y las finalidades propias de Wompi se identifican al operar; no se autoriza acceder a toda la información comercial del negocio ni registrar datos completos de tarjeta en correos o logs."
+              ]
+            },
+            {
+              "heading": "Documentos electrónicos: FACTUS S.A.S.",
+              "paragraphs": [
+                "FACTUS S.A.S., NIT 901724254-1, presta la API contratada para procesar documentos electrónicos. Se transmiten emisor, adquirente y operación necesarios para el documento y gestiones autorizadas, con destino DIAN cuando corresponda. El acuerdo de integración y confidencialidad no permite publicidad con esos datos ni hace a Factus responsable de todo el contrato SaaS. Deben verificarse los eventuales proveedores posteriores y la habilitación del proveedor tecnológico interviniente."
+              ]
+            },
+            {
+              "heading": "Autoridades y personas facultadas",
+              "paragraphs": [
+                "Se atienden solicitudes legítimas de titulares, representantes y autoridades competentes previa verificación de alcance. Se documenta lo entregado y su fundamento. No se comparte información de otras empresas por el hecho de que una persona tenga acceso administrativo a su propio POS."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "tratamiento-internacional",
+          "heading": "7. Tratamiento internacional",
+          "paragraphs": [
+            "No se promete residencia exclusiva en Colombia. La infraestructura y los proveedores pueden implicar alojamiento, respaldo, soporte o acceso desde otros países. Antes de habilitar un entorno productivo se documentarán destinos efectivos, entidades, categorías, medidas y fundamento; una región de Azure no prueba por sí sola la ubicación del correo o de todos los subencargados.",
+            "Una transmisión a un encargado por cuenta del responsable se sujeta al contrato y requisitos del artículo 2.2.2.25.5.2 del Decreto 1074 de 2015. Una transferencia a quien decide sus finalidades exige evaluar el artículo 26 de la Ley 1581 de 2012 y el mecanismo permitido para el caso. No se presume que un consentimiento genérico o el nombre de un proveedor acrediten esos requisitos.",
+            "Los cambios de destinatario, finalidad o ubicación que lo requieran se informarán y evaluarán antes de ejecutar el nuevo tratamiento. Las medidas internacionales no sustituyen los derechos, principios y autorizaciones aplicables al tratamiento original."
+          ]
+        },
+        {
+          "id": "seguridad",
+          "heading": "8. Acceso, confidencialidad e incidentes",
+          "paragraphs": [
+            "Se aplicarán medidas técnicas, humanas y administrativas proporcionales al riesgo: acceso por función, separación de empresas y ambientes, protección de credenciales y secretos, trazabilidad de actuaciones sensibles, gestión de cambios y respaldos con recuperación comprobada en el entorno que se ofrezca. No se publica información técnica que facilite vulnerar el servicio.",
+            "Los accesos de soporte y proveedores estarán justificados, limitados y sujetos a confidencialidad. Ningún usuario del comercio obtiene acceso a otra empresa por compartir una base física. Las exportaciones y movimientos de datos deben preservar ese aislamiento.",
+            "Los incidentes se documentarán, contendrán y evaluarán para comunicar a comercios, titulares y autoridades cuando corresponda. La investigación no pospondrá avisos necesarios hasta obtener un informe final. No se garantiza riesgo cero ni se exonera a Cripton de fallas atribuibles por presentar estas medidas."
+          ]
+        },
+        {
+          "id": "conservacion-y-supresion",
+          "heading": "9. Conservación y supresión",
+          "paragraphs": [
+            "Los 30 y 90 días son plazos comerciales de salida del espacio del negocio y comienzan en la fecha de terminación registrada, no por cerrar una pestaña, cancelar una renovación o simplemente vencer la prueba. Durante los 30 días calendario siguientes, el representante autorizado puede solicitar exportación de los datos operativos disponibles. Una solicitud oportuna continúa hasta ser atendida aunque su entrega exceda esa ventana. Se verifican empresa, identidad, alcance y medio seguro; no se entregan datos de otros comercios, secretos ni código.",
+            "Los datos operativos se conservan durante 90 días calendario desde la terminación registrada para el cierre y recuperación controlada. Cumplido ese umbral se revisan las condiciones de baja y se ejecuta mediante el procedimiento privado la supresión o anonimización de lo que no tenga fundamento específico de conservación, registrando fecha, alcance y excepciones; no es un temporizador de borrado automático. Una solicitud de supresión anterior se evalúa conforme a la ley. Obligaciones fiscales, reclamaciones, exportaciones oportunas aún sin entregar y preservaciones identificadas pueden impedir una baja concreta; deben registrarse motivo, categorías, acceso restringido y revisión. No se promete borrar indiscriminadamente toda evidencia comercial, contractual, de seguridad o de derechos al día 90 ni conservarla indefinidamente sin justificación.",
+            "Los respaldos sirven exclusivamente para recuperación y tienen acceso restringido. En staging se ha configurado un objetivo de rotación de siete días para cadenas SQL, sujeto a custodia externa cifrada e independiente y a pruebas de restauración válidas. Si faltan esas pruebas o está pausada la copia externa, no se elimina una cadena necesaria para recuperar; se registra la excepción y se revisa su retiro seguro. Ese objetivo no es un plazo máximo universal de borrado de todas las copias. Las imágenes, las claves, la web y los diarios de bajas tienen inventarios y ciclos propios; las claves necesarias se mantienen mientras exista evidencia cifrada que deba conservarse.",
+            "Una restauración debe reaplicar el diario de bajas y las restricciones vigentes antes de habilitar acceso, para no reactivar datos suprimidos. La conservación de copias no permite un nuevo uso comercial de los datos. El comercio puede solicitar información sobre el estado de su salida, entrega, supresión y excepciones mediante los canales de privacidad y soporte."
+          ]
+        },
+        {
+          "id": "derechos",
+          "heading": "10. Derechos de los titulares",
+          "paragraphs": [
+            "Las personas podrán conocer, actualizar y rectificar datos; solicitar prueba de autorización cuando sea exigible; conocer el uso de la información; acceder gratuitamente en los términos legales; y pedir revocatoria o supresión cuando corresponda. Podrán acudir a la SIC después de agotar el trámite previo exigible.",
+            "Si una obligación legal o contractual impide suprimir determinados datos se explicarán fundamento y alcance. No se convertirá esa excepción en negativa automática para toda la información."
+          ]
+        },
+        {
+          "id": "procedimiento",
+          "heading": "11. Consultas y reclamos",
+          "paragraphs": [
+            "Jonathan Santiago Murcia Peña atiende protección de datos por legal@cripton.com.co y por la dirección física indicada en la sección 1. La solicitud debe permitir identificar al titular o representante, localizar los datos y conocer lo pedido, con un canal de respuesta. Se verifica identidad proporcionalmente, sin pedir contraseñas, códigos o copias de documentos innecesarias. Se deja constancia y seguimiento.",
+            "Las consultas se atenderán en diez días hábiles desde su recepción. Si no es posible, se informarán motivo y nueva fecha antes del vencimiento, con ampliación máxima de cinco días hábiles. Los reclamos se resolverán en quince días hábiles desde el día siguiente a su recibo; una ampliación motivada y comunicada no superará ocho días hábiles adicionales.",
+            "Si el reclamo está incompleto se requerirá subsanación dentro de cinco días siguientes. Transcurridos dos meses desde el requerimiento sin completarlo, se entenderá desistido. Si no se es competente, se trasladará en máximo dos días hábiles e informará al interesado. Recibido completo, se registrará reclamo en trámite dentro de dos días hábiles hasta decidirlo.",
+            "Las solicitudes sobre datos operativos se coordinarán con el comercio responsable. Remitir no elimina los deberes propios de Cripton como encargado ni permite acceder a otro tenant. El titular podrá acudir a la SIC después de agotar la consulta o reclamo previo exigible. Los derechos no dependen de tener una suscripción pagada.",
+            "Si quien recibe un reclamo no es competente para resolverlo, lo traslada a quien corresponda en un máximo de dos días hábiles desde la recepción e informa al interesado. Recibido el reclamo completo, incluye en la base de datos la leyenda «reclamo en trámite» y su motivo dentro de los dos días hábiles siguientes y la mantiene hasta decidirlo. Se documentan recepción, competencia, traslado, aviso, datos afectados, anotación y decisión. Registrar un evento en el portal no reemplaza ejecutar la actuación sobre los datos ni acreditar la remisión o entrega."
+          ]
+        },
+        {
+          "id": "datos-especiales-y-navegacion",
+          "heading": "12. Datos especiales y navegación",
+          "paragraphs": [
+            "El registro SaaS no solicita datos sensibles ni de menores. No se deben introducir innecesariamente en campos libres, adjuntos o pruebas. Cuando alguna operación los requiera deberá evaluarse previamente finalidad, necesidad y salvaguardas, incluida la protección prevalente de niños, niñas y adolescentes. La respuesta sobre datos sensibles es facultativa y esta política no es una autorización para recolectarlos.",
+            "La web utiliza almacenamiento necesario para sesión, seguridad, avance del registro y preferencias de privacidad. La información de cookies distingue esa finalidad del seguimiento opcional. Las preferencias de cookies no autorizan pagos ni sustituyen la autorización de datos de cuenta.",
+            "La analítica y publicidad opcionales solo se activarán si su proveedor, finalidad y mecanismo de elección han sido revisados y se cumplen las autorizaciones exigibles. Se podrá retirar una elección sin perder el almacenamiento indispensable para operar. No se presenta una herramienta apagada como seguimiento activo."
+          ]
+        },
+        {
+          "id": "versiones",
+          "heading": "13. Versiones y vigencia",
+          "paragraphs": [
+            "Esta versión 2026-11-25-minimo-qa se aplica a las aceptaciones que la identifiquen expresamente desde su publicación y adopción registrada en staging. Se mantienen consultables las versiones y evidencias anteriores; esta publicación no adopta condiciones de producción.",
+            "Los cambios sustanciales de finalidades, derechos o destinatarios se comunicarán oportunamente. Si exigen nueva autorización se obtendrá antes del tratamiento; continuar usando el servicio no la sustituye. La vigencia de las bases depende de sus finalidades y retenciones justificadas, no de una autorización perpetua.",
+            "La política aplicable a un acto es la versión identificada en ese acto y conservada con su evidencia, no una sustitución retroactiva por el enlace público de hoy. Las preferencias de cookies y medición tienen versión y decisión separadas; aceptarlas no equivale a aceptar el contrato, autorizar publicidad ni consentir el tratamiento que un comercio hace de sus propios clientes."
+          ]
+        },
+        {
+          "id": "autorizacion-del-declarante",
+          "heading": "Autorización específica para esta simulación",
+          "paragraphs": [
+            "Autorizo a Jonathan Santiago Murcia Peña a tratar los datos de mi cuenta, identificación y representación declaradas para verificar el control de mi correo, individualizar esta empresa de pruebas, conservar el soporte de aceptación, ejecutar el flujo solicitado, brindar soporte y atender mis derechos. Puedo consultar, actualizar, rectificar, solicitar prueba de autorización y, cuando proceda legalmente, revocar o solicitar supresión por legal@cripton.com.co.",
+            "No se solicitan datos sensibles ni imágenes de identificación. Esta autorización no incluye publicidad ni el débito automático de una tarjeta. Los datos almacenados por mi negocio se rigen por el anexo de tratamiento por cuenta del cliente, con roles distintos del tratamiento propio de Cripton."
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "tratamiento-por-cuenta-del-cliente",
+      "title": "Anexo de transmisión y tratamiento por cuenta del cliente — simulación staging 2026-11-25",
+      "sections": [
+        {
+          "id": "partes-y-objeto",
+          "heading": "1. Partes, objeto y alcance",
+          "paragraphs": [
+            "Jonathan Santiago Murcia Peña, persona natural, identificado con NIT 1014234769-1, con domicilio en Bogotá D.C., Colombia, y dirección de notificaciones CL 78 C 130 55 T 4 507, Bogotá D.C., Colombia, es el proveedor del servicio identificado comercialmente como Cripton. Contacto: +57 321 959 7077; legal@cripton.com.co para asuntos legales y privacidad; servicioalcliente@cripton.com.co para soporte.",
+            "El comercio identificado en la orden es responsable de los datos operativos que incorpora al POS para sus finalidades lícitas. Jonathan Santiago Murcia Peña actúa como encargado al tratarlos por su cuenta e instrucciones para prestar el servicio. La orden individualiza comercio, identificación, representante y facultades, tenant, módulos, duración, titulares, categorías, operaciones, contactos y política o instrucciones del responsable.",
+            "Este anexo comprende el tratamiento por cuenta del comercio y se incorpora por aceptación documentada al contrato del servicio, sin convertir el acceso técnico en autorización para fines propios. Los tratamientos propios de cuenta, cobro y seguridad de Cripton se distinguen en su política. Los roles corresponden a las actividades reales, no solo al nombre dado en el documento.",
+            "Este anexo integra el acuerdo desde que el representante facultado lo acepta, también durante la prueba gratuita y antes del acceso operativo de nuevos comercios. Cada constancia identifica el texto, la empresa y la fecha exactos. Sus condiciones no limitan derechos de los titulares ni deberes legales del responsable y encargado."
+          ]
+        },
+        {
+          "id": "datos-titulares-y-operaciones",
+          "heading": "2. Titulares, datos y operaciones",
+          "paragraphs": [
+            "Las categorías ordinarias comprenden identificación y contacto de compradores, proveedores, representantes, empleados y cajeros, así como datos comerciales, fiscales y transaccionales que los vinculen con ventas, pagos, caja o inventario. No se autorizan por defecto categorías sensibles o datos de menores innecesarios; requerirlos exige evaluación y salvaguardas previas.",
+            "Las operaciones necesarias pueden incluir recepción, organización, almacenamiento, consulta por usuarios facultados, actualización, elaboración de documentos y reportes, transmisión autorizada para facturación, soporte, respaldo, recuperación, exportación y supresión. Su alcance efectivo depende de los módulos e instrucciones registrados para la empresa.",
+            "El encargo se limita a finalidades lícitas del comercio, su política informada y autorizaciones exigibles. No permite vender bases, publicidad propia de Cripton o de un proveedor, entrenamiento de modelos con datos del negocio, mezcla entre tenants o uso de datos productivos en material promocional. Las imágenes de demostración deben utilizar información sintética o debidamente habilitada."
+          ]
+        },
+        {
+          "id": "instrucciones",
+          "heading": "3. Instrucciones y límites del encargo",
+          "paragraphs": [
+            "Cripton tratará los datos únicamente para prestar las actividades acordadas, conforme a instrucciones documentadas, la política del responsable, los principios de protección de datos y la ley. Los cambios de alcance requerirán registro y evaluación antes de ejecutarse.",
+            "Las instrucciones deberán provenir de personas facultadas y permitir identificar el tenant afectado. Si una instrucción parece exceder el encargo o contrariar la ley, Cripton lo comunicará al responsable y pedirá aclaración antes de realizar la operación cuestionada, sin impedir medidas urgentes exigibles para proteger datos o cumplir una orden legal.",
+            "El encargo no autoriza vender bases, publicidad propia, entrenamiento de modelos con datos operativos, combinación entre comercios ni uso de producción en demostraciones. Una finalidad adicional exige análisis y habilitación propios; no se presume por el acceso técnico.",
+            "Una orden de autoridad se verificará y atenderá en su alcance obligatorio, con información al comercio cuando esté legalmente permitido. Se documentarán motivo, datos entregados y destinatario, sin revelar información de otros tenants."
+          ]
+        },
+        {
+          "id": "deberes-del-responsable",
+          "heading": "4. Obligaciones del comercio responsable",
+          "paragraphs": [
+            "El comercio determinará finalidades lícitas, informará a los titulares, obtendrá y conservará autorizaciones cuando sean exigibles y transmitirá únicamente datos cuyo tratamiento esté permitido. Mantendrá calidad, pertinencia y actualización y comunicará correcciones y reclamos al encargado.",
+            "El comercio administrará usuarios y permisos, verificará que sus instrucciones estén autorizadas, identificará contactos para derechos e incidentes y facilitará su política de tratamiento. El acceso de un empleado no sustituye las autorizaciones de los titulares ni permite transmitir datos de otra empresa.",
+            "Si requiere datos sensibles o de niños, niñas y adolescentes deberá evaluar previamente necesidad, autorización y salvaguardas especiales, incluida la protección prevalente de los menores. Responder sobre datos sensibles es facultativo y no debe condicionarse el servicio a su suministro innecesario. Este anexo no habilita por sí solo esas categorías.",
+            "Estas obligaciones no desplazan los deberes legales del encargado ni convierten al comercio en responsable de cualquier incidente originado en la plataforma."
+          ]
+        },
+        {
+          "id": "deberes-del-encargado",
+          "heading": "5. Obligaciones de Cripton como encargado",
+          "paragraphs": [
+            "Cripton dará tratamiento a nombre del responsable conforme a los principios aplicables; protegerá las bases de datos y mantendrá confidencialidad. Limitará el acceso a personal autorizado para el servicio y vinculado a deberes de reserva que subsistan al finalizar su relación.",
+            "Implementará las instrucciones lícitas de actualización y rectificación, atenderá los deberes de consultas y reclamos que le correspondan, registrará la información en discusión y evitará circular datos bloqueados por decisión de la autoridad cuando resulte aplicable.",
+            "Mantendrá evidencia pertinente de instrucciones, accesos y operaciones sensibles y colaborará con requerimientos de la autoridad. Si reúne respecto de un tratamiento la calidad de responsable y encargado cumplirá los deberes correspondientes a ambas.",
+            "El acceso de soporte deberá estar justificado y limitado a lo necesario. El contrato no constituye autorización para consultar indiscriminadamente datos operativos de los comercios."
+          ]
+        },
+        {
+          "id": "seguridad-y-separacion",
+          "heading": "6. Seguridad, separación y recuperación",
+          "paragraphs": [
+            "Cripton aplicará medidas técnicas, humanas y administrativas proporcionales a los riesgos: autenticación, acceso por función y empresa, separación de ambientes, protección de credenciales, trazabilidad de cambios sensibles, gestión de actualizaciones, respaldo y recuperación. El acceso de soporte estará justificado y limitado; la confidencialidad subsiste al terminar la relación.",
+            "No se mezclarán registros, credenciales, emisores, rangos, documentos ni reintentos de empresas o ambientes fiscales distintos. Una base compartida es una ubicación técnica, no una autorización de circulación entre clientes. Mover una empresa a una base dedicada exige preservar identidad, documentos y configuraciones de origen, integridad y evidencia del traslado.",
+            "Los respaldos y exportaciones tendrán controles de acceso e integridad adecuados y un ciclo de conservación documentado. La recuperación se ensayará en el entorno ofrecido. No se garantiza riesgo cero, una certificación, un porcentaje de disponibilidad ni tiempos de recuperación no pactados y verificados.",
+            "Las pruebas con datos de producción requieren necesidad, autorización y medidas propias; la alternativa ordinaria son datos sintéticos. Escribir estas obligaciones no certifica su cumplimiento: se mantendrá evidencia y se corregirán deficiencias según impacto y deber legal."
+          ]
+        },
+        {
+          "id": "proveedores-posteriores",
+          "heading": "7. Proveedores posteriores y destinos",
+          "paragraphs": [
+            "Antes de iniciar una comunicación a un proveedor posterior se registrarán su identidad jurídica, rol, función, datos, ubicación, medidas y condiciones de protección y se obtendrá la instrucción o autorización documentada que corresponda. No se autoriza una lista indeterminada ni cualquier sustitución por el solo uso del SaaS.",
+            "Al tercero que actúe por cuenta del responsable se le exigirán obligaciones compatibles sobre finalidad, instrucciones, confidencialidad, seguridad, asistencia, incidentes y salida. Cripton mantendrá el seguimiento de sus prestaciones y no se libera de su integración por utilizar terceros. El destinatario con finalidades propias se identificará y evaluará como tal.",
+            "Los cambios de proveedor o ubicación se comunicarán antes de aplicarlos con información suficiente para evaluar su efecto y dar instrucciones. Si hay una objeción fundada se buscará una alternativa lícita; no se comunicarán datos sin la habilitación necesaria. Si ello impide el servicio se coordinará su terminación y salida, sin eliminar derechos legales."
+          ],
+          "subsections": [
+            {
+              "heading": "Infraestructura y mensajes",
+              "paragraphs": [
+                "Azure y Microsoft 365 intervienen según el entorno y flujo. Deben individualizarse sus entidades y destinos contractuales. La comercialización del buzón a través de GoDaddy no autoriza a entregar a ese intermediario todas las bases del POS. Los correos deben minimizar la información operativa y proteger enlaces de acceso."
+              ]
+            },
+            {
+              "heading": "Documentos electrónicos",
+              "paragraphs": [
+                "FACTUS S.A.S., NIT 901724254-1, recibe los datos necesarios de emisor, adquirente y operación para el procesamiento contratado y la transmisión a DIAN cuando corresponda. Se verificará la cadena de proveedores tecnológicos y la habilitación aplicable. El contrato de API atribuye a Cripton su integración y soporte al comercio; no permite atribuir a Factus todas las obligaciones del SaaS. Los datos y consultas conservan tenant, emisor y ambiente de origen."
+              ]
+            },
+            {
+              "heading": "Pago del SaaS",
+              "paragraphs": [
+                "El pago de la suscripción en Wompi corresponde ordinariamente a la relación propia de cuenta entre Cripton y el contratante. No habilita acceso a los datos de compradores del comercio. Una futura función de cobro de ventas del negocio requiere definir su alcance y tratamiento por separado."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "operaciones-internacionales",
+          "heading": "8. Transmisiones y transferencias internacionales",
+          "paragraphs": [
+            "Se identificarán ubicaciones de alojamiento, respaldo, soporte y acceso remoto. No se promete residencia exclusiva en Colombia. La evaluación incluirá destinatarios posteriores y cambios relevantes de ubicación.",
+            "Una transmisión a un encargado por cuenta del responsable se sujetará al contrato que cumpla el artículo 2.2.2.25.5.2 del Decreto 1074 de 2015. El régimen de transmisiones internacionales con ese contrato no constituye una dispensa general de informar finalidades, obtener las autorizaciones del tratamiento original o cumplir los demás deberes.",
+            "Si hay transferencia a un receptor que decide sobre los datos se evaluarán el artículo 26 de la Ley 1581 de 2012 y el mecanismo legal aplicable. La sola firma de este acuerdo no acredita un país adecuado, una excepción ni una declaración de conformidad."
+          ]
+        },
+        {
+          "id": "derechos-y-asistencia",
+          "heading": "9. Derechos y asistencia al responsable",
+          "paragraphs": [
+            "Las partes coordinarán el acceso, prueba de autorización, información sobre uso, actualización, rectificación y las solicitudes de revocatoria o supresión procedentes. El encargado facilitará al comercio la información necesaria por un medio seguro y con verificación proporcional de identidad.",
+            "Recibir una solicitud sobre el comercio no habilita a consultar otro tenant. El traslado por falta de competencia se hará en máximo dos días hábiles e informando al interesado, conforme a la ley; remitir no elimina los deberes propios del encargado.",
+            "Se respetarán los términos legales: consultas en diez días hábiles desde recepción, con ampliación motivada de hasta cinco adicionales; reclamos en quince días hábiles desde el día siguiente al recibo, con ampliación motivada de hasta ocho adicionales. Se aplicarán las reglas de subsanación y registro del reclamo en trámite descritas en la política de privacidad identificada en esta misma aceptación.",
+            "Las partes acordarán tiempos de coordinación internos que permitan cumplir esos términos. No se subordinará el ejercicio de derechos al pago de una factura ni a la renuncia a acciones legales.",
+            "Si quien recibe un reclamo no es competente para resolverlo, lo traslada a quien corresponda en un máximo de dos días hábiles desde la recepción e informa al interesado. Recibido el reclamo completo, incluye en la base de datos la leyenda «reclamo en trámite» y su motivo dentro de los dos días hábiles siguientes y la mantiene hasta decidirlo. Se documentan recepción, competencia, traslado, aviso, datos afectados, anotación y decisión. Registrar un evento en el portal no reemplaza ejecutar la actuación sobre los datos ni acreditar la remisión o entrega."
+          ]
+        },
+        {
+          "id": "incidentes",
+          "heading": "10. Incidentes y cooperación",
+          "paragraphs": [
+            "Al conocer una violación de seguridad que afecte datos del encargo, Cripton informará al contacto autorizado del comercio sin dilación injustificada, con los hechos disponibles: momento conocido, alcance y categorías, consecuencias posibles, medidas de contención y contacto de seguimiento. No se esperará un informe definitivo para emitir un aviso necesario; se actualizarán hallazgos relevantes.",
+            "Las partes preservarán evidencia, investigarán causas, limitarán exposición y coordinarán recuperación y correcciones. Los canales de derechos e incidentes se individualizarán en la orden. Cripton empleará legal@cripton.com.co para la coordinación jurídica y servicioalcliente@cripton.com.co para soporte, sin exigir el envío de secretos por esos canales.",
+            "Cada parte cumplirá las comunicaciones a la SIC y a los titulares que le correspondan conforme a su rol y normativa, dentro de los términos aplicables. La coordinación contractual no sustituye esos deberes. No se fija un plazo universal ficticio ni se comunican datos de otras empresas para explicar el incidente."
+          ]
+        },
+        {
+          "id": "evidencia-y-revision",
+          "heading": "11. Evidencia y revisión del encargo",
+          "paragraphs": [
+            "Cripton facilitará información pertinente para demostrar las obligaciones del encargo, incluidos el registro de instrucciones, proveedores y medidas aplicables. El comercio podrá solicitar aclaraciones y revisión proporcionada al riesgo mediante un procedimiento acordado.",
+            "Las revisiones protegerán secretos, seguridad de la plataforma y datos de otros comercios. Se definirán alcance, acceso, confidencialidad y tratamiento de hallazgos sin bloquear requerimientos de la autoridad ni derechos legales. No se presume una certificación por disponer de una política escrita.",
+            "Las deficiencias verificadas se documentarán y corregirán según su gravedad y las obligaciones aplicables. No se pacta una exoneración automática por fallos de proveedores posteriores."
+          ]
+        },
+        {
+          "id": "duracion-y-salida",
+          "heading": "12. Duración, devolución y supresión",
+          "paragraphs": [
+            "El encargo comienza con su aceptación y comprende la prueba gratuita, la prestación pagada y las operaciones de cierre que estén lícitamente justificadas. El comercio conserva su condición de responsable y Cripton actúa como encargado para el alcance, actividades, instrucciones, seguridad y confidencialidad aquí descritos, conforme al artículo 2.2.2.25.5.2 del Decreto 1074 de 2015.",
+            "Los 30 y 90 días son plazos comerciales de salida del espacio del negocio y comienzan en la fecha de terminación registrada, no por cerrar una pestaña, cancelar una renovación o simplemente vencer la prueba. Durante los 30 días calendario siguientes, el representante autorizado puede solicitar exportación de los datos operativos disponibles. Una solicitud oportuna continúa hasta ser atendida aunque su entrega exceda esa ventana. Se verifican empresa, identidad, alcance y medio seguro; no se entregan datos de otros comercios, secretos ni código.",
+            "Los datos operativos se conservan durante 90 días calendario desde la terminación registrada para el cierre y recuperación controlada. Cumplido ese umbral se revisan las condiciones de baja y se ejecuta mediante el procedimiento privado la supresión o anonimización de lo que no tenga fundamento específico de conservación, registrando fecha, alcance y excepciones; no es un temporizador de borrado automático. Una solicitud de supresión anterior se evalúa conforme a la ley. Obligaciones fiscales, reclamaciones, exportaciones oportunas aún sin entregar y preservaciones identificadas pueden impedir una baja concreta; deben registrarse motivo, categorías, acceso restringido y revisión. No se promete borrar indiscriminadamente toda evidencia comercial, contractual, de seguridad o de derechos al día 90 ni conservarla indefinidamente sin justificación.",
+            "Los respaldos sirven exclusivamente para recuperación y tienen acceso restringido. En staging se ha configurado un objetivo de rotación de siete días para cadenas SQL, sujeto a custodia externa cifrada e independiente y a pruebas de restauración válidas. Si faltan esas pruebas o está pausada la copia externa, no se elimina una cadena necesaria para recuperar; se registra la excepción y se revisa su retiro seguro. Ese objetivo no es un plazo máximo universal de borrado de todas las copias. Las imágenes, las claves, la web y los diarios de bajas tienen inventarios y ciclos propios; las claves necesarias se mantienen mientras exista evidencia cifrada que deba conservarse.",
+            "Una restauración debe reaplicar el diario de bajas y las restricciones vigentes antes de habilitar acceso, para no reactivar datos suprimidos. La conservación de copias no permite un nuevo uso comercial de los datos. El comercio puede solicitar información sobre el estado de su salida, entrega, supresión y excepciones mediante los canales de privacidad y soporte."
+          ]
+        },
+        {
+          "id": "responsabilidad-y-adopcion",
+          "heading": "13. Responsabilidad, ley y adopción",
+          "paragraphs": [
+            "Cada parte responde por sus obligaciones y daños imputables conforme a la ley. El comercio responde por las finalidades y datos que instruye; Cripton por el cumplimiento de su encargo, su integración y controles a cargo. No se excluyen dolo, culpa grave, seguridad exigible ni derechos de los titulares, y las autoridades conservan sus facultades.",
+            "Este anexo se rige por la legislación colombiana y complementa el contrato sin disminuir las garantías de la Ley 1581 de 2012 y el Decreto 1074 de 2015. Las nuevas instrucciones, proveedores o condiciones se registrarán y aprobarán por el mecanismo que corresponda antes de ejecutar el cambio.",
+            "Esta versión se adopta expresamente sólo para el ensayo de staging mediante un registro versionado. Cada aceptación identifica su texto inmutable y conserva las anteriores. Su aceptación no certifica identidad oficial, revisión jurídica profesional ni habilitación de un proveedor tecnológico o emisor ante DIAN. La futura publicación para producción requiere su propio alcance y configuración; no se produce por esta simulación."
+          ]
+        }
+      ]
+    }
+  ]
+}

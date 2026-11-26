@@ -1,10 +1,12 @@
 import { createIdempotencyKey } from "../scripts/client-idempotency";
 
-export type ContractSection = { id: string; heading: string; paragraphs?: string[]; items?: string[] };
+export type ContractSubsection = { heading: string; paragraphs?: string[]; items?: string[] };
+export type ContractSection = ContractSubsection & { id: string; subsections?: ContractSubsection[] };
 export type ContractPackage = { version: string; documents: { slug: string; title: string; sections: ContractSection[] }[] };
 export type ContractFeature = { code: string; display_name: string; enabled: boolean; limit_value?: number | null; text_value?: string | null };
 export type ContractOffer = { features?: ContractFeature[]; taxBehavior?: string; implementationAmountMinor?: number; [key: string]: unknown; subscriptionId: string; priceId: string; planCode: string; planName: string; amountMinor: number; currency: "COP"; billingInterval: "monthly" | "annual"; automaticRenewal: false; periodRule: "trial_remainder_then_paid_or_payment_date" };
-export type CustomerContract = { required: boolean; accepted: boolean; contractId: string | null; package: ContractPackage | null; packageSha256: string | null; offer: ContractOffer | null; offerSha256: string | null; verifiedEmail: string | null; identityMethod: "declared_and_verified_email" };
+export type OperationalAccess = { schemaVersion: 1; required: boolean; accepted: boolean; packageVersion: string | null; contractId: string | null };
+export type CustomerContract = { required: boolean; accepted: boolean; contractId: string | null; package: ContractPackage | null; packageSha256: string | null; offer: ContractOffer | null; offerSha256: string | null; verifiedEmail: string | null; identityMethod: "declared_and_verified_email"; canAccept: boolean; operationalAccess: OperationalAccess | null };
 export type ContractContext = { accessToken: string; tenantId: string; subscriptionId: string; session: object; canContract: boolean };
 export const contractDeclarations = ["serviceTerms", "dataProcessingAnnex", "ownDataAuthorization", "adultAndAuthorized", "truthfulDeclaredIdentity"] as const;
 export const contractPartyLimits = { name: 240, address: 240, city: 100, phone: 24, documentNumber: 30, representativeName: 180, representativeDocumentNumber: 30 } as const;
@@ -34,10 +36,25 @@ export function readContractPackage(value: unknown): ContractPackage {
       for (const key of ["paragraphs", "items"]) {
         if (section[key] !== undefined && (!Array.isArray(section[key]) || !section[key].every(text))) throw invalid();
       }
-      if (!(section.paragraphs as string[] | undefined)?.length && !(section.items as string[] | undefined)?.length) throw invalid();
+      const subsections = section.subsections === undefined ? undefined : (() => {
+        if (!Array.isArray(section.subsections)) throw invalid();
+        return section.subsections.map(value => {
+          const part = record(value);
+          if (!text(part.heading)) throw invalid();
+          for (const key of ["paragraphs", "items"]) {
+            if (part[key] !== undefined && (!Array.isArray(part[key]) || !part[key].every(text))) throw invalid();
+          }
+          if (!(part.paragraphs as string[] | undefined)?.length && !(part.items as string[] | undefined)?.length) throw invalid();
+          return { heading: part.heading,
+            ...(part.paragraphs !== undefined ? { paragraphs: [...part.paragraphs as string[]] } : {}),
+            ...(part.items !== undefined ? { items: [...part.items as string[]] } : {}) };
+        });
+      })();
+      if (!(section.paragraphs as string[] | undefined)?.length && !(section.items as string[] | undefined)?.length && !subsections?.length) throw invalid();
       return { id: section.id, heading: section.heading,
         ...(section.paragraphs !== undefined ? { paragraphs: [...section.paragraphs as string[]] } : {}),
-        ...(section.items !== undefined ? { items: [...section.items as string[]] } : {}) };
+        ...(section.items !== undefined ? { items: [...section.items as string[]] } : {}),
+        ...(subsections !== undefined ? { subsections } : {}) };
     });
     return { slug: doc.slug, title: doc.title, sections };
   });
@@ -68,7 +85,20 @@ export function readContractOffer(value: unknown, subscriptionId: string): Contr
 }
 
 export function readCustomerContract(value: unknown, subscriptionId: string): CustomerContract {
-  const row = record(value), needsEvidence = row.required === true || row.accepted === true;
+  const row = record(value);
+  let needsEvidence = row.required === true || row.accepted === true;
+  let operationalAccess: OperationalAccess | null = null;
+  if (row.operationalAccess !== undefined) {
+    const access = record(row.operationalAccess);
+    if (access.schemaVersion !== 1 || typeof access.required !== "boolean" || typeof access.accepted !== "boolean"
+      || !(access.packageVersion === null || text(access.packageVersion))
+      || (access.required && !text(access.packageVersion))
+      || (access.accepted ? !uuid(access.contractId) || !text(access.packageVersion) : access.contractId !== null)
+      || typeof row.canAccept !== "boolean") throw invalid();
+    operationalAccess = { schemaVersion: 1, required: access.required, accepted: access.accepted,
+      packageVersion: access.packageVersion as string | null, contractId: access.contractId as string | null };
+    needsEvidence ||= access.required && !access.accepted && row.canAccept === true;
+  }
   if (typeof row.required !== "boolean" || typeof row.accepted !== "boolean"
     || (row.accepted ? !uuid(row.contractId) : row.contractId !== null)
     || ![row.packageSha256, row.offerSha256].every(value => value === null || hash(value))
@@ -78,7 +108,9 @@ export function readCustomerContract(value: unknown, subscriptionId: string): Cu
   return { required: row.required, accepted: row.accepted, contractId: row.contractId as string | null,
     package: row.package === null ? null : readContractPackage(row.package), packageSha256: row.packageSha256 as string | null,
     offer: row.offer === null ? null : readContractOffer(row.offer, subscriptionId), offerSha256: row.offerSha256 as string | null,
-    verifiedEmail: row.verifiedEmail as string | null, identityMethod: "declared_and_verified_email" };
+    verifiedEmail: row.verifiedEmail as string | null, identityMethod: "declared_and_verified_email",
+    canAccept: typeof row.canAccept === "boolean" ? row.canAccept : operationalAccess === null,
+    operationalAccess };
 }
 
 export function createContractAcceptance(contract: CustomerContract, data: FormData) {
@@ -106,16 +138,23 @@ export function createContractAcceptance(contract: CustomerContract, data: FormD
 export function renderContractDocuments(container: HTMLElement, pack: ContractPackage) {
   const doc = container.ownerDocument;
   const node = (tag: string, value: string) => { const element = doc.createElement(tag); element.textContent = value; return element; };
+  const appendContent = (container: HTMLElement, section: ContractSubsection) => {
+    for (const paragraph of section.paragraphs ?? []) container.appendChild(node("p", paragraph));
+    if (section.items?.length) {
+      const list = doc.createElement("ul");
+      for (const item of section.items) list.appendChild(node("li", item));
+      container.appendChild(list);
+    }
+  };
   container.replaceChildren(...pack.documents.map(document => {
     const details = doc.createElement("details");
     details.appendChild(node("summary", document.title));
     for (const section of document.sections) {
       details.appendChild(node("h3", section.heading));
-      for (const paragraph of section.paragraphs ?? []) details.appendChild(node("p", paragraph));
-      if (section.items?.length) {
-        const list = doc.createElement("ul");
-        for (const item of section.items) list.appendChild(node("li", item));
-        details.appendChild(list);
+      appendContent(details, section);
+      for (const part of section.subsections ?? []) {
+        details.appendChild(node("h4", part.heading));
+        appendContent(details, part);
       }
     }
     return details;
@@ -167,7 +206,7 @@ export function readContractReceipt(value: unknown, context: Pick<ContractContex
 
 export function bindCustomerContract(root: HTMLElement, options: {
   apiUrl: string; getContext: () => ContractContext | null;
-  onUnauthorized: () => void; onContinue: () => Promise<void>;
+  onUnauthorized: () => void; onContinue: () => Promise<void>; onOperate?: () => Promise<void>;
 }) {
   const section = root.querySelector<HTMLElement>("[data-customer-contract]")!;
   const get = <T extends HTMLElement = HTMLElement>(selector: string) => section.querySelector<T>(selector)!;
@@ -178,7 +217,8 @@ export function bindCustomerContract(root: HTMLElement, options: {
   const receipt = get<HTMLButtonElement>("[data-contract-receipt]");
   const retry = get<HTMLButtonElement>("[data-contract-retry]");
   let generation = 0, state: CustomerContract | null = null, owner: ContractContext | null = null;
-  let pending: Promise<CustomerContract | null> | null = null, busy = false, paymentIntent = false;
+  let pending: Promise<CustomerContract | null> | null = null, busy = false;
+  let intent: "payment" | "pos" | null = null;
   let attempt: { body: string; key: string } | null = null;
   const current = (context: ContractContext, version = generation) => {
     const now = options.getContext();
@@ -205,7 +245,7 @@ export function bindCustomerContract(root: HTMLElement, options: {
     type.value = legal ? "NIT" : type.value === "NIT" ? "CC" : type.value;
   };
   const reset = () => {
-    generation++; state = null; owner = null; pending = null; busy = false; paymentIntent = false; attempt = null;
+    generation++; state = null; owner = null; pending = null; busy = false; intent = null; attempt = null;
     dialog.close(); form.reset(); kindChanged(); clearEvidence();
     get("[data-contract-documents]").replaceChildren(); get("[data-contract-offer]").replaceChildren();
     get("[data-contract-email]").textContent = ""; get("[data-contract-version]").textContent = "";
@@ -224,25 +264,36 @@ export function bindCustomerContract(root: HTMLElement, options: {
         state = null; attempt = null; form.reset(); kindChanged(); form.hidden = true; accept.disabled = true;
         throw new Error("El contrato o la oferta cambiaron. Actualiza el contrato y revisa de nuevo antes de aceptar.");
       }
-      throw new Error("No pudimos consultar o registrar el contrato. Reintenta; tu acceso permitido al POS continúa disponible.");
+      throw new Error("No pudimos verificar o registrar el acuerdo. Reintenta desde Mi cuenta antes de abrir el POS o continuar al pago.");
     }
     const body: unknown = await response.json();
     return current(context, version) ? body : null;
   };
   const render = () => {
     if (!state) return;
-    renderContractOffer(get("[data-contract-offer]"), state.offer);
-    get("[data-contract-version]").textContent = state.package
+    const representative = Boolean(state.canAccept && owner?.canContract);
+    renderContractOffer(get("[data-contract-offer]"), representative ? state.offer : null);
+    get("[data-contract-version]").textContent = representative && state.package
       ? `Versión consultada: ${state.package.version}. SHA-256 del paquete: ${state.packageSha256 ?? "no disponible"}. SHA-256 de la oferta: ${state.offerSha256 ?? "no disponible"}.`
-      : "Aún no hay un paquete contractual adoptado para esta cuenta.";
-    get("[data-contract-email]").textContent = state.verifiedEmail ?? "";
-    if (state.package) renderContractDocuments(get("[data-contract-documents]"), state.package);
+      : state.operationalAccess?.packageVersion ? `Acuerdo operativo: ${state.operationalAccess.packageVersion}.` : "Aún no hay un paquete contractual adoptado para esta cuenta.";
+    get("[data-contract-email]").textContent = representative ? state.verifiedEmail ?? "" : "";
+    if (representative && state.package) renderContractDocuments(get("[data-contract-documents]"), state.package);
     else get("[data-contract-documents]").replaceChildren();
-    receipt.hidden = !state.accepted || !state.contractId;
-    form.hidden = state.accepted || !state.required || !owner?.canContract;
+    receipt.hidden = !representative || !(state.accepted && state.contractId || state.operationalAccess?.accepted && state.operationalAccess.contractId);
+    const needsAcceptance = intent === "pos" ? state.operationalAccess?.required && !state.operationalAccess.accepted : state.required && !state.accepted;
+    form.hidden = !needsAcceptance || !state.canAccept || !owner?.canContract;
     accept.disabled = form.hidden || busy;
-    status.textContent = state.accepted ? "Contrato aceptado según el servidor. Puedes consultar su constancia privada."
-      : state.required ? "Contrato pendiente para contratar un plan de pago. La prueba y el acceso permitido al POS continúan disponibles."
+    accept.textContent = intent === "pos" ? "Aceptar acuerdo y abrir POS" : "Aceptar contrato y continuar al pago";
+    get("#customer-contract-intro").textContent = intent === "pos"
+      ? "Revisa el acuerdo de servicio y el encargo de datos antes de operar. Aceptarlo es gratuito y no exige tarjeta. No inicia un pago ni activa renovación automática."
+      : "Para contratar, revisa la oferta y los tres documentos completos. La aceptación y el pago son pasos distintos; puedes comprar durante la prueba y conservar el tiempo gratis restante.";
+    status.textContent = state.operationalAccess?.required && !state.operationalAccess.accepted
+      ? state.canAccept && owner?.canContract
+        ? "Acuerdo y encargo de datos pendientes antes de abrir el POS. Su aceptación es gratuita y no obliga a comprar."
+        : "El representante habilitado de esta empresa debe aceptar el acuerdo y el encargo de datos desde Mi cuenta antes de que sus usuarios abran el POS."
+      : state.operationalAccess?.accepted ? "Acuerdo operativo aceptado según el servidor. La compra y la renovación se autorizan por separado."
+      : state.accepted ? "Contrato aceptado según el servidor. Puedes consultar su constancia privada."
+      : state.required ? "Contrato pendiente para contratar un plan de pago. Revisa el acuerdo operativo antes de abrir el POS."
         : "El servidor no requiere una aceptación para esta cuenta. No hay una aceptación acreditada.";
   };
   const load = (): Promise<CustomerContract | null> => {
@@ -275,31 +326,52 @@ export function bindCustomerContract(root: HTMLElement, options: {
   };
   const refresh = () => { reset(); return load(); };
   const canContinue = () => Boolean(owner && current(owner) && options.getContext()?.canContract && state && (!state.required || state.accepted));
-  const beforeCheckout = async () => {
-    if (!options.getContext()?.canContract || busy) return false;
+  const canOperate = () => Boolean(owner && current(owner) && state?.operationalAccess
+    && (!state.operationalAccess.required || state.operationalAccess.accepted));
+  const beforeOperation = async () => {
+    if (!options.getContext() || busy || dialog.open) return false;
     const context = options.getContext()!, version = generation;
-    paymentIntent = true;
+    intent = "pos";
+    const contract = await load();
+    if (!contract || !current(context, version)) return false;
+    if (!contract.operationalAccess) {
+      status.textContent = "No pudimos verificar el acuerdo de datos necesario para operar. Actualiza Mi cuenta antes de abrir el POS.";
+      return false;
+    }
+    if (canOperate()) { intent = null; return true; }
+    if (contract.canAccept && context.canContract) {
+      form.reset(); kindChanged(); attempt = null; render(); dialog.showModal();
+    }
+    return false;
+  };
+  const beforeCheckout = async () => {
+    if (!options.getContext()?.canContract || busy || dialog.open) return false;
+    const context = options.getContext()!, version = generation;
+    intent = "payment";
     const contract = await load();
     if (!contract || !current(context, version)) return false;
     if (contract.required && !contract.accepted) {
+      if (!contract.canAccept) return false;
       form.reset(); kindChanged(); attempt = null; render();
       if (!dialog.open) dialog.showModal();
       return false;
     }
-    paymentIntent = false;
+    intent = null;
     return canContinue();
   };
   form.addEventListener("submit", async event => {
     event.preventDefault();
-    if (busy || pending || !state || !owner || !current(owner) || !options.getContext()?.canContract
-      || !paymentIntent || state.accepted || !state.required || form.hidden || !dialog.open || !form.reportValidity()) return;
+    const needsAcceptance = intent === "pos" ? state?.operationalAccess?.required && !state.operationalAccess.accepted : state?.required && !state.accepted;
+    if (busy || pending || !state || !owner || !current(owner) || !options.getContext()?.canContract || !state.canAccept
+      || !intent || !needsAcceptance || form.hidden || !dialog.open || !form.reportValidity()) return;
     const context = owner, version = generation;
+    const submissionIntent = intent;
     let body: string;
     try { body = JSON.stringify(createContractAcceptance(state, new FormData(form))); }
     catch (error) { dialogStatus.textContent = error instanceof Error ? error.message : invalid().message; return; }
     if (!attempt || attempt.body !== body) attempt = { body, key: createIdempotencyKey() };
     busy = true; accept.disabled = true; retry.disabled = true;
-    dialogStatus.textContent = "Registrando la aceptación. El pago aún no se ha realizado…";
+    dialogStatus.textContent = "Registrando la aceptación. No se ha ordenado ningún pago…";
     try {
       const result = await request(context, version, "", { method: "POST", headers: { "content-type": "application/json", "idempotency-key": attempt.key }, body });
       if (result === null || !current(context, version)) return;
@@ -307,13 +379,19 @@ export function bindCustomerContract(root: HTMLElement, options: {
       if (!uuid(accepted.contractId) || !hash(accepted.evidenceSha256) || !text(accepted.acceptedAt)
         || !/^\d{4}-\d\d-\d\dT.*(?:Z|[+-]\d\d:\d\d)$/.test(accepted.acceptedAt) || !Number.isFinite(Date.parse(accepted.acceptedAt))) throw invalid();
       state = { ...state!, accepted: true, contractId: accepted.contractId };
-      const continuePayment = paymentIntent;
-      form.reset(); kindChanged(); render(); paymentIntent = false;
+      if (submissionIntent === "pos") {
+        const updated = await load();
+        if (!current(context, version)) return;
+        if (!updated || !canOperate()) throw new Error("La aceptación se registró, pero aún no pudimos confirmar el acceso operativo. Actualiza el acuerdo antes de abrir el POS.");
+      }
+      const continuation = intent === submissionIntent && dialog.open ? submissionIntent : null;
+      form.reset(); kindChanged(); render(); intent = null;
       get("[data-contract-acceptance]").textContent = `Contrato ${accepted.contractId}. Aceptado: ${accepted.acceptedAt}. SHA-256 de evidencia: ${accepted.evidenceSha256}.`;
       status.textContent = "Contrato aceptado. El pago se confirma por separado en el checkout.";
       dialog.close();
       // Only this explicit submit can resume payment. Loading/retrying/receipts never do.
-      if (continuePayment && canContinue()) await options.onContinue();
+      if (continuation === "payment" && canContinue()) await options.onContinue();
+      if (continuation === "pos" && canOperate()) await options.onOperate?.();
     } catch (error) {
       if (current(context, version)) {
         dialogStatus.textContent = error instanceof Error ? error.message : invalid().message;
@@ -324,8 +402,9 @@ export function bindCustomerContract(root: HTMLElement, options: {
     }
   });
   receipt.addEventListener("click", async () => {
-    if (busy || pending || !state?.accepted || !state.contractId || !owner || !current(owner)) return;
-    const context = owner, version = generation, contractId = state.contractId;
+    const contractId = state?.operationalAccess?.accepted ? state.operationalAccess.contractId : state?.accepted ? state.contractId : null;
+    if (busy || pending || !state?.canAccept || !options.getContext()?.canContract || !contractId || !owner || !current(owner)) return;
+    const context = owner, version = generation;
     busy = true; receipt.disabled = true; clearEvidence(); form.hidden = true;
     dialogStatus.textContent = "Consultando constancia privada…";
     if (!dialog.open) dialog.showModal();
@@ -350,7 +429,7 @@ export function bindCustomerContract(root: HTMLElement, options: {
   input("kind").addEventListener("change", kindChanged);
   get("[data-contract-close]").addEventListener("click", () => dialog.close());
   dialog.addEventListener("close", () => {
-    paymentIntent = false; form.reset(); kindChanged(); clearEvidence();
+    intent = null; form.reset(); kindChanged(); clearEvidence();
     if (!busy) attempt = null;
   });
   get("[data-contract-print]").addEventListener("click", () => {
@@ -360,5 +439,5 @@ export function bindCustomerContract(root: HTMLElement, options: {
     }
   });
   reset();
-  return { reset, refresh, beforeCheckout, canContinue };
+  return { reset, refresh, beforeCheckout, canContinue, beforeOperation, canOperate };
 }

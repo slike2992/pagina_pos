@@ -15,6 +15,7 @@ const plain = value => JSON.parse(JSON.stringify(value));
 const reply = (body, status = 200) => ({ ok: status >= 200 && status < 300, status, json: async () => body });
 const flush = () => new Promise(resolve => setImmediate(resolve));
 const fixture = (extra = {}) => ({ required: true, accepted: false, contractId: null,
+  canAccept: true, operationalAccess: { schemaVersion: 1, required: false, accepted: false, packageVersion: null, contractId: null },
   package: { version: 'qa-2026-11-25', documents: ['service-terms', 'data-processing-annex', 'own-data-authorization'].map(slug => ({ slug, title: `Documento ${slug}`, sections: [{ id: 'one', heading: 'Texto completo', paragraphs: ['Párrafo uno', 'Párrafo dos <img src=x onerror=alert(1)>'], items: ['Primer punto', 'Segundo punto'] }] })) },
   packageSha256: 'a'.repeat(64), offerSha256: 'b'.repeat(64),
   offer: { subscriptionId: id(1), priceId: id(2), planCode: 'professional', planName: 'Profesional', amountMinor: 1230017, currency: 'COP', billingInterval: 'monthly', automaticRenewal: false, periodRule: 'trial_remainder_then_paid_or_payment_date' },
@@ -48,7 +49,7 @@ function browser(options = {}) {
   let tenant = { tenantId: 'tenant-1', name: 'Empresa 1', role: options.role ?? 'owner', status: 'active' };
   const subscription = { subscriptionId: id(1), status: 'trialing', plan: { code: 'professional', name: 'Profesional' }, price: { amountMinor: 1230017, currency: 'COP', billingInterval: 'monthly' }, currentPeriodStart: null, currentPeriodEnd: null, cancelAtPeriodEnd: false,
     trial: { status: 'active', durationDays: 15, startsAt: '2026-11-20T00:00:00Z', endsAt: '2026-12-05T00:00:00Z', convertedAt: null, canConvert: true }, ...options.subscription };
-  const sandbox = { URL, URLSearchParams, Date, Intl, Error, console, document,
+  const sandbox = { URL, URLSearchParams, Date: options.now === undefined ? Date : class extends Date { constructor(...args) { super(...(args.length ? args : [options.now])); } static now() { return options.now; } }, Intl, Error, console, document,
     crypto: { randomUUID: () => `key-${++keys}` },
     window: { location: { href: 'https://web.example.invalid/cuenta', origin: 'https://web.example.invalid', assign: value => navigations.push(value) }, print() { printed++; } },
     sessionStorage: { setItem() { assert.fail('No contract credentials or PII in session storage'); }, getItem() { return null; } },
@@ -117,6 +118,23 @@ test('three complete API documents render safely, and all five declarations star
   assert.equal(h.continued, 0);
 });
 
+test('the minimum canonical service packet renders every section, provider subsection and list item', async () => {
+  const pack = JSON.parse(await readFile(new URL('../contracts/legal/staging-minimum-2026-11-25.json', import.meta.url), 'utf8'));
+  const h = browser({ contract: () => reply(fixture({ package: pack })) }); await h.controller.refresh();
+  const rendered = treeText(h.get('[data-contract-documents]'));
+  for (const document of pack.documents) {
+    assert.ok(rendered.includes(document.title));
+    for (const section of document.sections) for (const part of [section, ...(section.subsections ?? [])]) {
+      assert.ok(rendered.includes(part.heading));
+      for (const paragraph of [...(part.paragraphs ?? []), ...(part.items ?? [])]) assert.ok(rendered.includes(paragraph), part.heading);
+    }
+  }
+  const malformed = fixture({ package: structuredClone(pack) });
+  const section = malformed.package.documents.flatMap(document => document.sections).find(section => section.subsections?.length);
+  assert.ok(section); section.subsections[0].paragraphs = '<script>';
+  assert.throws(() => h.helper.readCustomerContract(malformed, id(1)));
+});
+
 for (const mutate of [r => r.accepted = 'true', r => r.package.documents.pop(), r => r.package.documents[1].slug = r.package.documents[0].slug,
   r => r.package.documents[0].sections[0].items = '<script>', r => r.package.documents[0].sections[0].paragraphs = [''],
   r => r.packageSha256 = null, r => r.offerSha256 = 'invalid', r => r.offer.automaticRenewal = true,
@@ -174,13 +192,14 @@ test('kind selection hides natural representative, constrains NIT and does not r
   assert.equal(h.get('[data-contract-documents]').children.length, 0); assert.equal(h.get('[data-contract-email]').textContent, '');
 });
 
-test('503 and malformed contract preserve account and POS SSO, prevent checkout, and never claim acceptance', async () => {
+test('503 and malformed contract preserve account but fail closed for POS SSO and checkout', async () => {
   for (const contract of [() => reply({}, 503), () => reply(fixture({ packageSha256: null }))]) {
     const h = browser({ account: true, contract }); await h.login(); await h.click('contract-trial');
     assert.equal(h.get('.account-panel').hidden, false); assert.equal(h.get('[data-contract-receipt]').hidden, true);
     assert.equal(paymentCalls(h).length, 0); assert.equal(h.get('[data-contract-form]').hidden, true);
     assert.equal(h.get('[data-contract-status]').textContent.includes('Contrato aceptado'), false);
-    await h.click('open-pos'); assert.equal(h.navigations[0], 'https://pos.example.invalid/auth/sso?ticket=qa');
+    await h.click('open-pos'); assert.equal(h.navigations.length, 0);
+    assert.equal(h.calls.filter(call => call.url.endsWith('/auth/pos-sso')).length, 0);
   }
 });
 
@@ -191,9 +210,10 @@ test('not required never means accepted and receipt is not invented; checkout st
   await h.click('contract-trial'); assert.equal(paymentCalls(h).length, 1); assert.equal(contractCalls(h, 'POST').length, 0);
 });
 
-test('member cannot fetch private billing contract, accept or pay even through programmatic events', async () => {
+test('member reads operational status but cannot accept or pay even through programmatic events', async () => {
   const h = browser({ account: true, role: 'member' }); await h.login(); await h.click('contract-trial'); h.fill(); await h.submit();
-  assert.equal(contractCalls(h).length, 0); assert.equal(paymentCalls(h).length, 0);
+  assert.ok(contractCalls(h, 'GET').length >= 1); assert.equal(contractCalls(h, 'POST').length, 0); assert.equal(paymentCalls(h).length, 0);
+  assert.equal(h.get('[data-contract-email]').textContent, ''); assert.equal(h.get('[data-contract-documents]').children.length, 0);
   await h.click('open-pos'); assert.equal(h.navigations.length, 1);
 });
 
@@ -371,4 +391,113 @@ test('a receipt for a different contract or tenant never exposes its private JSO
     await h.controller.refresh(); await h.get('[data-contract-receipt]').dispatch('click');
     assert.equal(h.get('[data-contract-evidence]').textContent, ''); assert.equal(h.get('[data-contract-evidence-section]').hidden, true);
   }
+});
+
+const operational = (accepted = false) => ({ schemaVersion: 1, required: true, accepted,
+  packageVersion: 'qa-2026-11-25', contractId: accepted ? id(3) : null });
+const ssoCalls = h => h.calls.filter(call => call.url.endsWith('/auth/pos-sso'));
+
+test('representative accepts for POS for free, refreshes operational evidence and opens exactly one SSO without checkout', async () => {
+  let accepted = false;
+  const waiting = Promise.withResolvers();
+  const h = browser({ account: true, subscription: { trial: { status: 'active', durationDays: 15,
+    startsAt: '2026-11-20T00:00:00Z', endsAt: '2026-12-05T00:00:00Z', convertedAt: null, canConvert: false } },
+    contract: () => reply(fixture({ accepted, contractId: accepted ? id(3) : null, operationalAccess: operational(accepted) })),
+    post: async () => { await waiting.promise; accepted = true; return reply(acceptance()); } });
+  await h.login(); await h.click('open-pos');
+  assert.equal(h.get('[data-contract-dialog]').open, true);
+  assert.equal(h.get('[data-contract-accept]').textContent, 'Aceptar acuerdo y abrir POS');
+  assert.equal(paymentCalls(h).length, 0); assert.equal(ssoCalls(h).length, 0);
+  h.fill(); const first = h.submit(), second = h.submit(); await flush();
+  assert.equal(contractCalls(h, 'POST').length, 1); assert.equal(ssoCalls(h).length, 0);
+  waiting.resolve(); await Promise.all([first, second]);
+  assert.equal(ssoCalls(h).length, 1); assert.equal(paymentCalls(h).length, 0);
+  assert.deepEqual(h.navigations, ['https://pos.example.invalid/auth/sso?ticket=qa']);
+  const postIndex = h.calls.findIndex(call => call.method === 'POST' && call.url.endsWith('/customer-contract'));
+  const ssoIndex = h.calls.findIndex(call => call.url.endsWith('/auth/pos-sso'));
+  assert.ok(h.calls.slice(postIndex + 1, ssoIndex).some(call => call.method === 'GET' && call.url.endsWith('/customer-contract') && call.cache === 'no-store'));
+});
+
+test('member receives representative guidance and only enters once a fresh tenant operational acceptance exists', async () => {
+  let accepted = false;
+  const h = browser({ account: true, role: 'member', contract: () => reply(fixture({
+    required: false, accepted: false, contractId: null, canAccept: false, package: null, packageSha256: null,
+    offer: null, offerSha256: null, verifiedEmail: null, operationalAccess: operational(accepted),
+  })) });
+  await h.login(); await h.click('open-pos'); h.fill(); await h.submit();
+  assert.match(h.get('[data-contract-status]').textContent, /representante habilitado/);
+  assert.equal(h.get('[data-contract-dialog]').open, false); assert.equal(ssoCalls(h).length, 0);
+  assert.equal(contractCalls(h, 'POST').length, 0); assert.equal(paymentCalls(h).length, 0);
+  assert.equal(h.get('[data-contract-email]').textContent, ''); assert.equal(h.get('[data-contract-documents]').children.length, 0);
+  accepted = true; await h.click('open-pos');
+  assert.equal(ssoCalls(h).length, 1); assert.equal(contractCalls(h, 'POST').length, 0);
+});
+
+for (const mutate of [row => delete row.operationalAccess, row => row.operationalAccess = null,
+  row => row.operationalAccess.schemaVersion = 2, row => row.operationalAccess.accepted = 'true',
+  row => row.operationalAccess.required = 'false', row => row.operationalAccess.packageVersion = null,
+  row => { row.operationalAccess.accepted = true; row.operationalAccess.contractId = null; }, row => delete row.canAccept]) {
+  test(`missing or malformed operational state cannot issue SSO: ${mutate}`, async () => {
+    const row = fixture({ operationalAccess: operational() }); mutate(row);
+    const h = browser({ account: true, contract: () => reply(row) }); await h.login(); await h.click('open-pos');
+    assert.equal(ssoCalls(h).length, 0); assert.equal(paymentCalls(h).length, 0);
+    assert.equal(h.get('.account-panel').hidden, false);
+  });
+}
+
+test('a POST receipt alone or a failed verification GET cannot enable operational SSO', async () => {
+  for (const unavailable of [false, true]) {
+    let posted = false;
+    const h = browser({ account: true, post: () => { posted = true; return reply(acceptance()); },
+      contract: () => posted && unavailable ? reply({}, 503) : reply(fixture({ operationalAccess: operational() })) });
+    await h.login(); await h.click('open-pos'); h.fill(); await h.submit();
+    assert.equal(contractCalls(h, 'POST').length, 1); assert.equal(ssoCalls(h).length, 0); assert.equal(paymentCalls(h).length, 0);
+  }
+});
+
+test('closing a pending operational acceptance never resumes POS or payment automatically', async () => {
+  let accepted = false; const waiting = Promise.withResolvers();
+  const h = browser({ account: true, contract: () => reply(fixture({ operationalAccess: operational(accepted) })),
+    post: async () => { await waiting.promise; accepted = true; return reply(acceptance()); } });
+  await h.login(); await h.click('open-pos'); h.fill(); const submitting = h.submit(); await flush();
+  await h.get('[data-contract-close]').dispatch('click'); waiting.resolve(); await submitting;
+  assert.equal(ssoCalls(h).length, 0); assert.equal(paymentCalls(h).length, 0);
+  await h.click('open-pos'); assert.equal(ssoCalls(h).length, 1);
+});
+
+for (const stage of ['GET', 'POST']) test(`late operational ${stage} cannot issue SSO after logout and a different account`, async () => {
+  const waiting = Promise.withResolvers();
+  const h = browser({ account: true,
+    contract: (_call, login) => stage === 'GET' && login === 1 ? waiting.promise : reply(fixture({ operationalAccess: operational() })),
+    post: () => waiting.promise });
+  await h.login();
+  let pending;
+  if (stage === 'GET') { pending = h.click('open-pos'); await flush(); }
+  else { await h.click('open-pos'); h.fill(); pending = h.submit(); await flush(); }
+  await h.click('logout'); await h.login();
+  waiting.resolve(reply(stage === 'GET' ? fixture({ operationalAccess: operational(true) }) : acceptance()));
+  await pending; await flush();
+  assert.equal(ssoCalls(h).length, 0); assert.equal(paymentCalls(h).length, 0);
+  assert.equal(h.get('[data-contract-email]').textContent, 'declarado@example.invalid');
+  assert.equal(h.fields.get('name').value, '');
+});
+
+test('operational acceptance remains valid despite a different commercial offer requiring review', async () => {
+  const h = browser({ account: true, contract: () => reply(fixture({ offerSha256: 'd'.repeat(64), operationalAccess: operational(true) })) });
+  await h.login(); await h.click('open-pos');
+  assert.equal(ssoCalls(h).length, 1); assert.equal(contractCalls(h, 'POST').length, 0);
+  await h.click('contract-trial');
+  assert.equal(h.get('[data-contract-dialog]').open, true); assert.equal(paymentCalls(h).length, 0);
+  assert.equal(h.get('[data-contract-accept]').textContent, 'Aceptar contrato y continuar al pago');
+});
+
+for (const day of [0, 2, 4]) test(`an eligible trial can be purchased on day ${day} while preserving the free balance`, async () => {
+  const startsAt = '2030-01-01T00:00:00Z', endsAt = '2030-01-16T00:00:00Z';
+  const h = browser({ account: true, now: Date.parse(startsAt) + day * 86400000 + 60000,
+    subscription: { trial: { status: 'active', durationDays: 15, startsAt, endsAt, convertedAt: null, canConvert: true } },
+    contract: () => reply(fixture({ accepted: true, contractId: id(3), operationalAccess: operational(true) })) });
+  await h.login(); await h.click('contract-trial');
+  assert.equal(paymentCalls(h).length, 1); assert.equal(contractCalls(h, 'POST').length, 0);
+  assert.ok(treeText(h.get('[data-contract-offer]')).includes('se conserva el tiempo restante'));
+  assert.equal(h.subscription.trial.endsAt, endsAt); assert.equal(h.subscription.trial.convertedAt, null);
 });

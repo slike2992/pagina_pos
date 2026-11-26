@@ -5,13 +5,15 @@ import { createHash } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { registrationLegalLinks, isSignupTrialQaSite, SIGNUP_TRIAL_QA_VERSION } from '../src/lib/registration-legal.ts';
+import { registrationLegalLinks, isSignupTrialQaSite, SIGNUP_TRIAL_QA_VERSION, SIGNUP_MINIMUM_QA_VERSION } from '../src/lib/registration-legal.ts';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const read = relative => readFile(path.join(root, relative));
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const sourceHash = 'be97e5efb921c9436532e9cf483d7d151d19693f1a8ba4b6c6f43ae28e6cc1df';
 const packet = JSON.parse(await read('src/content/signup-trial-qa-2026-11-25.json'));
+const minimumPacket = JSON.parse(await read('contracts/legal/signup-minimum-qa-2026-11-25.json'));
+const servicePacket = JSON.parse(await read('contracts/legal/staging-minimum-2026-11-25.json'));
 const prefix = `/legal/versiones/${SIGNUP_TRIAL_QA_VERSION}`;
 const canonicalJson = value => value === null || typeof value !== 'object' ? JSON.stringify(value)
   : Array.isArray(value) ? `[${value.map(canonicalJson).join(',')}]`
@@ -20,8 +22,9 @@ const text = markup => markup.replace(/<!--[\s\S]*?-->/g, '').replace(/<[^>]+>/g
   .replace(/&(?:amp|lt|gt|quot|apos|#39|#x27);/g, value => ({ '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&apos;': "'", '&#39;': "'", '&#x27;': "'" })[value])
   .replace(/\s+/g, ' ').trim();
 const preserved = ['src/pages/legal/terminos.astro', 'src/pages/legal/privacidad.astro',
-  'src/components/Brand.astro', 'src/pages/pago/demo.astro'];
-let temporary, defaultOutput, qaOutput;
+  'src/components/Brand.astro', 'src/pages/pago/demo.astro', 'src/content/signup-trial-qa-2026-11-25.json',
+  'src/pages/legal/versiones/2026-11-25-prueba-qa/[document].astro'];
+let temporary, defaultOutput, qaOutput, minimumOutput;
 const beforeBytes = new Map();
 
 function build(output, overrides) {
@@ -44,6 +47,9 @@ before(async () => {
   const defaults = await build(defaultOutput, {}); assert.equal(defaults.code, 0, defaults.log);
   const qa = await build(qaOutput, { PUBLIC_REGISTRATION_LEGAL_VERSION: SIGNUP_TRIAL_QA_VERSION });
   assert.equal(qa.code, 0, qa.log);
+  minimumOutput = path.join(temporary, 'minimum');
+  const minimum = await build(minimumOutput, { PUBLIC_REGISTRATION_LEGAL_VERSION: SIGNUP_MINIMUM_QA_VERSION });
+  assert.equal(minimum.code, 0, minimum.log);
 });
 after(async () => {
   for (const [file, bytes] of beforeBytes) assert.deepEqual(await read(file), bytes, `${file}: bytes changed during builds`);
@@ -96,7 +102,7 @@ test('default rendered legal center and footer retain historical hrefs/version; 
   assert.ok(!defaults.includes(prefix));
   const selected = await rendered(qaOutput, 'legal');
   for (const route of ['terminos', 'privacidad']) {
-    assert.equal((selected.match(new RegExp(`href="${prefix}/${route}/"`, 'g')) ?? []).length, 2, `${route}: legal center and footer`);
+    assert.equal((selected.match(new RegExp(`href="${prefix}/${route}/"`, 'g')) ?? []).length, route === 'privacidad' ? 3 : 2, `${route}: legal center, footer and privacy consent link`);
   }
   assert.equal((text(selected).match(/Versión para prueba en staging: 2026-11-25-prueba-qa/g) ?? []).length, 2);
   assert.match(selected, /href="\/legal\/cookies\/"/); assert.match(selected, /mailto:legal@cripton.com.co/);
@@ -123,4 +129,62 @@ test('both static QA documents exactly render source sections/paragraphs and can
 test('actual production-origin build rejects QA selection rather than publishing links outside staging', async () => {
   const denied = await build(path.join(temporary, 'rejected-production'), { PUBLIC_SITE_URL: 'https://cripton.com.co', PUBLIC_REGISTRATION_LEGAL_VERSION: SIGNUP_TRIAL_QA_VERSION });
   assert.notEqual(denied.code, 0); assert.match(denied.log, /solo puede seleccionarse en https:\/\/staging\.cripton\.com\.co/);
+});
+
+test('minimum registration selector is explicit, staging-only, and preserves the previous QA selector', () => {
+  const selected = registrationLegalLinks({ PUBLIC_SITE_URL: 'https://staging.cripton.com.co', PUBLIC_REGISTRATION_LEGAL_VERSION: SIGNUP_MINIMUM_QA_VERSION });
+  assert.equal(selected.version, minimumPacket.version);
+  assert.equal(selected.privacyHref, `/legal/versiones/${SIGNUP_MINIMUM_QA_VERSION}/privacidad/`);
+  for (const site of ['https://cripton.com.co', 'http://staging.cripton.com.co', undefined]) {
+    assert.throws(() => registrationLegalLinks({ PUBLIC_SITE_URL: site, PUBLIC_REGISTRATION_LEGAL_VERSION: SIGNUP_MINIMUM_QA_VERSION }));
+  }
+  assert.equal(registrationLegalLinks({ PUBLIC_SITE_URL: 'https://staging.cripton.com.co', PUBLIC_REGISTRATION_LEGAL_VERSION: SIGNUP_TRIAL_QA_VERSION }).version, SIGNUP_TRIAL_QA_VERSION);
+});
+
+test('minimum documents render the exact canonical packet while every previous staging URL remains available', async () => {
+  assert.equal(minimumPacket.version, SIGNUP_MINIMUM_QA_VERSION); assert.equal(minimumPacket.scope, 'staging_trial_qa');
+  assert.equal(servicePacket.version, '2026-11-25-minimo-qa'); assert.equal(servicePacket.scope, 'staging_qa');
+  assert.equal(servicePacket.documents.length, 3);
+  for (const document of minimumPacket.documents) {
+    const route = `legal/versiones/${minimumPacket.version}/${document.slug}`;
+    const html = await rendered(minimumOutput, route);
+    const article = html.match(/<article\b[^>]*data-registration-legal-copy[^>]*>([\s\S]*?)<\/article>/)?.[1];
+    assert.ok(article);
+    assert.deepEqual([...article.matchAll(/<(h2|p)\b[^>]*>([\s\S]*?)<\/\1>/g)].map(match => text(match[2])),
+      document.sections.flatMap(section => [section.heading, ...section.paragraphs]).map(text));
+    const digest = hash(canonicalJson(document));
+    assert.ok(html.includes(digest)); assert.ok((await rendered(defaultOutput, route)).includes(digest));
+    assert.match(html, /name="robots" content="noindex, follow"/); assert.doesNotMatch(html, /rel="canonical"/);
+    assert.ok((await rendered(minimumOutput, `legal/versiones/${packet.version}/${document.slug}`)).includes(hash(canonicalJson(packet.documents.find(item => item.slug === document.slug)))));
+  }
+});
+
+test('footer, legal center, cookie notice and consent panel point to the same selected registration privacy', async () => {
+  for (const [output, version] of [[defaultOutput, '2026-09-01'], [qaOutput, packet.version], [minimumOutput, minimumPacket.version]]) {
+    const links = registrationLegalLinks({ PUBLIC_SITE_URL: 'https://staging.cripton.com.co', PUBLIC_REGISTRATION_LEGAL_VERSION: version === '2026-09-01' ? '' : version });
+    for (const route of ['legal', 'legal/cookies']) {
+      const html = await rendered(output, route);
+      assert.ok(html.includes(`href="${links.privacyHref}"`));
+      const panel = html.match(/<section\b[^>]*id="analytics-preferences"[^>]*>([\s\S]*?)<\/section>/)?.[1];
+      assert.ok(panel); assert.ok(panel.includes(`href="${links.privacyHref}"`));
+      assert.ok(text(panel).includes('Cookies: aviso 2026-11-23'));
+      assert.ok(text(panel).includes(`Privacidad del registro: versión ${version}`));
+    }
+    const cookies = await rendered(output, 'legal/cookies');
+    assert.match(text(cookies), /Versión de este aviso de cookies: 2026-11-23/);
+    assert.match(text(cookies), /privacidad 2026-09-01/);
+    assert.doesNotMatch(cookies, /href="\/legal\/privacidad\/">política de privacidad vigente/);
+  }
+});
+
+test('minimum source distinguishes free operational acceptance, early purchase, termination deadlines and conditional SQL backup rotation', () => {
+  const source = canonicalJson(minimumPacket);
+  assert.ok(source.includes('antes del acceso operativo'));
+  assert.ok(source.includes('primer minuto')); assert.ok(source.includes('distinto de comprar'));
+  assert.ok(source.includes('fecha de terminación registrada'));
+  assert.ok(source.includes('30 días calendario')); assert.ok(source.includes('90 días calendario'));
+  assert.ok(source.includes('objetivo de rotación de siete días')); assert.ok(source.includes('no es un plazo máximo universal'));
+  assert.ok(source.includes('dos días hábiles')); assert.ok(source.includes('no reemplaza ejecutar la actuación'));
+  assert.doesNotMatch(source, /Versión 2026-11-25-prueba-qa\./);
+  assert.doesNotMatch(canonicalJson(servicePacket), /revisión preparada el 2026-11-24, sin entrada en vigor|borrador de privacidad/);
 });

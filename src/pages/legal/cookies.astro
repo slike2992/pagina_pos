@@ -1,8 +1,12 @@
 ---
 import EditorialLayout from "../../layouts/EditorialLayout.astro";
+import { registrationLegalLinks } from "../../lib/registration-legal";
+import { CONSENT_VERSION } from "../../lib/analytics";
+const legal = registrationLegalLinks({ PUBLIC_SITE_URL: import.meta.env.PUBLIC_SITE_URL,
+  PUBLIC_REGISTRATION_LEGAL_VERSION: import.meta.env.PUBLIC_REGISTRATION_LEGAL_VERSION });
 ---
 <EditorialLayout title="Cookies y privacidad de tu navegación" description="Consulta qué guarda Cripton en tu navegador, para qué se utiliza, cuánto dura y cómo gestionar las cookies y la analítica opcional." eyebrow="Cookies y privacidad" heading="Tú decides sobre la analítica opcional" lead="Puedes consultar la web y empezar tu prueba de 15 días sin aceptar seguimiento. Aquí explicamos el almacenamiento necesario y las opciones que puedes controlar." breadcrumbs={[{ name: "Centro legal", href: "/legal/" }]}>
-  <p>Última actualización de esta información: 2026-11-23. Este aviso describe la web comercial de Cripton; no sustituye la <a href="/legal/privacidad/">política de privacidad</a> ni la autorización que se solicita al registrarte.</p>
+  <p>Versión de este aviso de cookies: {CONSENT_VERSION}. Describe el almacenamiento y la medición de la web comercial; es independiente de la <a href={legal.privacyHref}>privacidad del registro, versión {legal.version}</a>, y no sustituye la autorización que se solicita al registrarte. La <a href="/legal/privacidad/">política de privacidad 2026-09-01</a> conserva su propia versión y sus aceptaciones anteriores.</p>
   <h2>Almacenamiento para que funcionen los procesos</h2>
   <p>Una cookie es un archivo pequeño que el navegador conserva para un sitio. También existen tecnologías como <code>localStorage</code>, que recuerda una preferencia entre visitas, y <code>sessionStorage</code>, asociado a la sesión de una pestaña. Informamos sobre las tres: no todo lo que recuerda la web es una cookie.</p>
   <p>Los flujos de registro, cuenta y pago utilizan almacenamiento para recordar pasos en curso y evitar solicitudes duplicadas. Se usa únicamente cuando realizas esas acciones. Elegir «Solo necesarias» no autoriza analítica ni publicidad, no acepta los términos del servicio y no cambia tu sesión.</p>
@@ -29,5 +33,5 @@ import EditorialLayout from "../../layouts/EditorialLayout.astro";
   <p>Si el navegador comunica Global Privacy Control o Do Not Track, esta integración mantiene desactivada la analítica. Si bloqueas el almacenamiento local, tu elección funciona para la página actual y puede solicitarse otra vez al navegar.</p>
   <h2>Servicios que abres desde la web</h2>
   <p>WhatsApp, tu aplicación de correo y el proveedor del pago aplican sus propias condiciones cuando decides abrirlos. Preparar un mensaje en el formulario de contacto no lo envía automáticamente; el contenido se conserva en memoria y no se incluye en el enlace de un botón de la página. Revisa su contenido y destinatario antes de enviarlo.</p>
-  <p>Para una solicitud de privacidad escribe a <a href="mailto:legal@cripton.com.co">legal@cripton.com.co</a>. Consulta también la <a href="/legal/privacidad/">política de privacidad vigente</a>.</p>
+  <p>Para una solicitud de privacidad escribe a <a href="mailto:legal@cripton.com.co">legal@cripton.com.co</a>. Consulta también la <a href={legal.privacyHref}>privacidad aplicable al registro, versión {legal.version}</a>.</p>
 </EditorialLayout>

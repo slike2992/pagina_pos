@@ -301,5 +301,6 @@ test('legal index guidance preserves legacy links by default and follows the exp
   assert.deepEqual(anchors(paragraph).map(link => link.href), ['mailto:servicioalcliente@cripton.com.co', 'mailto:ventas@cripton.com.co']);
   const documents = anchors(main).filter(link => ['Leer términos vigentes', 'Leer política vigente', 'Leer términos de la prueba QA', 'Leer privacidad de la prueba QA', 'Consultar cookies y preferencias'].includes(link.label));
   assert.deepEqual(documents.map(link => new URL(link.href, SITE_URL).pathname), [legal.termsHref, legal.privacyHref, '/legal/cookies/']);
-  assert.equal((textContent(main).match(legal.stagingTrialQa ? /Versión para prueba en staging: 2026-11-25-prueba-qa/g : /Versión publicada: 2026-09-01/g) ?? []).length, 2);
+  const versionLabel = legal.stagingTrialQa ? `Versión para prueba en staging: ${legal.version}` : 'Versión publicada: 2026-09-01';
+  assert.equal(textContent(main).split(versionLabel).length - 1, 2);
 });
