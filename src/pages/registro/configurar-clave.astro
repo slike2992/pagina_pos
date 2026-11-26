@@ -43,7 +43,7 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
         actions.append(login); result.append(label, heading, details, actions); form.append(result);
       } catch (error) {
         button.disabled = false;
-        status.textContent = typeof error === "object" && error && "error" in error ? (error as { error?: { message?: string } }).error?.message ?? "No fue posible guardar la contraseña." : "No fue posible guardar la contraseña.";
+        status.textContent = typeof error === "object" && error && "error" in error ? (error as { error?: { message?: string } }).error?.message ?? "No fue posible guardar la contraseña." : "No pudimos confirmar si se guardó la contraseña. Revisa tu conexión y comprueba tu acceso desde Mi cuenta.";
         status.dataset.state = "error";
       }
     });

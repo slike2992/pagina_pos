@@ -318,6 +318,8 @@ test('registration fallback retains constraints and required labels, without sta
   }
   assert.match(markup, /id="legal"[^>]*required disabled/);
   assert.match(markup, /vigentes\. \(obligatorio\)/);
+  assert.match(markup, /contratar el plan en cualquier momento, también durante la prueba, y conservar el tiempo gratis restante/);
+  assert.doesNotMatch(markup, /contratarlo después de la prueba/);
 });
 
 test('registration never reaches the signup transport or storage on invalid values or unchecked legal', async () => {
@@ -649,4 +651,52 @@ test('contact validates before preparing and invalidates a prepared message when
   assert.match(page.status.textContent, /Vuelve a preparar el mensaje/);
   await page.ready.emit('click');
   assert.equal(page.opened.length, 0, 'a stale prepared URL cannot be reused');
+});
+
+const passwordSetupPage = await readFile(new URL('../src/pages/registro/configurar-clave.astro', import.meta.url), 'utf8');
+function passwordSetup(transport) {
+  const page = browser([
+    { name: 'password', type: 'password', value: 'Only-For-QA123' },
+    { name: 'confirmation', type: 'password', value: 'Only-For-QA123' },
+  ]);
+  const help = new page.Element('p'), status = new page.Element('p'), button = new page.Element('button');
+  help.className = 'status'; status.className = 'status'; button.type = 'submit';
+  page.form.append(help, button, status); page.form.dataset.apiUrl = 'https://api.example.invalid';
+  page.form.querySelectorAll = selector => selector === '.status' ? [help, status] : [];
+  page.document.querySelector = selector => selector === '#password-form' ? page.form : null;
+  const calls = [];
+  Object.assign(page.context, {
+    URLSearchParams, location: { search: '?token=fixture-setup-token' },
+    FormData: class { constructor(form) { this.form = form; } get(name) { return this.form.elements.find(field => field.name === name)?.value ?? null; } },
+    fetch: async (url, options) => { calls.push({ url, options }); return transport(); },
+  });
+  vm.runInContext(compile(passwordSetupPage.match(/<script>\s*([\s\S]*?)<\/script>/)[1]), page.context);
+  return { ...page, calls, status, button };
+}
+
+test('password setup treats network, unreadable JSON and unknown rejection responses as unconfirmed without replay or clearing fields', async () => {
+  for (const transport of [() => Promise.reject(new TypeError('Failed to fetch')),
+    () => ({ ok: true, json: async () => { throw new SyntaxError('Invalid JSON'); } }),
+    () => ({ ok: false, json: async () => ({ unexpected: 'response' }) })]) {
+    const page = passwordSetup(transport), originalChildren = [...page.form.children];
+    assert.equal(page.calls.length, 0); await page.form.emit('submit');
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(page.calls.length, 1); assert.equal(page.calls[0].url, 'https://api.example.invalid/v1/password-setup');
+    assert.equal(page.calls[0].options.method, 'POST');
+    assert.equal(page.status.dataset.state, 'error'); assert.equal(page.button.disabled, false);
+    assert.match(page.status.textContent, /No pudimos confirmar si se guardó la contraseña/);
+    assert.match(page.status.textContent, /conexión.*Mi cuenta/);
+    assert.doesNotMatch(page.status.textContent, /fixture-setup-token|Only-For-QA123/);
+    assert.deepEqual(page.form.children, originalChildren); assert.equal(page.fields[0].value, 'Only-For-QA123');
+  }
+});
+
+test('password setup keeps explicit API rejection messages separate from unconfirmed transport errors', async () => {
+  for (const error of [{ code: 'invalid_or_expired_token', message: 'El enlace venció.' }, { code: 'invalid_request' }]) {
+    const page = passwordSetup(() => ({ ok: false, json: async () => ({ error }) }));
+    await page.form.emit('submit');
+    assert.equal(page.status.textContent, error.message ?? 'No fue posible guardar la contraseña.');
+    assert.equal(page.status.dataset.state, 'error'); assert.equal(page.calls.length, 1);
+    assert.equal(page.button.disabled, false);
+  }
 });
