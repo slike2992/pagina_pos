@@ -6,12 +6,14 @@ export type SupportReceipt = { caseId: string; tenantId: string; principalId: st
 export type SupportClaimCompletion = { state: "required" | "completed" | "closed_incomplete"; requiredAt: string; requirementDueAt: string; completionDeadlineExclusiveAt: string; completedAt: string | null; closedAt: string | null; initialDueAt: string | null; maximumDueAt: string | null };
 export type SupportSummary = { claimCompletion?: SupportClaimCompletion; receipt: SupportReceipt; version: number; status: "received" | "in_progress" | "resolved"; assignedTo: string | null; dueAt: string | null; extendedAt: string | null; firstResponseAt: string | null; resolvedAt: string | null };
 export type SupportNotificationProof = { type: "operator_declaration"; notificationAt: string; notificationEvidence: string; declaredByPrincipalId: string; declaredAt: string; closureNotBeforeAt: string };
-export type SupportEvent = { notificationProof?: SupportNotificationProof; eventId: string; type: "received" | "started" | "replied" | "extended" | "resolved" | "completion_required" | "claim_completed" | "closed_incomplete"; occurredAt: string; actorPrincipalId: string; message: string | null; dueAt: string | null };
+export type SupportEvent = { notificationProof?: SupportNotificationProof; eventId: string; type: "received" | "started" | "replied" | "extended" | "resolved" | "completion_required" | "claim_completed" | "closed_incomplete" | "transferred" | "claim_annotated"; occurredAt: string; actorPrincipalId: string; message: string | null; dueAt: string | null };
 export type SupportDetail = SupportSummary & { content: string; events: SupportEvent[] };
 const kinds: Record<SupportKind, string> = { support: "Soporte del servicio", data_query: "Consulta sobre mis datos", data_claim: "Reclamo sobre mis datos" };
 const statuses: Record<SupportSummary["status"], string> = { received: "Recibida", in_progress: "En trámite", resolved: "Resuelta" };
-const eventLabels: Record<SupportEvent["type"], string> = { received: "Recibida", started: "Trámite iniciado", replied: "Respuesta", extended: "Prórroga informada", resolved: "Resuelta", completion_required: "Aclaración requerida", claim_completed: "Aclaración recibida", closed_incomplete: "Cierre por información incompleta" };
-const invalid = () => new Error("No pudimos verificar tus solicitudes. Actualiza la consulta o utiliza los correos de contacto.");
+const eventLabels: Record<SupportEvent["type"], string> = { received: "Recibida", started: "Trámite iniciado", replied: "Respuesta", extended: "Prórroga informada", resolved: "Resuelta", completion_required: "Aclaración requerida", claim_completed: "Aclaración recibida", closed_incomplete: "Cierre por información incompleta", transferred: "Declaración de traslado registrada", claim_annotated: "Declaración de anotación registrada" };
+class SupportError extends Error {}
+const supportMessage = (error: unknown, fallback: string) => error instanceof SupportError ? error.message : fallback;
+const invalid = () => new SupportError("No pudimos verificar tus solicitudes. Actualiza la consulta o utiliza los correos de contacto.");
 const record = (value: unknown): Record<string, unknown> => {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw invalid();
   return value as Record<string, unknown>;
@@ -23,7 +25,7 @@ const known = (object: object, value: unknown): value is string => typeof value 
 
 export function createSupportRequest(kind: unknown, content: unknown): { kind: SupportKind; content: string } {
   if (!known(kinds, kind) || typeof content !== "string" || content.trim().length < 8 || content.trim().length > 8000) {
-    throw new Error("Selecciona el tipo y escribe una descripción de entre 8 y 8.000 caracteres.");
+    throw new SupportError("Selecciona el tipo y escribe una descripción de entre 8 y 8.000 caracteres.");
   }
   return { kind: kind as SupportKind, content: content.trim() };
 }
@@ -50,13 +52,13 @@ export function readClaimCompletion(value: unknown): SupportClaimCompletion | un
 }
 export function createClaimCompletion(content: unknown, expectedVersion: number) {
   if (!Number.isSafeInteger(expectedVersion) || expectedVersion < 1) throw invalid();
-  if (typeof content !== "string" || content.trim().length < 8 || content.trim().length > 8000) throw new Error("Escribe una aclaración de entre 8 y 8.000 caracteres.");
+  if (typeof content !== "string" || content.trim().length < 8 || content.trim().length > 8000) throw new SupportError("Escribe una aclaración de entre 8 y 8.000 caracteres.");
   return { content: content.trim(), expectedVersion };
 }
 const completionLabel = (summary: SupportSummary) => summary.claimCompletion?.state === "closed_incomplete"
   ? "Cerrado por información incompleta; sin decisión de fondo" : summary.claimCompletion?.state === "required"
     ? "Aclaración requerida" : summary.claimCompletion?.state === "completed" ? "Aclaración recibida" : "";
-class SupportRequestError extends Error {
+class SupportRequestError extends SupportError {
   constructor(readonly status: number, code: unknown) { super(errorMessage(code)); }
 }
 
@@ -98,10 +100,12 @@ export function readSupportDetail(value: unknown, context: Pick<SupportContext, 
   const events = row.events.map(value => {
     const event = record(value);
     if (!uuid(event.eventId) || !known(eventLabels, event.type) || !date(event.occurredAt) || !uuid(event.actorPrincipalId)
-      || !(event.message === null || typeof event.message === "string") || !nullableDate(event.dueAt)) throw invalid();
+      || !(event.message === null || typeof event.message === "string" && event.message.length <= 8000) || !nullableDate(event.dueAt)) throw invalid();
     const notificationProof = readNotificationProof(event.notificationProof);
     if (notificationProof && event.type !== "closed_incomplete") throw invalid();
-    return { ...event, ...(notificationProof ? { notificationProof } : {}) } as SupportEvent;
+    return { eventId: event.eventId, type: event.type, occurredAt: event.occurredAt,
+      actorPrincipalId: event.actorPrincipalId, message: event.message, dueAt: event.dueAt,
+      ...(notificationProof ? { notificationProof } : {}) } as SupportEvent;
   });
   return { ...summary, content: row.content, events };
 }
@@ -202,7 +206,7 @@ export function bindCustomerSupport(root: HTMLElement, options: {
       credentials: "omit", cache: "no-store", redirect: "error", referrerPolicy: "no-referrer" });
     if (!current(context, version)) return null;
     if (response.status === 401) { reset(); options.onUnauthorized(); return null; }
-    const body: unknown = await response.json().catch(() => null);
+    const body: unknown = await response.json().catch(error => { if (response.ok) throw error; return null; });
     if (!current(context, version)) return null;
     if (!response.ok) throw new SupportRequestError(response.status, body && typeof body === "object" && "code" in body ? body.code : response.status === 503 ? "legal_support_unavailable" : null);
     if (body === null) throw invalid();
@@ -264,7 +268,7 @@ export function bindCustomerSupport(root: HTMLElement, options: {
     setBusy(true); message("Consultando tu solicitud…");
     try { if (await readSelected(context, version, caseId, detailVersion)) message(""); }
     catch (error) {
-      if (current(context, version) && detailVersion === detailGeneration) message(error instanceof Error ? error.message : invalid().message, true);
+      if (current(context, version) && detailVersion === detailGeneration) message(supportMessage(error, "No pudimos consultar esta solicitud. Revisa tu conexión o utiliza los correos de contacto."), true);
     } finally { if (current(context, version)) setBusy(false); }
   };
   const renderList = () => {
@@ -292,7 +296,7 @@ export function bindCustomerSupport(root: HTMLElement, options: {
     const context = options.getContext(); if (busy || !context) return;
     const version = generation; section.hidden = false; setBusy(true); message("Consultando mis solicitudes…");
     try { if (await loadList(context, version, before)) message(""); }
-    catch (error) { if (current(context, version)) message(error instanceof Error ? error.message : invalid().message, true); }
+    catch (error) { if (current(context, version)) message(supportMessage(error, "No pudimos consultar tus solicitudes. Revisa tu conexión o utiliza los correos de contacto."), true); }
     finally { if (current(context, version)) setBusy(false); }
   };
   const refresh = () => { reset(); return load(); };
@@ -301,7 +305,7 @@ export function bindCustomerSupport(root: HTMLElement, options: {
     if (busy || !context || section.hidden || !ready || !form.reportValidity()) return;
     let body: string;
     try { body = JSON.stringify(createSupportRequest(kind.value, content.value)); }
-    catch (error) { message(error instanceof Error ? error.message : invalid().message, true); return; }
+    catch (error) { message(supportMessage(error, invalid().message), true); return; }
     if (!attempt || attempt.body !== body) attempt = { body, key: createIdempotencyKey() };
     const version = generation; setBusy(true); closeDetail(); message("Enviando tu solicitud…");
     try {
@@ -314,7 +318,7 @@ export function bindCustomerSupport(root: HTMLElement, options: {
       try { await loadList(context, version, null); }
       catch { if (current(context, version)) message("Solicitud recibida. El recibo está disponible; actualiza la lista para consultar su seguimiento."); }
     } catch (error) {
-      if (current(context, version)) message(error instanceof Error ? error.message : "No pudimos confirmar la recepción. Puedes reintentar el mismo contenido.", true);
+      if (current(context, version)) message(supportMessage(error, "No pudimos confirmar la recepción. Revisa tu conexión; conservamos tu texto para reintentar el mismo contenido."), true);
     } finally { if (current(context, version)) setBusy(false); }
   });
   completionForm.addEventListener("submit", async event => {
@@ -323,7 +327,7 @@ export function bindCustomerSupport(root: HTMLElement, options: {
     const reviewed = selected, context = selectedOwner, version = generation, view = detailGeneration;
     let body: string;
     try { body = JSON.stringify(createClaimCompletion(completionContent.value, reviewed.version)); }
-    catch (error) { completionStatus.textContent = error instanceof Error ? error.message : invalid().message; return; }
+    catch (error) { completionStatus.textContent = supportMessage(error, invalid().message); return; }
     keepDraft();
     const draft = drafts.get(reviewed.receipt.caseId)!;
     if (!draft.attempts.has(body)) draft.attempts.set(body, createIdempotencyKey());
@@ -357,7 +361,7 @@ export function bindCustomerSupport(root: HTMLElement, options: {
         } catch {
           if (isCurrentView()) completionStatus.textContent = "No pudimos actualizar el reclamo tras el conflicto. Conservamos tu borrador; actualiza este reclamo antes de reintentar.";
         }
-      } else completionStatus.textContent = error instanceof Error ? error.message : "No pudimos confirmar la aclaración. Puedes reintentar el mismo contenido.";
+      } else completionStatus.textContent = supportMessage(error, "No pudimos confirmar la aclaración. Revisa tu conexión; conservamos tu texto para reintentar el mismo contenido.");
     } finally { if (current(context, version)) setBusy(false); }
   });
   detailRefresh.addEventListener("click", async () => {
@@ -365,7 +369,7 @@ export function bindCustomerSupport(root: HTMLElement, options: {
     keepDraft(); const context = selectedOwner, version = generation, view = detailGeneration, caseId = selected.receipt.caseId;
     detailConfirmed = false; setBusy(true); completionStatus.textContent = "Actualizando este reclamo…";
     try { if (await readSelected(context, version, caseId, view)) completionStatus.textContent = "Estado actualizado. Revisa el historial y los plazos antes de enviar."; }
-    catch (error) { if (current(context, version) && view === detailGeneration) completionStatus.textContent = error instanceof Error ? error.message : invalid().message; }
+    catch (error) { if (current(context, version) && view === detailGeneration) completionStatus.textContent = supportMessage(error, "No pudimos actualizar esta solicitud. Revisa tu conexión o utiliza los correos de contacto."); }
     finally { if (current(context, version)) setBusy(false); }
   });
   refreshButton.addEventListener("click", () => { if (!busy) void refresh(); });

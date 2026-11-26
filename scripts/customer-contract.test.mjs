@@ -501,3 +501,76 @@ for (const day of [0, 2, 4]) test(`an eligible trial can be purchased on day ${d
   assert.ok(treeText(h.get('[data-contract-offer]')).includes('se conserva el tiempo restante'));
   assert.equal(h.subscription.trial.endsAt, endsAt); assert.equal(h.subscription.trial.convertedAt, null);
 });
+
+const transportFailures = [() => Promise.reject(new TypeError('Failed to fetch PRIVATE_TRANSPORT')),
+  () => Promise.reject(new Error('PRIVATE_TRANSPORT https://internal.example.invalid')),
+  () => ({ ok: true, status: 200, json: async () => { throw new SyntaxError('PRIVATE_JSON'); } })];
+
+test('contract GET translates arbitrary transport and JSON errors while keeping operational access closed', async () => {
+  for (const failure of transportFailures) {
+    const h = browser({ contract: failure }); await h.controller.refresh();
+    assert.match(h.get('[data-contract-status]').textContent, /No pudimos consultar el acuerdo.*conexión/);
+    assert.doesNotMatch(h.get('[data-contract-status]').textContent, /PRIVATE_|Failed to fetch|internal\.example/);
+    assert.equal(h.controller.canOperate(), false); assert.equal(h.controller.canContinue(), false);
+    assert.equal(contractCalls(h).length, 1); assert.equal(h.continued, 0); assert.equal(h.navigations.length, 0);
+  }
+});
+
+test('contract acceptance translates unconfirmed responses without replay and preserves the original retry key', async () => {
+  for (const failure of transportFailures) {
+    const h = browser({ post: failure }); await h.controller.beforeCheckout(); h.fill(); await h.submit();
+    assert.match(h.get('[data-contract-dialog-status]').textContent, /No pudimos confirmar si se registró la aceptación/);
+    assert.doesNotMatch(h.get('[data-contract-dialog-status]').textContent, /PRIVATE_|Failed to fetch|internal\.example/);
+    assert.equal(contractCalls(h, 'POST').length, 1); assert.equal(h.continued, 0); assert.equal(paymentCalls(h).length, 0);
+    const first = contractCalls(h, 'POST')[0]; await h.submit();
+    assert.equal(contractCalls(h, 'POST')[1].headers['idempotency-key'], first.headers['idempotency-key']);
+    assert.equal(contractCalls(h, 'POST')[1].body, first.body);
+  }
+});
+
+test('receipt failures display a public connection message without exposing raw errors, evidence or automatic printing', async () => {
+  for (const failure of transportFailures) {
+    const h = browser({ contract: () => reply(fixture({ accepted: true, contractId: id(3) })), receipt: failure });
+    await h.controller.refresh(); await h.get('[data-contract-receipt]').dispatch('click');
+    assert.match(h.get('[data-contract-dialog-status]').textContent, /No pudimos consultar la constancia.*conexión/);
+    assert.doesNotMatch(h.get('[data-contract-dialog-status]').textContent, /PRIVATE_|Failed to fetch|internal\.example/);
+    assert.equal(h.get('[data-contract-evidence]').textContent, ''); assert.equal(h.get('[data-contract-evidence-section]').hidden, true);
+    assert.equal(h.calls.filter(call => call.url.endsWith('/receipt')).length, 1); assert.equal(h.printed, 0); assert.equal(h.continued, 0);
+  }
+});
+
+test('contract error translation preserves local field validation and explicit API conflict handling', async () => {
+  const invalid = browser(); await invalid.controller.beforeCheckout(); invalid.fill(); invalid.fields.get('documentNumber').value = '';
+  await invalid.submit();
+  assert.equal(invalid.get('[data-contract-dialog-status]').textContent, 'Completa los datos declarados del contratante y su representante.');
+  assert.equal(contractCalls(invalid, 'POST').length, 0);
+  const conflict = browser({ post: () => reply({ error: { code: 'contract_changed' } }, 409) });
+  await conflict.controller.beforeCheckout(); conflict.fill(); await conflict.submit();
+  assert.match(conflict.get('[data-contract-dialog-status]').textContent, /El contrato o la oferta cambiaron/);
+  assert.equal(conflict.continued, 0);
+});
+
+test('trial checkout translates uncertain responses without automatic navigation or changing the manual retry key', async () => {
+  for (const failure of transportFailures) {
+    const h = browser({ account: true, contract: () => reply(fixture({ accepted: true, contractId: id(3) })), checkout: failure });
+    await h.login(); await h.click('contract-trial');
+    assert.match(h.get('.account-status').textContent, /No pudimos confirmar la preparación del pago.*conexión.*Mi cuenta/);
+    assert.doesNotMatch(h.get('.account-status').textContent, /PRIVATE_|Failed to fetch|internal\.example/);
+    assert.equal(paymentCalls(h).length, 1); assert.equal(h.navigations.length, 0);
+    const first = paymentCalls(h)[0]; await h.click('contract-trial');
+    assert.equal(paymentCalls(h)[1].headers['idempotency-key'], first.headers['idempotency-key']);
+    assert.equal(paymentCalls(h)[1].body, first.body); assert.equal(h.navigations.length, 0);
+  }
+});
+
+test('trial checkout keeps explicit API rejection and its own response-validation message', async () => {
+  for (const [checkoutResponse, expected] of [
+    [reply({ error: { code: 'checkout_pending', message: 'Ya hay un pago pendiente para esta empresa.' } }, 409), 'Ya hay un pago pendiente para esta empresa.'],
+    [reply({ ...checkout(), currency: 'USD' }), 'No pudimos verificar la prueba de tu suscripción. Actualiza Mi cuenta antes de continuar.'],
+  ]) {
+    const h = browser({ account: true, contract: () => reply(fixture({ accepted: true, contractId: id(3) })), checkout: () => checkoutResponse });
+    await h.login(); await h.click('contract-trial');
+    assert.equal(h.get('.account-status').textContent, expected); assert.equal(h.navigations.length, 0);
+    assert.equal(paymentCalls(h).length, 1);
+  }
+});

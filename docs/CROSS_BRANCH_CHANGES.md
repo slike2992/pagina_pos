@@ -1,5 +1,20 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-25 — Mensajes públicos de red y eventos de soporte040
+
+- Login, contrato/constancia, checkout de prueba y soporte muestran mensajes
+  españoles ante fallos de red/JSON, conservando errores API conocidos y
+  validaciones propias, sin exponer mensajes arbitrarios de transporte.
+- Resultados inciertos conservan texto y claves para reintento manual;
+  no confirman recepción/aceptación ni provocan reenvíos o pagos automáticos.
+- El cliente acepta transferred y claim_annotated como «Declaración de traslado
+  registrada» y «Declaración de anotación registrada». Omite procedureProof
+  no expuesto; mantiene validación y aislamiento por caso, empresa y principal.
+- Sin cambios HTTP, SQL, permisos ni paquetes adoptados. Validación local con
+  instalación frozen aislada:275 pruebas específicas,618 completas, Astro
+  check73 sin errores/advertencias/hints y build24 páginas. CUA posterior
+  sobre el dominio queda a cargo de Main; no se presume por estos tests.
+
 ## 2026-11-25 — Encargo previo al POS y documentos mínimos de staging
 
 - Consumidor de API/Control039: GET existente `customer-contract` incorpora

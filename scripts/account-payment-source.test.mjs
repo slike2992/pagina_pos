@@ -214,6 +214,7 @@ async function account(options = {}) {
     assert.equal(new URL(url).origin, 'https://api.example.invalid');
     if (path === '/v1/auth/portal-sso/redeem' && options.portal) return options.portal(call);
     if (path === '/v1/auth/login') {
+      if (options.loginResponse) return options.loginResponse(call);
       loginCount++;
       tenant = { ...tenant, tenantId: `synthetic-tenant-${loginCount}` };
       return reply({ accessToken: `synthetic-auth-${loginCount}`, principal: { displayName: 'QA' },
@@ -1818,4 +1819,29 @@ test('portal redemption 401 resets without reading its body, retaining the ticke
   await h.login(); await flush();
   assert.equal(h.get('.account-panel').hidden, false);
   assert.equal(h.calls.filter(call => call.url.endsWith('/portal-sso/redeem')).length, 1);
+});
+
+test('login translates transport and JSON failures without leaking raw messages or automatically replaying credentials', async () => {
+  const failures = [() => Promise.reject(new TypeError('Failed to fetch PRIVATE_TRANSPORT')),
+    () => Promise.reject(new Error('PRIVATE_TRANSPORT https://internal.example.invalid')),
+    () => ({ ok: true, json: async () => { throw new SyntaxError('PRIVATE_JSON'); } })];
+  for (const stage of ['loginResponse', 'readSubscription']) for (const fail of failures) {
+    const h = await account({ [stage]: fail }); await h.login(); await flush();
+    assert.match(h.get('.status').textContent, /No pudimos confirmar el acceso.*conexión.*Mi cuenta/);
+    assert.doesNotMatch(h.get('.status').textContent, /PRIVATE_|Failed to fetch|internal\.example|synthetic-password/);
+    assert.equal(h.get('.status').dataset.state, 'error'); assert.equal(h.get('#login-form').hidden, false);
+    assert.equal(h.get('.account-panel').hidden, true); assert.equal(h.navigations.length, 0);
+    assert.equal(h.calls.filter(call => call.url.endsWith('/auth/login')).length, 1);
+    assert.ok(h.calls.every(call => call.url.endsWith('/auth/login') || call.url.endsWith('/me/subscription')));
+  }
+});
+
+test('login preserves explicit API errors and its own subscription validation message', async () => {
+  const message = 'Las credenciales no son válidas para esta cuenta.';
+  const rejected = await account({ loginResponse: () => reply({ error: { code: 'invalid_credentials', message } }, 401) });
+  await rejected.login(); assert.equal(rejected.get('.status').textContent, message);
+  const invalid = await account({ subscription: { trial: { status: 'active', durationDays: 14 } } });
+  await invalid.login();
+  assert.match(invalid.get('.status').textContent, /No pudimos verificar la prueba de tu suscripción/);
+  assert.doesNotMatch(invalid.get('.status').textContent, /conexión/);
 });

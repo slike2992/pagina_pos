@@ -11,7 +11,9 @@ export type ContractContext = { accessToken: string; tenantId: string; subscript
 export const contractDeclarations = ["serviceTerms", "dataProcessingAnnex", "ownDataAuthorization", "adultAndAuthorized", "truthfulDeclaredIdentity"] as const;
 export const contractPartyLimits = { name: 240, address: 240, city: 100, phone: 24, documentNumber: 30, representativeName: 180, representativeDocumentNumber: 30 } as const;
 const documentTypes = ["CC", "CE", "PASSPORT", "PPT"];
-const invalid = () => new Error("No pudimos verificar el contrato y la oferta. Actualiza el contrato antes de pagar.");
+class ContractError extends Error {}
+const contractMessage = (error: unknown, fallback: string) => error instanceof ContractError ? error.message : fallback;
+const invalid = () => new ContractError("No pudimos verificar el contrato y la oferta. Actualiza el contrato antes de pagar.");
 const record = (value: unknown): Record<string, unknown> => {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw invalid();
   return value as Record<string, unknown>;
@@ -117,7 +119,7 @@ export function createContractAcceptance(contract: CustomerContract, data: FormD
   if (!contract.package || !contract.offer || !text(contract.verifiedEmail) || !hash(contract.packageSha256) || !hash(contract.offerSha256)) throw invalid();
   const field = (key: string, max: number) => {
     const value = String(data.get(key) ?? "").trim();
-    if (!value || value.length > max) throw new Error("Completa los datos declarados del contratante y su representante.");
+    if (!value || value.length > max) throw new ContractError("Completa los datos declarados del contratante y su representante.");
     return value;
   };
   const kind = field("kind", 10), documentType = field("documentType", 10);
@@ -127,7 +129,7 @@ export function createContractAcceptance(contract: CustomerContract, data: FormD
   const representativeDocumentType = kind === "natural" ? documentType : field("representativeDocumentType", 10);
   const representativeDocumentNumber = kind === "natural" ? documentNumber : field("representativeDocumentNumber", contractPartyLimits.representativeDocumentNumber);
   if (!documentTypes.includes(representativeDocumentType)) throw invalid();
-  if (!contractDeclarations.every(key => data.get(key) === "on")) throw new Error("Marca las cinco declaraciones para aceptar el contrato.");
+  if (!contractDeclarations.every(key => data.get(key) === "on")) throw new ContractError("Marca las cinco declaraciones para aceptar el contrato.");
   return { packageSha256: contract.packageSha256, offerSha256: contract.offerSha256,
     party: { kind, name, documentType, documentNumber, address: field("address", contractPartyLimits.address), city: field("city", contractPartyLimits.city), country: "CO",
       phone: field("phone", contractPartyLimits.phone), representativeName, representativeDocumentType, representativeDocumentNumber },
@@ -262,9 +264,9 @@ export function bindCustomerContract(root: HTMLElement, options: {
     if (!response.ok) {
       if (response.status === 409 || response.status === 412) {
         state = null; attempt = null; form.reset(); kindChanged(); form.hidden = true; accept.disabled = true;
-        throw new Error("El contrato o la oferta cambiaron. Actualiza el contrato y revisa de nuevo antes de aceptar.");
+        throw new ContractError("El contrato o la oferta cambiaron. Actualiza el contrato y revisa de nuevo antes de aceptar.");
       }
-      throw new Error("No pudimos verificar o registrar el acuerdo. Reintenta desde Mi cuenta antes de abrir el POS o continuar al pago.");
+      throw new ContractError("No pudimos verificar o registrar el acuerdo. Reintenta desde Mi cuenta antes de abrir el POS o continuar al pago.");
     }
     const body: unknown = await response.json();
     return current(context, version) ? body : null;
@@ -313,7 +315,7 @@ export function bindCustomerContract(root: HTMLElement, options: {
       } catch (error) {
         if (current(context, version)) {
           state = null;
-          status.textContent = error instanceof Error ? error.message : invalid().message;
+          status.textContent = contractMessage(error, "No pudimos consultar el acuerdo. Revisa tu conexión y vuelve a intentarlo desde Mi cuenta.");
           dialogStatus.textContent = status.textContent;
         }
         return null;
@@ -368,7 +370,7 @@ export function bindCustomerContract(root: HTMLElement, options: {
     const submissionIntent = intent;
     let body: string;
     try { body = JSON.stringify(createContractAcceptance(state, new FormData(form))); }
-    catch (error) { dialogStatus.textContent = error instanceof Error ? error.message : invalid().message; return; }
+    catch (error) { dialogStatus.textContent = contractMessage(error, invalid().message); return; }
     if (!attempt || attempt.body !== body) attempt = { body, key: createIdempotencyKey() };
     busy = true; accept.disabled = true; retry.disabled = true;
     dialogStatus.textContent = "Registrando la aceptación. No se ha ordenado ningún pago…";
@@ -382,7 +384,7 @@ export function bindCustomerContract(root: HTMLElement, options: {
       if (submissionIntent === "pos") {
         const updated = await load();
         if (!current(context, version)) return;
-        if (!updated || !canOperate()) throw new Error("La aceptación se registró, pero aún no pudimos confirmar el acceso operativo. Actualiza el acuerdo antes de abrir el POS.");
+        if (!updated || !canOperate()) throw new ContractError("La aceptación se registró, pero aún no pudimos confirmar el acceso operativo. Actualiza el acuerdo antes de abrir el POS.");
       }
       const continuation = intent === submissionIntent && dialog.open ? submissionIntent : null;
       form.reset(); kindChanged(); render(); intent = null;
@@ -394,7 +396,7 @@ export function bindCustomerContract(root: HTMLElement, options: {
       if (continuation === "pos" && canOperate()) await options.onOperate?.();
     } catch (error) {
       if (current(context, version)) {
-        dialogStatus.textContent = error instanceof Error ? error.message : invalid().message;
+        dialogStatus.textContent = contractMessage(error, "No pudimos confirmar si se registró la aceptación. Revisa tu conexión y actualiza el acuerdo desde Mi cuenta antes de continuar.");
         status.textContent = dialogStatus.textContent;
       }
     } finally {
@@ -420,7 +422,7 @@ export function bindCustomerContract(root: HTMLElement, options: {
       get("[data-contract-evidence-section]").hidden = false;
       dialogStatus.textContent = "";
     } catch (error) {
-      if (current(context, version)) dialogStatus.textContent = error instanceof Error ? error.message : invalid().message;
+      if (current(context, version)) dialogStatus.textContent = contractMessage(error, "No pudimos consultar la constancia. Revisa tu conexión y vuelve a intentarlo desde Mi cuenta.");
     } finally {
       if (current(context, version)) { busy = false; receipt.disabled = false; }
     }

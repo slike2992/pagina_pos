@@ -260,6 +260,18 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     const messageFrom = (body: unknown, fallback: string) => typeof body === "object" && body && "error" in body
       ? (body as { error?: { message?: string } }).error?.message ?? fallback
       : fallback;
+    class AccountRequestError extends Error {}
+    const accountValidationMessages = new Set([
+      "No pudimos verificar la prueba de tu suscripción. Actualiza Mi cuenta antes de continuar.",
+      "Falta el estado de la prueba. Actualiza Mi cuenta antes de continuar.",
+      "No pudimos comprobar el detalle de la renovación rechazada. Actualiza Mi cuenta.",
+    ]);
+    const accountErrorMessage = (error: unknown, fallback: string) => error instanceof AccountRequestError
+      || error instanceof Error && accountValidationMessages.has(error.message) ? error.message : fallback;
+    const requestResult = async <T,>(request: () => Promise<T>, unconfirmed: string): Promise<T> => {
+      try { return await request(); }
+      catch { throw new AccountRequestError(unconfirmed); }
+    };
     const formatDate = (value: string | null) => value && Number.isFinite(Date.parse(value))
       ? new Intl.DateTimeFormat("es-CO", { dateStyle: "long" }).format(new Date(value))
       : "Por confirmar";
@@ -721,14 +733,15 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       button.disabled = true;
       loginStatus.textContent = "Validando acceso…";
       loginStatus.dataset.state = "";
+      const unconfirmed = "No pudimos confirmar el acceso. Revisa tu conexión y vuelve a intentarlo desde Mi cuenta.";
       try {
         const data = new FormData(loginForm);
         const payload: Record<string, string> = { email: String(data.get("email") ?? ""), password: String(data.get("password") ?? "") };
         const tenantId = String(data.get("tenantId") ?? "");
         if (!tenantField.hidden && tenantId) payload.tenantId = tenantId;
-        const response = await fetch(`${apiUrl}/v1/auth/login`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });
+        const response = await requestResult(() => fetch(`${apiUrl}/v1/auth/login`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) }), unconfirmed);
         if (!isCurrent()) return;
-        const body = await response.json();
+        const body = await requestResult(() => response.json(), unconfirmed);
         if (!isCurrent()) return;
         if (response.status === 409 && body.error?.code === "tenant_selection_required" && Array.isArray(body.tenants)) {
           tenantSelect.replaceChildren(...body.tenants.map((tenant: Tenant) => new Option(tenant.name, tenant.tenantId)));
@@ -740,9 +753,9 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         const login = body as LoginResult;
         accountLogin = login;
         accessToken = login.accessToken;
-        const subscriptionResponse = await fetch(`${apiUrl}/v1/me/subscription`, { headers: { authorization: `Bearer ${accessToken}` } });
+        const subscriptionResponse = await requestResult(() => fetch(`${apiUrl}/v1/me/subscription`, { headers: { authorization: `Bearer ${accessToken}` } }), unconfirmed);
         if (stopOnUnauthorized(subscriptionResponse, isCurrent)) return;
-        const subscription = await subscriptionResponse.json();
+        const subscription = await requestResult(() => subscriptionResponse.json(), unconfirmed);
         if (!isCurrent()) return;
         if (!subscriptionResponse.ok) throw subscription;
         renderAccount(login, subscription as Subscription);
@@ -751,7 +764,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         loginForm.reset();
       } catch (error) {
         if (!isCurrent()) return;
-        resetAccount(messageFrom(error, error instanceof Error ? error.message : "No fue posible iniciar sesión."));
+        resetAccount(messageFrom(error, accountErrorMessage(error, unconfirmed)));
       } finally {
         if (isCurrent()) button.disabled = false;
       }
@@ -1112,16 +1125,17 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       if (afterAcceptance && !customerContract.canContinue()) { planBusy = false; return; }
       renderAccountActions();
       let navigating = false;
+      const unconfirmed = "No pudimos confirmar la preparación del pago. Revisa tu conexión y actualiza Mi cuenta antes de reintentar.";
       try {
         if (!afterAcceptance && !await customerContract.beforeCheckout()) return;
         if (!isCurrent() || !customerContract.canContinue()) return;
         if (!trialCheckoutKey) trialCheckoutKey = createIdempotencyKey();
-        const response = await fetch(`${apiUrl}/v1/me/subscription/trial-checkout`, {
+        const response = await requestResult(() => fetch(`${apiUrl}/v1/me/subscription/trial-checkout`, {
           method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json", "idempotency-key": trialCheckoutKey },
           body: JSON.stringify({ subscriptionId: subscription.subscriptionId }),
-        });
+        }), unconfirmed);
         if (stopOnUnauthorized(response, isCurrent)) return;
-        const body = await response.json();
+        const body = await requestResult(() => response.json(), unconfirmed);
         if (!isCurrent()) return;
         if (!response.ok) throw body;
         const checkout = readTrialCheckout(body, location.origin);
@@ -1129,7 +1143,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         location.assign(checkout.checkoutUrl);
       } catch (error) {
         if (!isCurrent()) return;
-        accountStatus.textContent = messageFrom(error, error instanceof Error ? error.message : "No pudimos preparar la contratación. Actualiza Mi cuenta antes de reintentar.");
+        accountStatus.textContent = messageFrom(error, accountErrorMessage(error, unconfirmed));
         accountStatus.dataset.state = "error";
       } finally {
         if (isCurrent()) { planBusy = navigating; renderAccountActions(); }

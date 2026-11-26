@@ -484,3 +484,119 @@ test('an old requiredAt and its internal closure boundary never become the custo
   assert.equal(parsed.events.at(-1).dueAt, completion.completionDeadlineExclusiveAt);
   await h.complete('Aclaración pese a una referencia interna antigua'); assert.equal(completions(h).length, 1);
 });
+
+const procedureDetail = () => {
+  const occurredAt = '2026-11-26T15:00:00.000Z', performedAt = '2026-11-26T14:00:00.000Z';
+  const commonProof = { type: 'operator_declaration', ...scope, declaredByPrincipalId: id(6), recordedAt: occurredAt, performedAt };
+  return detail({ receipt: receipt({ kind: 'data_claim', initialDueAt: '2026-12-16T23:00:00Z', maximumDueAt: '2026-12-29T23:00:00Z' }),
+    version: 3, status: 'in_progress', dueAt: '2026-12-16T23:00:00Z',
+    claimProcedure: { transfer: { eventId: id(31), recordedAt: occurredAt, performedAt, notificationAt: performedAt },
+      annotation: { eventId: id(32), recordedAt: occurredAt, performedAt, completeAt: receipt().receivedAt, dataScope: 'external' },
+      transferDueAt: '2026-11-27T23:00:00Z', annotationDueAt: '2026-11-27T23:00:00Z' },
+    events: [detail().events[0],
+      { eventId: id(31), type: 'transferred', occurredAt, actorPrincipalId: id(6), message: 'Motivo del traslado declarado.', dueAt: null,
+        procedureProof: { ...commonProof, kind: 'transfer', competentRecipient: 'PRIVATE040_RECIPIENT', transferEvidence: 'PRIVATE040_TRANSFER',
+          notificationAt: performedAt, notificationEvidence: 'PRIVATE040_NOTIFICATION' } },
+      { eventId: id(32), type: 'claim_annotated', occurredAt, actorPrincipalId: id(6), message: 'Motivo de la anotación declarada.', dueAt: null,
+        procedureProof: { ...commonProof, kind: 'annotation', annotationEvidence: 'PRIVATE040_ANNOTATION',
+          affectedData: { scope: 'external', reference: 'PRIVATE040_EXTERNAL' } } },
+    ] });
+};
+
+test('040 transfer and annotation detail is accepted and rendered as declarations without exposing private operator proof', async () => {
+  const value = procedureDetail();
+  const h = browser({ items: [value], detail: () => reply(value) }); await h.controller.refresh(); await h.open();
+  const parsed = plain(h.helper.readSupportDetail(value, scope, id(3)));
+  assert.deepEqual(parsed.events.map(event => event.type), ['received', 'transferred', 'claim_annotated']);
+  assert.ok(parsed.events.every(event => !Object.hasOwn(event, 'procedureProof')));
+  const output = text(h.get('[data-support-detail-content]'));
+  assert.ok(output.includes('Declaración de traslado registrada')); assert.ok(output.includes('Declaración de anotación registrada'));
+  assert.ok(output.includes('Motivo del traslado declarado.')); assert.ok(output.includes('Motivo de la anotación declarada.'));
+  assert.doesNotMatch(output, /PRIVATE040_|ejecutad[ao] automáticamente|entrega verificada/);
+  assert.ok(h.calls.every(call => call.method === 'GET'));
+});
+
+test('040 event support still rejects unknown event codes, oversized messages and malformed event identity', () => {
+  const h = browser();
+  for (const mutate of [event => event.type = 'transferred_v2', event => event.type = 'automatically_resolved',
+    event => event.type = 'toString', event => event.message = 'x'.repeat(8001), event => event.eventId = 'not-a-uuid',
+    event => event.occurredAt = 'not-a-date', event => event.actorPrincipalId = null]) {
+    const value = procedureDetail(); mutate(value.events[1]);
+    assert.throws(() => h.helper.readSupportDetail(value, scope, id(3)));
+  }
+});
+
+test('040 event detail keeps tenant, principal and requested-case scope guards', async () => {
+  for (const mismatch of [{ tenantId: id(90) }, { principalId: id(91) }, { caseId: id(92) }]) {
+    const value = procedureDetail(), foreign = { ...value, receipt: { ...value.receipt, ...mismatch } };
+    const h = browser({ items: [value], detail: () => reply(foreign) });
+    assert.throws(() => h.helper.readSupportDetail(foreign, scope, id(3)));
+    await h.controller.refresh(); await h.open();
+    assert.doesNotMatch(text(h.get('[data-support-detail-content]')), /Contenido privado|PRIVATE040_|Declaración de traslado registrada/);
+    assert.equal(writes(h).length, 0);
+  }
+});
+
+const supportTransportFailures = [() => Promise.reject(new TypeError('Failed to fetch PRIVATE_SUPPORT')),
+  () => Promise.reject(new Error('PRIVATE_SUPPORT https://internal.example.invalid')),
+  () => ({ ok: true, status: 200, json: async () => { throw new SyntaxError('PRIVATE_SUPPORT_JSON'); } })];
+
+test('support list, detail and detail refresh translate network and JSON errors without automatic writes', async () => {
+  for (const stage of ['list', 'detail', 'detail-refresh']) for (const failure of supportTransportFailures) {
+    let failRefresh = false;
+    const h = browser({ items: [claim()], list: () => stage === 'list' ? failure() : reply({ items: [claim()], nextBefore: null }),
+      detail: () => stage === 'detail' || failRefresh ? failure() : reply(claimDetail()) });
+    await h.controller.refresh();
+    if (stage !== 'list') await h.open();
+    if (stage === 'detail-refresh') { failRefresh = true; await h.get('[data-support-detail-refresh]').dispatch('click'); await flush(); }
+    const output = h.get(stage === 'detail-refresh' ? '[data-support-completion-status]' : '[data-support-status]').textContent;
+    assert.match(output, /No pudimos (?:consultar|actualizar).*conexión/);
+    assert.doesNotMatch(output, /PRIVATE_SUPPORT|Failed to fetch|internal\.example/);
+    assert.ok(h.calls.every(call => call.method === 'GET'));
+    assert.equal(h.calls.length, stage === 'list' ? 1 : stage === 'detail' ? 2 : 3);
+  }
+});
+
+test('uncertain support creation preserves text and idempotency key without claiming receipt or resending', async () => {
+  for (const failure of supportTransportFailures) {
+    const h = browser({ post: failure }); await h.controller.refresh(); h.fill('support', 'Solicitud conservada mientras se confirma.'); await h.submit();
+    const output = h.get('[data-support-status]').textContent;
+    assert.match(output, /No pudimos confirmar la recepción.*conexión/);
+    assert.doesNotMatch(output, /PRIVATE_SUPPORT|Failed to fetch|internal\.example/);
+    assert.equal(h.content.value, 'Solicitud conservada mientras se confirma.');
+    assert.equal(h.get('[data-support-created]').hidden, true); assert.equal(writes(h).length, 1);
+    assert.equal(h.calls.length, 2);
+    const first = writes(h)[0]; await h.submit();
+    assert.equal(writes(h)[1].headers['idempotency-key'], first.headers['idempotency-key']);
+    assert.equal(writes(h)[1].body, first.body);
+  }
+});
+
+test('uncertain claim completion preserves its draft and retry key without claiming completion or performing an extra GET', async () => {
+  for (const failure of supportTransportFailures) {
+    const h = browser({ items: [claim()], detail: () => reply(claimDetail()), completion: failure });
+    await h.controller.refresh(); await h.open(); await h.complete('Aclaración conservada para reintento manual.');
+    const output = h.get('[data-support-completion-status]').textContent;
+    assert.match(output, /No pudimos confirmar la aclaración.*conexión/);
+    assert.doesNotMatch(output, /PRIVATE_SUPPORT|Failed to fetch|internal\.example/);
+    assert.equal(h.completionContent.value, 'Aclaración conservada para reintento manual.');
+    assert.equal(completions(h).length, 1); assert.equal(h.calls.length, 3);
+    const first = completions(h)[0]; await h.complete();
+    assert.equal(completions(h)[1].headers['idempotency-key'], first.headers['idempotency-key']);
+    assert.equal(completions(h)[1].body, first.body);
+  }
+});
+
+test('support error translation keeps known API codes and local validation, ignoring arbitrary API message text', async () => {
+  const unavailable = browser({ list: () => reply({ code: 'legal_support_unavailable', message: 'PRIVATE_SERVER_MESSAGE' }, 503) });
+  await unavailable.controller.refresh();
+  assert.match(unavailable.get('[data-support-status]').textContent, /El formulario no está disponible/);
+  assert.doesNotMatch(unavailable.get('[data-support-status]').textContent, /PRIVATE_SERVER_MESSAGE/);
+  const invalid = browser({ items: [claim()], detail: () => reply(claimDetail()) }); await invalid.controller.refresh();
+  invalid.fill('invalid-kind', 'Contenido de prueba suficiente'); await invalid.submit();
+  assert.match(invalid.get('[data-support-status]').textContent, /Selecciona el tipo y escribe una descripción/);
+  assert.equal(writes(invalid).length, 0);
+  await invalid.open(); await invalid.complete('corto');
+  assert.equal(invalid.get('[data-support-completion-status]').textContent, 'Escribe una aclaración de entre 8 y 8.000 caracteres.');
+  assert.equal(completions(invalid).length, 0);
+});
