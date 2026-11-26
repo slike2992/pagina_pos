@@ -427,6 +427,34 @@ test('optional offer features, tax and zero implementation survive parsing and r
   for (const expected of ['Usuarios: Incluido; límite: 5', 'Electrónica: No incluido', '<img src=x onerror=alert(1)>', 'Incluidos en el valor', '0,00 COP']) assert.ok(text.includes(expected));
 });
 
+test('unspecified tax catalog shows the quoted total without claiming VAT treatment or changing the offer', async () => {
+  const offer = { ...fixture().offer, amountMinor: 4990000, taxBehavior: 'unspecified', implementationAmountMinor: 0 };
+  const h = browser({ contract: () => reply(fixture({ offer })) }); await h.controller.refresh();
+  const displayed = treeText(h.get('[data-contract-offer]'));
+  assert.ok(displayed.includes('Valor total del plan'));
+  assert.ok(displayed.includes('49.900,00 COP / mes'));
+  assert.ok(displayed.includes('Sin desglose tributario. El checkout no añade recargos por impuestos al valor del plan mostrado.'));
+  assert.doesNotMatch(displayed, /IVA incluido|exento|Sin especificar en la oferta/i);
+  assert.deepEqual(plain(h.helper.readCustomerContract(fixture({ offer }), id(1))).offer, offer);
+});
+
+test('offer distinguishes a report from issuance and a zero quota without altering its recorded features', async () => {
+  const offer = { ...fixture().offer, features: [
+    { code: 'electronic_invoicing.enabled', display_name: 'Facturación electrónica', enabled: false },
+    { code: 'reports.electronic_invoicing.read', display_name: 'Facturacion electronica', enabled: true },
+    { code: 'reports.commercial.read', display_name: 'Reporte comercial', enabled: true },
+    { code: 'electronic_documents.annual', display_name: 'Documentos electrónicos anuales', enabled: true, limit_value: 0 },
+    { code: 'users.max', display_name: 'Usuarios máximos', enabled: true, limit_value: 1 },
+  ] };
+  const h = browser({ contract: () => reply(fixture({ offer })) }); await h.controller.refresh();
+  const displayed = treeText(h.get('[data-contract-offer]'));
+  for (const expected of ['Facturación electrónica: No incluido', 'Reporte: Facturacion electronica: Incluido',
+    'Reporte comercial: Incluido', 'Documentos electrónicos anuales: Sin capacidad incluida; límite: 0',
+    'Usuarios máximos: Incluido; límite: 1']) assert.ok(displayed.includes(expected), expected);
+  assert.equal(displayed.includes('Reporte: Reporte comercial'), false);
+  assert.deepEqual(plain(h.helper.readCustomerContract(fixture({ offer }), id(1))).offer, offer);
+});
+
 test('receipt renders its accepted historical package and full offer while preserving the original evidence JSON', async () => {
   const savedPackage = { ...fixture().package, version: 'accepted-historical-version' };
   const savedOffer = { ...fixture().offer, planName: 'Plan aceptado anteriormente', taxBehavior: 'inclusive', implementationAmountMinor: 0,

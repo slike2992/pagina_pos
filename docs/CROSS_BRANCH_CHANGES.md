@@ -1,5 +1,22 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-26 — Oferta contractual clara antes de aceptar
+
+- CUA del cliente nuevo mostró un permiso de reporte como «Facturacion
+  electronica: Incluido» junto a la emisión no incluida, y una cuota electrónica
+  cero como incluida. La proyección identifica `reports.*.read` como reportes y
+  muestra las cuotas habilitadas de cero como «Sin capacidad incluida».
+- El importe se identifica como total del plan. Para `taxBehavior=unspecified`
+  se explica que no hay desglose ni recargo tributario en este checkout. Código
+  canónico confirma amountMinor=total, tax_minor=0 y rechazo de exclusive o
+  implementación distinta de cero. No se afirma IVA incluido, tarifa cero o
+  exención del proveedor. Inclusive/exclusive históricos conservan su descripción.
+- Sólo presentación y pruebas: no se modifica JSON, huella, aceptación, catálogo,
+  precio, permiso ni documento público. Se conserva el mismo render para la
+  constancia histórica y sus datos íntegros. Consumidores: acuerdo y recibo de
+  Mi cuenta; sin contrato HTTP ni SQL nuevos. QA web668, Astro check y build24
+  correctos; validación del resultado publicado en CUA pendiente de despliegue.
+
 ## 2026-11-26 — Abrir solicitudes y constancias desde su correo
 
 - CUA confirmó que el enlace recibido conservaba `case`, pero Mi cuenta sólo

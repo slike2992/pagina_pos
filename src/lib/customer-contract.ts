@@ -170,11 +170,11 @@ export function renderContractOffer(container: HTMLElement, offer: ContractOffer
   const amount = (value: number) => new Intl.NumberFormat("es-CO", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value / 100) + " COP";
   const rows = [
     ["Plan", offer.planName + " (" + offer.planCode + ")"],
-    ["Valor", amount(offer.amountMinor) + " / " + (offer.billingInterval === "annual" ? "año" : "mes")],
+    ["Valor total del plan", amount(offer.amountMinor) + " / " + (offer.billingInterval === "annual" ? "año" : "mes")],
     ["Renovación automática", "No. No se autorizan débitos automáticos."],
     ["Período", "Si pagas durante la prueba, se conserva el tiempo restante y después comienza el período pagado. Si la prueba terminó, el período pagado comienza en la fecha del pago."],
   ];
-  if (offer.taxBehavior !== undefined) rows.push(["Impuestos", ({ inclusive: "Incluidos en el valor", exclusive: "No incluidos en el valor", unspecified: "Sin especificar en la oferta" } as Record<string, string>)[offer.taxBehavior] ?? offer.taxBehavior]);
+  if (offer.taxBehavior !== undefined) rows.push(["Impuestos", ({ inclusive: "Incluidos en el valor", exclusive: "No incluidos en el valor", unspecified: "Sin desglose tributario. El checkout no añade recargos por impuestos al valor del plan mostrado." } as Record<string, string>)[offer.taxBehavior] ?? offer.taxBehavior]);
   if (offer.implementationAmountMinor !== undefined) rows.push(["Implementación", amount(offer.implementationAmountMinor)]);
   for (const [label, value] of rows) {
     const row = doc.createElement("div"), dt = doc.createElement("dt"), dd = doc.createElement("dd");
@@ -186,7 +186,10 @@ export function renderContractOffer(container: HTMLElement, offer: ContractOffer
     heading.textContent = "Funciones y límites de la oferta";
     for (const feature of offer.features) {
       const item = doc.createElement("li");
-      item.textContent = feature.display_name + ": " + (feature.enabled ? "Incluido" : "No incluido")
+      const label = /^reports\..+\.read$/.test(feature.code) && !/^reporte\b/i.test(feature.display_name)
+        ? "Reporte: " + feature.display_name : feature.display_name;
+      const availability = !feature.enabled ? "No incluido" : feature.limit_value === 0 ? "Sin capacidad incluida" : "Incluido";
+      item.textContent = label + ": " + availability
         + (feature.limit_value == null ? "" : "; límite: " + new Intl.NumberFormat("es-CO").format(feature.limit_value))
         + (feature.text_value == null || feature.text_value === "" ? "" : "; " + feature.text_value);
       list.appendChild(item);
