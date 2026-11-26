@@ -51,7 +51,7 @@ function browser(options = {}) {
     trial: { status: 'active', durationDays: 15, startsAt: '2026-11-20T00:00:00Z', endsAt: '2026-12-05T00:00:00Z', convertedAt: null, canConvert: true }, ...options.subscription };
   const sandbox = { URL, URLSearchParams, Date: options.now === undefined ? Date : class extends Date { constructor(...args) { super(...(args.length ? args : [options.now])); } static now() { return options.now; } }, Intl, Error, console, document,
     crypto: { randomUUID: () => `key-${++keys}` },
-    window: { location: { href: 'https://web.example.invalid/cuenta', origin: 'https://web.example.invalid', assign: value => navigations.push(value) }, print() { printed++; } },
+    window: { location: { href: 'https://web.example.invalid/cuenta/' + (options.query ?? ''), origin: 'https://web.example.invalid', assign: value => navigations.push(value) }, print() { printed++; } },
     sessionStorage: { setItem() { assert.fail('No contract credentials or PII in session storage'); }, getItem() { return null; } },
     localStorage: { setItem() { assert.fail('No contract data in local storage'); }, getItem() { assert.fail('No local storage'); } },
     Option: class { constructor(text, value) { this.text = text; this.value = value; } },
@@ -104,6 +104,62 @@ function browser(options = {}) {
 const contractCalls = (h, method) => h.calls.filter(call => new URL(call.url).pathname === '/v1/me/customer-contract' && (!method || call.method === method));
 const paymentCalls = h => h.calls.filter(call => new URL(call.url).pathname.endsWith('/trial-checkout'));
 const treeText = node => [node.textContent, ...node.children.map(treeText)].join('\n');
+
+const linkedReceipts = h => h.calls.filter(call => new URL(call.url).pathname.endsWith('/receipt'));
+test('contract email link reads its exact historical receipt after login without acceptance, checkout or SSO', async () => {
+  const h = browser({ account: true, query: `?contract=${id(3).toUpperCase()}`,
+    contract: () => reply(fixture({ accepted: true, contractId: id(9) })) });
+  assert.equal(linkedReceipts(h).length, 0); await h.login();
+  assert.equal(linkedReceipts(h).length, 1);
+  assert.ok(linkedReceipts(h)[0].url.endsWith('/' + id(3) + '/receipt'));
+  assert.equal(linkedReceipts(h)[0].headers.authorization, 'Bearer token-1');
+  assert.equal(h.get('[data-contract-dialog]').open, true);
+  assert.equal(h.get('[data-contract-evidence-section]').hidden, false);
+  assert.ok(h.get('[data-contract-acceptance]').textContent.includes(id(3)));
+  for (const name of h.helper.contractDeclarations) assert.equal(h.fields.get(name).checked, false);
+  await h.get('[data-contract-close]').dispatch('click');
+  await h.get('[data-contract-retry]').dispatch('click'); await flush();
+  assert.equal(linkedReceipts(h).length, 1); assert.equal(h.get('[data-contract-dialog]').open, false);
+  assert.deepEqual(h.calls.filter(call => call.method !== 'GET').map(call => new URL(call.url).pathname), ['/v1/auth/login']);
+  assert.equal(h.navigations.length, 0);
+});
+for (const query of ['?contract=bad', '?contract=', `?contract=${id(3)}&contract=${id(3)}`, `?contract=${id(3)}&case=${id(4)}`, '?contract=%2F..%2Fprivate']) {
+  test(`invalid or ambiguous contract link does not read evidence: ${query}`, async () => {
+    const h = browser({ account: true, query }); await h.login();
+    assert.equal(linkedReceipts(h).length, 0); assert.equal(h.get('[data-contract-dialog]').open, false);
+  });
+}
+test('member email link cannot read a representative-only contract receipt', async () => {
+  const h = browser({ account: true, role: 'member', query: `?contract=${id(3)}` }); await h.login();
+  assert.equal(linkedReceipts(h).length, 0); assert.equal(h.get('[data-contract-dialog]').open, false);
+});
+for (const mismatch of [{ tenantId: 'tenant-other' }, { contractId: id(9) }, { offer: { ...fixture().offer, subscriptionId: id(9) } }]) {
+  test(`contract link rejects evidence outside its requested scope: ${JSON.stringify(mismatch)}`, async () => {
+    const h = browser({ account: true, query: `?contract=${id(3)}`, receipt: () => reply(receiptFixture(mismatch)) }); await h.login();
+    assert.equal(h.get('[data-contract-evidence-section]').hidden, true);
+    assert.equal(h.get('[data-contract-evidence]').textContent, '');
+    assert.match(h.get('[data-contract-dialog-status]').textContent, /No pudimos verificar/);
+  });
+}
+test('contract link survives a wrong tenant and opens only after an explicit correct-tenant login', async () => {
+  let reads = 0;
+  const h = browser({ account: true, query: `?contract=${id(3)}`, receipt: () => ++reads === 1
+    ? reply({}, 404) : reply(receiptFixture({ tenantId: 'tenant-2' })) });
+  await h.login(); assert.equal(reads, 1); await flush(); assert.equal(reads, 1);
+  await h.click('logout'); await h.login();
+  assert.equal(reads, 2); assert.equal(linkedReceipts(h)[1].headers.authorization, 'Bearer token-2');
+  assert.equal(h.get('[data-contract-evidence-section]').hidden, false);
+});
+test('late linked receipt cannot display or consume the target after logout', async () => {
+  const waiting = Promise.withResolvers(); let reads = 0;
+  const h = browser({ account: true, query: `?contract=${id(3)}`, receipt: () => ++reads === 1
+    ? waiting.promise : reply(receiptFixture({ tenantId: 'tenant-2' })) });
+  await h.login(); await h.click('logout');
+  waiting.resolve(reply(receiptFixture())); await flush();
+  assert.equal(h.get('[data-contract-evidence]').textContent, '');
+  assert.equal(h.get('[data-contract-dialog]').open, false);
+  await h.login(); assert.equal(reads, 2); assert.equal(h.get('[data-contract-evidence-section]').hidden, false);
+});
 
 test('three complete API documents render safely, and all five declarations start unchecked', async () => {
   const h = browser(); await h.controller.refresh();

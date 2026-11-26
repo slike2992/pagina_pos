@@ -43,7 +43,7 @@ function browser(options = {}) {
     trial: { status: 'active', durationDays: 15, startsAt: '2026-11-20T00:00:00Z', endsAt: '2026-12-05T00:00:00Z', convertedAt: null, canConvert: true } };
   const sandbox = { URL, URLSearchParams, Date, Intl, Error, console, document,
     crypto: { randomUUID: () => id(100 + ++keys) },
-    window: { location: { href: 'https://web.example.invalid/cuenta', origin: 'https://web.example.invalid', assign: url => navigations.push(url) } },
+    window: { location: { href: 'https://web.example.invalid/cuenta/' + (options.query ?? ''), origin: 'https://web.example.invalid', assign: url => navigations.push(url) } },
     FormData: class { get(name) { return { email: 'qa@example.invalid', password: 'synthetic' }[name] ?? null; } },
     Option: class { constructor(text, value) { this.text = text; this.value = value; } },
     localStorage: { getItem() { assert.fail('No persistent support data'); }, setItem() { assert.fail('No PII storage'); } },
@@ -92,6 +92,62 @@ function browser(options = {}) {
 }
 const writes = h => h.calls.filter(call => call.method === 'POST' && call.url.endsWith('/legal-support/cases'));
 const text = node => [node.textContent, ...node.children.map(text)].join('\n');
+
+const linkedDetails = h => h.calls.filter(call => new URL(call.url).pathname.startsWith('/v1/me/legal-support/cases/'));
+test('case email link opens the scoped detail after login even outside the first page, only once', async () => {
+  const h = browser({ account: true, query: `?case=${id(3).toUpperCase()}` });
+  assert.equal(linkedDetails(h).length, 0);
+  await h.login();
+  assert.equal(linkedDetails(h).length, 1);
+  assert.ok(linkedDetails(h)[0].url.endsWith('/' + id(3)));
+  assert.equal(linkedDetails(h)[0].headers.authorization, 'Bearer token-1');
+  assert.equal(h.get('[data-support-detail]').hidden, false);
+  assert.ok(text(h.get('[data-support-detail-content]')).includes('Contenido privado'));
+  await h.get('[data-support-close]').dispatch('click');
+  await h.get('[data-support-refresh]').dispatch('click'); await flush();
+  assert.equal(linkedDetails(h).length, 1);
+  assert.equal(h.get('[data-support-detail]').hidden, true);
+  assert.deepEqual(h.calls.filter(call => call.method !== 'GET').map(call => new URL(call.url).pathname), ['/v1/auth/login']);
+  assert.equal(h.navigations.length, 0);
+});
+for (const query of ['?case=bad', '?case=', `?case=${id(3)}&case=${id(3)}`, `?case=${id(3)}&contract=${id(4)}`, '?case=%2F..%2Fprivate']) {
+  test(`invalid or ambiguous case link does not read a detail: ${query}`, async () => {
+    const h = browser({ account: true, query }); await h.login();
+    assert.equal(linkedDetails(h).length, 0);
+    assert.equal(h.get('[data-support-detail]').hidden, true);
+  });
+}
+for (const mismatch of [{ tenantId: id(10) }, { principalId: id(10) }, { caseId: id(10) }]) {
+  test(`case link rejects a successful response outside the requested scope: ${JSON.stringify(mismatch)}`, async () => {
+    const h = browser({ account: true, query: `?case=${id(3)}`, detail: () => reply(detail({ receipt: receipt(mismatch) })) });
+    await h.login();
+    assert.equal(h.get('[data-support-detail]').hidden, true);
+    assert.equal(text(h.get('[data-support-detail-content]')).includes('Contenido privado'), false);
+  });
+}
+test('unavailable case link is retried only by explicit refresh or login in the correct tenant', async () => {
+  let fail = true;
+  const h = browser({ account: true, query: `?case=${id(3)}`, detail: (_call, login) => fail
+    ? reply({ error: { code: 'legal_support_not_found' } }, 404)
+    : reply(detail({ receipt: receipt({ tenantId: login === 1 ? id(1) : id(10) }) })) });
+  await h.login(); assert.equal(linkedDetails(h).length, 1);
+  await flush(); assert.equal(linkedDetails(h).length, 1);
+  await h.click('logout'); fail = false; await h.login();
+  assert.equal(linkedDetails(h).length, 2);
+  assert.equal(linkedDetails(h)[1].headers.authorization, 'Bearer token-2');
+  assert.equal(h.get('[data-support-detail]').hidden, false);
+  assert.equal(h.calls.filter(call => new URL(call.url).pathname === '/v1/auth/login').length, 2);
+});
+test('late linked case response cannot display or consume the target in another authenticated tenant', async () => {
+  const waiting = Promise.withResolvers(); let reads = 0;
+  const h = browser({ account: true, query: `?case=${id(3)}`, detail: () => ++reads === 1 ? waiting.promise
+    : reply(detail({ receipt: receipt({ tenantId: id(10) }) })) });
+  await h.login(); await h.click('logout');
+  waiting.resolve(reply(detail())); await flush();
+  assert.equal(h.get('[data-support-detail]').hidden, true);
+  await h.login();
+  assert.equal(reads, 2); assert.equal(h.get('[data-support-detail]').hidden, false);
+});
 
 test('form exposes three kinds, content minimum/maximum, privacy warning, and both published fallback emails', () => {
   assert.equal(/innerHTML|insertAdjacentHTML|localStorage|sessionStorage|Date\.now|setInterval/.test(source), false);

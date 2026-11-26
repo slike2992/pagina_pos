@@ -237,8 +237,15 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     let catalogOwner: { token: string; tenantId: string; subscriptionId: string; currency: string; billingInterval: string; planCode: string } | null = null;
     let reviewedPlan: { target: string; subscription: Subscription; login: LoginResult; token: string; pendingId?: string } | null = null;
 
+    const legalLink = new URL(location.href).searchParams;
+    const linkedId = (name: "case" | "contract", other: "case" | "contract") => {
+      const values = legalLink.getAll(name);
+      return values.length === 1 && !legalLink.has(other)
+        && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(values[0]!) ? values[0]!.toLowerCase() : undefined;
+    };
     const customerContract = bindCustomerContract(root, {
       apiUrl,
+      requestedContractId: linkedId("contract", "case"),
       getContext: () => accessToken && accountLogin && currentSubscription && !subscriptionRefreshing
         && ["owner", "admin", "billing", "member"].includes(accountLogin.tenant.role)
         ? { accessToken, tenantId: accountLogin.tenant.tenantId, subscriptionId: currentSubscription.subscriptionId,
@@ -250,6 +257,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     });
     const customerSupport = bindCustomerSupport(root, {
       apiUrl,
+      requestedCaseId: linkedId("case", "contract"),
       getContext: () => accessToken && accountLogin?.principal.principalId && currentSubscription && !subscriptionRefreshing
         ? { accessToken, tenantId: accountLogin.tenant.tenantId, principalId: accountLogin.principal.principalId,
           session: currentSubscription }

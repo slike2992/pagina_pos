@@ -1,5 +1,21 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-26 — Abrir solicitudes y constancias desde su correo
+
+- CUA confirmó que el enlace recibido conservaba `case`, pero Mi cuenta sólo
+  mostraba la lista. Ahora un único UUID `case` o `contract` solicita su detalle
+  después de autenticarse y seleccionar la empresa. Un caso fuera de la primera
+  página se consulta por su ruta privada, sin búsqueda global de empresas.
+- No acepta parámetros duplicados, ambiguos o rutas. Conserva comprobaciones
+  de caso/constancia, tenant, principal, rol y generación de sesión; una respuesta
+  tardía no cambia de propietario. No acepta contratos ni genera pagos, SSO,
+  solicitudes o datos persistentes por abrir un enlace. Los errores se reintentan
+  sólo por acción explícita y un enlace usado no reabre el diálogo al actualizar.
+- Sin contrato HTTP, SQL, permiso o documento público nuevo. Compatible con
+  las rutas privadas existentes de API/Control.664 pruebas web completas,
+  185 enfocadas sobre el diff final, Astro check limpio y build24 páginas.
+  Despliegue y nueva validación CUA se acreditan por separado.
+
 ## 2026-11-25 — Mensajes públicos de red y eventos de soporte040
 
 - Login, contrato/constancia, checkout de prueba y soporte muestran mensajes

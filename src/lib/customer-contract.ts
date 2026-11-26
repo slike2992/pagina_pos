@@ -208,6 +208,7 @@ export function readContractReceipt(value: unknown, context: Pick<ContractContex
 
 export function bindCustomerContract(root: HTMLElement, options: {
   apiUrl: string; getContext: () => ContractContext | null;
+  requestedContractId?: string;
   onUnauthorized: () => void; onContinue: () => Promise<void>; onOperate?: () => Promise<void>;
 }) {
   const section = root.querySelector<HTMLElement>("[data-customer-contract]")!;
@@ -220,6 +221,7 @@ export function bindCustomerContract(root: HTMLElement, options: {
   const retry = get<HTMLButtonElement>("[data-contract-retry]");
   let generation = 0, state: CustomerContract | null = null, owner: ContractContext | null = null;
   let pending: Promise<CustomerContract | null> | null = null, busy = false;
+  let requestedContractId = uuid(options.requestedContractId) ? options.requestedContractId.toLowerCase() : null;
   let intent: "payment" | "pos" | null = null;
   let attempt: { body: string; key: string } | null = null;
   const current = (context: ContractContext, version = generation) => {
@@ -326,7 +328,13 @@ export function bindCustomerContract(root: HTMLElement, options: {
     pending = task;
     return task;
   };
-  const refresh = () => { reset(); return load(); };
+  const refresh = async () => {
+    reset(); const context = options.getContext(), version = generation;
+    const loaded = await load();
+    if (loaded && context && current(context, version) && requestedContractId
+      && await openReceipt(requestedContractId) && current(context, version)) requestedContractId = null;
+    return loaded;
+  };
   const canContinue = () => Boolean(owner && current(owner) && options.getContext()?.canContract && state && (!state.required || state.accepted));
   const canOperate = () => Boolean(owner && current(owner) && state?.operationalAccess
     && (!state.operationalAccess.required || state.operationalAccess.accepted));
@@ -403,16 +411,15 @@ export function bindCustomerContract(root: HTMLElement, options: {
       if (current(context, version)) { busy = false; accept.disabled = !state || state.accepted; retry.disabled = false; }
     }
   });
-  receipt.addEventListener("click", async () => {
-    const contractId = state?.operationalAccess?.accepted ? state.operationalAccess.contractId : state?.accepted ? state.contractId : null;
-    if (busy || pending || !state?.canAccept || !options.getContext()?.canContract || !contractId || !owner || !current(owner)) return;
+  const openReceipt = async (contractId: string) => {
+    if (busy || pending || !state?.canAccept || !options.getContext()?.canContract || !uuid(contractId) || !owner || !current(owner)) return false;
     const context = owner, version = generation;
     busy = true; receipt.disabled = true; clearEvidence(); form.hidden = true;
     dialogStatus.textContent = "Consultando constancia privada…";
     if (!dialog.open) dialog.showModal();
     try {
       const body = await request(context, version, `/${encodeURIComponent(contractId)}/receipt`);
-      if (body === null || !current(context, version)) return;
+      if (body === null || !current(context, version)) return false;
       const saved = readContractReceipt(body, context, contractId);
       renderContractDocuments(get("[data-contract-documents]"), saved.package);
       renderContractOffer(get("[data-contract-offer]"), saved.offer);
@@ -421,11 +428,17 @@ export function bindCustomerContract(root: HTMLElement, options: {
       get("[data-contract-evidence]").textContent = JSON.stringify(body, null, 2);
       get("[data-contract-evidence-section]").hidden = false;
       dialogStatus.textContent = "";
+      return true;
     } catch (error) {
       if (current(context, version)) dialogStatus.textContent = contractMessage(error, "No pudimos consultar la constancia. Revisa tu conexión y vuelve a intentarlo desde Mi cuenta.");
     } finally {
       if (current(context, version)) { busy = false; receipt.disabled = false; }
     }
+    return false;
+  };
+  receipt.addEventListener("click", async () => {
+    const contractId = state?.operationalAccess?.accepted ? state.operationalAccess.contractId : state?.accepted ? state.contractId : null;
+    if (contractId) await openReceipt(contractId);
   });
   retry.addEventListener("click", () => { if (!busy && !pending) void refresh(); });
   input("kind").addEventListener("change", kindChanged);

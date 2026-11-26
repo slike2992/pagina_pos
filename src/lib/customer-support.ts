@@ -140,7 +140,7 @@ function errorMessage(code: unknown) {
 }
 
 export function bindCustomerSupport(root: HTMLElement, options: {
-  apiUrl: string; getContext: () => SupportContext | null; onUnauthorized: () => void;
+  apiUrl: string; getContext: () => SupportContext | null; onUnauthorized: () => void; requestedCaseId?: string;
 }) {
   const section = root.querySelector<HTMLElement>("[data-customer-support]")!;
   const get = <T extends HTMLElement = HTMLElement>(selector: string) => section.querySelector<T>(selector)!;
@@ -159,6 +159,7 @@ export function bindCustomerSupport(root: HTMLElement, options: {
   let selected: SupportDetail | null = null, selectedOwner: SupportContext | null = null, detailConfirmed = false;
   let generation = 0, detailGeneration = 0, busy = false, ready = false, nextBefore: string | null = null;
   let summaries: SupportSummary[] = [], attempt: { body: string; key: string } | null = null;
+  let requestedCaseId = uuid(options.requestedCaseId) ? options.requestedCaseId.toLowerCase() : null;
   const current = (context: SupportContext, version: number) => {
     const now = options.getContext();
     return version === generation && now?.accessToken === context.accessToken && now.tenantId === context.tenantId
@@ -261,15 +262,16 @@ export function bindCustomerSupport(root: HTMLElement, options: {
     summaries = summaries.map(value => value.receipt.caseId === caseId ? next : value); renderList();
     return true;
   };
-  const openDetail = async (caseId: string) => {
+  const openDetail = async (caseId: string, fromLink = false) => {
     const context = options.getContext();
-    if (busy || !context || !summaries.some(item => item.receipt.caseId === caseId)) return;
+    if (busy || !context || !uuid(caseId) || (!fromLink && !summaries.some(item => item.receipt.caseId === caseId))) return false;
     closeDetail(); const detailVersion = detailGeneration, version = generation;
     setBusy(true); message("Consultando tu solicitud…");
-    try { if (await readSelected(context, version, caseId, detailVersion)) message(""); }
+    try { if (await readSelected(context, version, caseId, detailVersion)) { message(""); return true; } }
     catch (error) {
       if (current(context, version) && detailVersion === detailGeneration) message(supportMessage(error, "No pudimos consultar esta solicitud. Revisa tu conexión o utiliza los correos de contacto."), true);
     } finally { if (current(context, version)) setBusy(false); }
+    return false;
   };
   const renderList = () => {
     const doc = list.ownerDocument;
@@ -299,7 +301,12 @@ export function bindCustomerSupport(root: HTMLElement, options: {
     catch (error) { if (current(context, version)) message(supportMessage(error, "No pudimos consultar tus solicitudes. Revisa tu conexión o utiliza los correos de contacto."), true); }
     finally { if (current(context, version)) setBusy(false); }
   };
-  const refresh = () => { reset(); return load(); };
+  const refresh = async () => {
+    reset(); const context = options.getContext(), version = generation;
+    await load();
+    if (context && current(context, version) && ready && requestedCaseId
+      && await openDetail(requestedCaseId, true) && current(context, version)) requestedCaseId = null;
+  };
   form.addEventListener("submit", async event => {
     event.preventDefault(); const context = options.getContext();
     if (busy || !context || section.hidden || !ready || !form.reportValidity()) return;
