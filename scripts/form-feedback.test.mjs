@@ -11,6 +11,7 @@ const compile = source => ts.transpileModule(source, {
 }).outputText;
 const helperCode = compile(helperSource);
 const verificationCode = compile(await readFile(new URL('../src/lib/signup-verification.ts', import.meta.url), 'utf8'));
+const phoneCode = compile(await readFile(new URL('../src/lib/signup-phone.ts', import.meta.url), 'utf8'));
 
 // Only deterministic DOM/transport boundaries: no server or real signup request.
 function browser(specs = []) {
@@ -256,7 +257,7 @@ async function signup({ ready = true, initialStorage = [], blockedStorage = fals
     { id: 'contactName', name: 'contactName', required: true, minLength: 2, maxLength: 180, value: ' Ana ' },
     { id: 'email', name: 'email', type: 'email', required: true, maxLength: 320, value: 'ana@example.invalid' },
     { id: 'companyName', name: 'companyName', required: true, minLength: 2, maxLength: 200, value: ' Tienda ' },
-    { id: 'phone', name: 'phone', type: 'tel', minLength: 5, maxLength: 40, value: '' },
+    { id: 'phone', name: 'phone', type: 'tel', required: true, minLength: 8, maxLength: 40, value: '+57 321 555 0123' },
     { id: 'priceCode', name: 'priceCode', tag: 'select', required: true, value: 'professional' },
     { id: 'legal', type: 'checkbox', required: true, checked: false, disabled: true, wrapLabel: true },
   ]);
@@ -300,6 +301,7 @@ async function signup({ ready = true, initialStorage = [], blockedStorage = fals
   const script = registration.match(/<script>\s*([\s\S]*?)<\/script>/)[1]
     .replace(/^\s*import[^;]+;/gm, '').replaceAll('import.meta.env.DEV', String(dev));
   vm.runInContext(verificationCode, page.context);
+  vm.runInContext(phoneCode, page.context);
   Object.assign(page.context, page.context.exports);
   vm.runInContext(compile(script), page.context);
   await new Promise(resolve => setImmediate(resolve));
@@ -313,7 +315,7 @@ async function signup({ ready = true, initialStorage = [], blockedStorage = fals
 test('registration fallback retains constraints and required labels, without static novalidate', () => {
   const markup = registration.split('<script>')[0];
   assert.doesNotMatch(markup, /novalidate/i);
-  for (const id of ['contactName', 'email', 'companyName', 'priceCode']) {
+  for (const id of ['contactName', 'email', 'companyName', 'phone', 'priceCode']) {
     assert.match(markup, new RegExp('<label for="' + id + '">[^<]+\\(obligatorio\\)</label>'));
   }
   assert.match(markup, /id="legal"[^>]*required disabled/);
@@ -366,6 +368,7 @@ test('valid local transport stub preserves raw payload, versions, acceptedAt, an
   assert.equal(first.url, 'https://api.example.invalid/v1/signup-intents');
   assert.deepEqual(payload, {
     contactName: ' Ana ', email: 'ana@example.invalid', companyName: ' Tienda ', priceCode: 'professional',
+    phone: '+573215550123',
     legalAcceptance: { termsVersion: '2026-09-01', privacyVersion: '2026-09-01',
       acceptedAt: payload.legalAcceptance.acceptedAt },
   });
@@ -477,6 +480,7 @@ test('creation retry preserves its key and legal acceptance after a lost respons
 test('stale legal acceptance clears a restored attempt, refreshes uncached documents, and requires manual acceptance', async () => {
   const original = {
     contactName: ' Ana ', email: 'ana@example.invalid', companyName: ' Tienda ', priceCode: 'professional',
+    phone: '+573215550123',
     legalAcceptance: { termsVersion: '2026-09-01', privacyVersion: '2026-09-01' },
   };
   const oldKey = 'restored-key-before-stale', oldTime = '2029-12-31T23:00:00.000Z';
@@ -667,6 +671,7 @@ function passwordSetup(transport) {
   const calls = [];
   Object.assign(page.context, {
     URLSearchParams, location: { search: '?token=fixture-setup-token' },
+    require: name => name.includes('owner-onboarding') ? { showOwnerOnboarding() { throw new Error('No onboarding root in this legacy password fixture'); } } : assert.fail('Unexpected import'),
     FormData: class { constructor(form) { this.form = form; } get(name) { return this.form.elements.find(field => field.name === name)?.value ?? null; } },
     fetch: async (url, options) => { calls.push({ url, options }); return transport(); },
   });

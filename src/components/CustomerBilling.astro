@@ -1,0 +1,18 @@
+<section data-customer-billing hidden aria-labelledby="customer-billing-heading">
+  <h3 id="customer-billing-heading">Pagos y notificaciones</h3>
+  <p data-billing-status role="status" aria-live="polite"></p>
+  <button type="button" class="button secondary" data-billing-refresh>Actualizar pagos</button>
+  <div data-billing-receipts></div>
+  <button type="button" class="button secondary" data-billing-more hidden>Ver pagos anteriores</button>
+  <details>
+    <summary>Preferencias de recordatorios de pago</summary>
+    <form class="flow-form" data-billing-preferences>
+      <div class="field full"><label class="legal-check"><input name="emailEnabled" type="checkbox" /> Recibir recordatorios por correo</label></div>
+      <div class="field full"><label class="legal-check"><input name="whatsappConsent" type="checkbox" /> Autorizo recordatorios de pago por WhatsApp</label></div>
+      <div class="field"><label for="billing-whatsapp-number">Número de WhatsApp con indicativo</label><input id="billing-whatsapp-number" name="whatsappNumber" type="tel" autocomplete="tel" placeholder="+573001234567" maxlength="16" /></div>
+      <div class="field"><label for="billing-channel">Canal preferido para recordatorios</label><select id="billing-channel" name="preferredChannel"><option value="email">Correo</option><option value="whatsapp">WhatsApp</option></select></div>
+      <p class="field full">Los soportes de pagos aprobados y los mensajes de seguridad se envían por correo. Autorizar WhatsApp no activa cobros ni renovación automática. Su disponibilidad depende de la conexión del canal.</p>
+      <button type="submit" class="button secondary">Guardar preferencias</button>
+    </form>
+  </details>
+</section>

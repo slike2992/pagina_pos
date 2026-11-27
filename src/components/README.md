@@ -1,5 +1,10 @@
 # Componentes compartidos
 
+`CustomerBilling.astro` contiene soportes de pago y preferencias dentro de
+Mi cuenta. Usa clases de FlowLayout; el controlador se enlaza desde cuenta para
+mantener una única autoridad de sesión. Un histórico sin evidencia no habilita
+PDF; las descargas usan fetch autenticado y URL de blob temporal.
+
 `Brand.astro` mantiene el sistema de marca aprobado y sus proporciones. No se
 redibuja la marca desde las páginas ni se sustituye trabajo de otros worktrees.
 

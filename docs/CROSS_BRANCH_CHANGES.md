@@ -1,5 +1,28 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-27 — Alta secuencial y comunicaciones de cobro
+
+- Registro exige teléfono E.164 válido para altas nuevas, sin consentimiento
+  WhatsApp implícito. API conserva replay histórico. Después de verificar, la
+  pantalla sigue la preparación real del POS y distingue clave inicial y acceso
+  ya existente; no dispara restablecimientos por crear otra empresa.
+- Reenvío de clave inicial por `/v1/owner-onboarding/resend-password-setup`,
+  prueba opaca e idempotencia, con cooldown60s del servidor. Sin token en logs ni
+  datos de otras empresas. Mensajes y botones reflejan el paso vigente.
+- Mi cuenta muestra pagos aprobados, soporte PDF autenticado e imprimible y
+  limitación de históricos sin evidencia. Paginación privada y detalle desde
+  enlace de correo. El tenant de URL es sólo pista, validada por membresía en
+  API. Bearer sólo en cabecera; nunca en enlace o almacenamiento persistente.
+- Preferencias versionadas de recordatorios de pago y autorización WhatsApp
+  separada. No afectan correo de seguridad ni soporte aprobado. Respuestas
+  tardías no alteran otra sesión. Controles reutilizan estilos de FlowLayout.
+- Renovación manual anticipada consulta la oferta de API y conserva los
+  bloqueos de pago pendiente/ambiguo y las fechas ya cubiertas. Abrir un enlace
+  no cobra. Requiere publicación coordinada de API/worker/Control041/edge.
+- Validación de código: web714/714, helper de billing y Astro sin incidencias;
+  build correcto. SQL/proveedores/Gmail/Codex y despliegue se documentan después
+  del recorrido en staging; esta entrada no los acredita todavía.
+
 ## 2026-11-26 — Oferta contractual clara antes de aceptar
 
 - CUA del cliente nuevo mostró un permiso de reporte como «Facturacion

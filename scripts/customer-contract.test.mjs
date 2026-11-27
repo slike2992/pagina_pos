@@ -73,6 +73,7 @@ function browser(options = {}) {
   sandbox.location = sandbox.window.location;
   const vmContext = vm.createContext(sandbox), cache = new Map();
   const load = name => {
+    if (name.endsWith('customer-billing')) return { bindCustomerBilling: () => ({ reset() {}, refresh() {} }) };
     if (name.endsWith('customer-support')) return { bindCustomerSupport: () => ({ reset() {}, refresh() {} }) };
     if (name.endsWith('client-idempotency')) return { createIdempotencyKey: () => `key-${++keys}` };
     const key = name.split('/').at(-1);

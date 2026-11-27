@@ -2,6 +2,7 @@
 import FlowLayout from "../layouts/FlowLayout.astro";
 import CustomerContract from "../components/CustomerContract.astro";
 import CustomerSupport from "../components/CustomerSupport.astro";
+import CustomerBilling from "../components/CustomerBilling.astro";
 const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
 const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
 ---
@@ -39,6 +40,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       </section>
       <CustomerContract />
       <CustomerSupport />
+      <CustomerBilling />
       <section class="recovery-management" data-section="fiscal-onboarding" hidden aria-labelledby="fiscal-onboarding-heading">
         <h3 id="fiscal-onboarding-heading">Facturación electrónica</h3>
         <p data-field="fiscal-plan-guidance"></p>
@@ -148,6 +150,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
   <script>
     import { bindCustomerSupport } from "../lib/customer-support";
     import { bindCustomerContract } from "../lib/customer-contract";
+    import { bindCustomerBilling } from "../lib/customer-billing";
     import { createIdempotencyKey } from "../scripts/client-idempotency";
     import { prepareWompiSession } from "../lib/wompi-client";
     import { readSubscriptionTrial, readTrialCheckout, type SubscriptionTrial } from "../lib/subscription-trial";
@@ -158,7 +161,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     type Tenant = { tenantId: string; tenantKey: string; name: string; status: string; role: string };
     import { beginPortalReturn, readPortalReturn, validatePortalLogin } from "../lib/portal-return";
     type LoginResult = { accessToken: string; expiresAt: string; principal: { principalId: string; displayName: string }; tenant: Tenant };
-    type Subscription = { subscriptionId: string; status: string; plan: { code: string; name: string }; price: { amountMinor: number; currency: string; billingInterval: string }; currentPeriodStart: string | null; currentPeriodEnd: string | null; cancelAtPeriodEnd: boolean; renewalIssue?: RenewalIssue | null; pendingChange?: unknown; trial?: SubscriptionTrial | null };
+    type Subscription = { subscriptionId: string; status: string; plan: { code: string; name: string }; price: { amountMinor: number; currency: string; billingInterval: string }; currentPeriodStart: string | null; currentPeriodEnd: string | null; cancelAtPeriodEnd: boolean; autoRenew?: boolean; renewalIssue?: RenewalIssue | null; pendingChange?: unknown; trial?: SubscriptionTrial | null };
     type PaymentSourceConfig = { publicKey: string; widgetScriptUrl: string; fraudScriptUrl: string; acceptance: { token: string; permalink: string }; personalDataAuthorization: { token: string; permalink: string } };
     type PaymentSource = { type: "card" | "nequi"; displayHint: string | null; recurringConsentAt: string };
     type TokenizedSource = { token: string; type: "CARD" | "NEQUI" };
@@ -255,6 +258,16 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       onContinue: () => startTrialCheckout(true),
       onOperate: () => openPos(null, posSetupIntent, true),
     });
+    const customerBilling = bindCustomerBilling(root, {
+      apiUrl,
+      requestedPaymentId: legalLink.getAll("paymentReceipt").length === 1
+        && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(legalLink.get("paymentReceipt") ?? "")
+        ? legalLink.get("paymentReceipt")! : undefined,
+      getContext: () => accessToken && accountLogin && currentSubscription && !subscriptionRefreshing
+        && ["owner", "admin", "billing"].includes(accountLogin.tenant.role)
+        ? { accessToken, tenantId: accountLogin.tenant.tenantId, session: currentSubscription } : null,
+      onUnauthorized: () => resetAccount("La sesión no es válida o expiró. Vuelve a iniciar sesión."),
+    });
     const customerSupport = bindCustomerSupport(root, {
       apiUrl,
       requestedCaseId: linkedId("case", "contract"),
@@ -307,7 +320,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     const canQueryRecovery = () => Boolean(accessToken && accountLogin && currentSubscription && !hasOpenTrial()
       && ["owner", "admin", "billing"].includes(accountLogin.tenant.role) && !renewalScheduled()
       && ["active", "past_due", "grace", "restricted", "suspended"].includes(currentSubscription.status)
-      && (currentSubscription.status !== "active" || currentSubscription.renewalIssue || currentSubscription.autoRenew === false));
+      && (currentSubscription.status !== "active" || periodState() === "expired" || currentSubscription.renewalIssue || currentSubscription.autoRenew === false));
     const canManageRenewal = () => Boolean(accessToken && accountLogin && currentSubscription
       && !hasOpenTrial()
       && ["owner", "admin", "billing"].includes(accountLogin.tenant.role)
@@ -444,6 +457,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       void refreshPlanCatalog();
       void customerContract.refresh();
       void customerSupport.refresh();
+      void customerBilling.refresh();
     };
 
     const refreshPlanCatalog = async () => {
@@ -519,7 +533,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       recoveryRefresh.disabled = true;
       recoveryRefresh.setAttribute("aria-busy", "true");
       if (refreshSubscription) {
-        customerContract.reset(); customerSupport.reset();
+        customerContract.reset(); customerSupport.reset(); customerBilling.reset();
         subscriptionRefreshing = true;
         // An overlay without a cancellation callback is reopenable. Refresh
         // supersedes that idle attempt so its later token cannot submit.
@@ -572,7 +586,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         }
         recoveryOffer = offer;
         if (offer.status === "blocked") {
-          if (offer.blockReason === "not_due") { recoverySection.hidden = true; return; }
+          if (offer.blockReason === "not_due" && !currentSubscription!.renewalIssue && periodState() !== "expired") { recoverySection.hidden = true; return; }
           recoverySection.hidden = false;
           const reasons: Record<string, string> = {
             not_due: "La recuperación de este período aún no está habilitada por el servidor. Actualiza la suscripción o contacta a soporte.",
@@ -620,7 +634,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         if (isCurrent()) {
           recoveryBusy = false;
           subscriptionRefreshing = false;
-          if (refreshSubscription) { void customerContract.refresh(); void customerSupport.refresh(); }
+          if (refreshSubscription) { void customerContract.refresh(); void customerSupport.refresh(); void customerBilling.refresh(); }
           if (refreshSubscription) sourceControls.forEach((control, index) => { control.disabled = sourceDisabled[index]; });
           renderAccountActions();
           recoveryRefresh.setAttribute("aria-busy", "false");
@@ -747,7 +761,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
 
     loginForm.addEventListener("submit", async (event) => {
       event.preventDefault();
-      customerContract.reset(); customerSupport.reset();
+      customerContract.reset(); customerSupport.reset(); customerBilling.reset();
       const generation = ++loginGeneration;
       const isCurrent = () => generation === loginGeneration;
       const button = loginForm.querySelector<HTMLButtonElement>("button[type='submit']")!;
@@ -760,6 +774,11 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         const payload: Record<string, string> = { email: String(data.get("email") ?? ""), password: String(data.get("password") ?? "") };
         const tenantId = String(data.get("tenantId") ?? "");
         if (!tenantField.hidden && tenantId) payload.tenantId = tenantId;
+        else if (legalLink.getAll("tenantId").length === 1
+          && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(legalLink.get("tenantId") ?? "")) {
+          // A routing hint only: the API still verifies this identity's membership.
+          payload.tenantId = legalLink.get("tenantId")!;
+        }
         const response = await requestResult(() => fetch(`${apiUrl}/v1/auth/login`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) }), unconfirmed);
         if (!isCurrent()) return;
         const body = await requestResult(() => response.json(), unconfirmed);
@@ -1172,7 +1191,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     };
     trialContract.addEventListener("click", () => startTrialCheckout());
     const resetAccount = (message = "") => {
-      customerContract.reset(); customerSupport.reset();
+      customerContract.reset(); customerSupport.reset(); customerBilling.reset();
       loginGeneration++;
       catalogGeneration++;
       catalogBusy = false; planCatalog = null; catalogOwner = null; reviewedPlan = null;
@@ -1241,7 +1260,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     const resumePortalSession = async () => {
       const url = new URL(location.href);
       if (!url.searchParams.has("from") && !new URLSearchParams(url.hash.slice(1)).has("portal-ticket")) return;
-      customerContract.reset(); customerSupport.reset();
+      customerContract.reset(); customerSupport.reset(); customerBilling.reset();
       const generation = ++loginGeneration;
       const isCurrent = () => generation === loginGeneration;
       loginForm.hidden = true;

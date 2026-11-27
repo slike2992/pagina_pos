@@ -1,5 +1,11 @@
 # Helpers de la web
 
+`owner-onboarding.ts` sigue provisión y reenvío inicial con prueba acotada y
+reloj servidor. `signup-phone.ts` normaliza teléfono nuevo sin dar consentimiento.
+`customer-billing.ts` consulta sólo la sesión/empresa vigente: pagos aprobados,
+PDF privado y preferencias versionadas. Limpia el estado al cambiar de identidad
+y descarta respuestas tardías. No inicia cobros al abrir enlaces.
+
 `seo.ts` contiene el origen y allowlist pública; no deriva canonical de una URL
 privada. `analytics.ts` define consentimiento y eventos comerciales categóricos.
 

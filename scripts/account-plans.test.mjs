@@ -136,6 +136,7 @@ function browser(options = {}) {
   const recovery = run(recoveryCode, name => name === './checkout-return' ? checkoutReturn : assert.fail(name));
   run(accountCode, name => {
     if (name === '../lib/customer-support') return { bindCustomerSupport: () => ({ reset() {}, refresh() {} }) };
+    if (name === '../lib/customer-billing') return { bindCustomerBilling: () => ({ reset() {}, refresh() {} }) };
     if (name === '../lib/customer-contract') return { bindCustomerContract: () => ({ reset() {}, refresh() {}, beforeCheckout: async () => true, canContinue: () => true, beforeOperation: async () => true, canOperate: () => true }) };
     if (name === '../lib/account-plans') return run(plansCode);
     if (name === '../lib/subscription-upgrade') return run(upgradeCode);

@@ -7,7 +7,7 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
     <div class="field"><label for="contactName">Nombre completo (obligatorio)</label><input id="contactName" name="contactName" autocomplete="name" minlength="2" maxlength="180" required /></div>
     <div class="field"><label for="email">Correo (obligatorio)</label><input id="email" name="email" type="email" autocomplete="email" maxlength="320" required /></div>
     <div class="field"><label for="companyName">Empresa (obligatorio)</label><input id="companyName" name="companyName" autocomplete="organization" minlength="2" maxlength="200" required /></div>
-    <div class="field"><label for="phone">Teléfono (opcional)</label><input id="phone" name="phone" type="tel" autocomplete="tel" minlength="5" maxlength="40" /></div>
+    <div class="field"><label for="phone">Teléfono (obligatorio)</label><input id="phone" name="phone" type="tel" autocomplete="tel" minlength="8" maxlength="40" required aria-describedby="phone-help" /><p id="phone-help" class="status">Incluye el indicativo de país; en Colombia, +57 y diez dígitos. Dar tu teléfono no autoriza mensajes por WhatsApp.</p></div>
     <div class="field full"><label for="priceCode">Plan (obligatorio)</label><select id="priceCode" name="priceCode" required><optgroup label="Sin facturación electrónica"><option value="basic">Básico · $49.900/mes</option><option value="professional">Profesional · $79.900/mes</option><option value="enterprise">Empresarial · $129.900/mes</option></optgroup><optgroup label="Con facturación electrónica"><option value="basic-fe">Básico FE · $69.900/mes</option><option value="professional-fe">Profesional FE · $99.900/mes</option><option value="enterprise-fe">Empresarial FE · $159.900/mes</option></optgroup></select></div>
     <p>Puedes contratar el plan en cualquier momento, también durante la prueba, y conservar el tiempo gratis restante. La disponibilidad electrónica requiere configurar el emisor y el ambiente fiscal.</p>
     <label class="legal-check"><input id="legal" type="checkbox" required disabled /><span>Acepto los <a id="terms-link" href="/legal/terminos" target="_blank" rel="noopener">términos</a> y la <a id="privacy-link" href="/legal/privacidad" target="_blank" rel="noopener">política de privacidad</a> vigentes. (obligatorio)</span></label>
@@ -17,6 +17,7 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
   <script>
     import { bindFormFeedback } from "../../lib/form-feedback";
     import { createIdempotencyKey } from "../../scripts/client-idempotency";
+    import { normalizeSignupPhone } from "../../lib/signup-phone";
 
     import { readPendingSignup, createdPendingSignup, savePendingSignup, showVerificationInbox } from "../../lib/signup-verification";
 
@@ -97,15 +98,33 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
         event.preventDefault();
         if (!feedback?.validate() || documents.length < 2 || !legal || legal.disabled || !legal.checked || submit?.disabled) return;
         const data = new FormData(form);
+        const phone = normalizeSignupPhone(String(data.get("phone") ?? ""));
+        if (!phone) {
+          setStatus("Ingresa un teléfono válido con indicativo de país; en Colombia, +57 y diez dígitos.", "error");
+          form.querySelector<HTMLInputElement>("#phone")?.focus();
+          return;
+        }
         const terms = documents.find((item) => item.type === "terms")!;
         const privacy = documents.find((item) => item.type === "privacy")!;
         const draft = {
           contactName: String(data.get("contactName") ?? ""), email: String(data.get("email") ?? ""),
-          companyName: String(data.get("companyName") ?? ""), phone: String(data.get("phone") ?? "") || undefined,
+          companyName: String(data.get("companyName") ?? ""), phone,
           priceCode: String(data.get("priceCode") ?? "professional")
         };
         const legalAcceptance = { termsVersion: terms.version, privacyVersion: privacy.version };
-        const fingerprint = JSON.stringify({ ...draft, legalAcceptance });
+        let fingerprint = JSON.stringify({ ...draft, legalAcceptance });
+        // An in-flight pre-upgrade request may contain a formatted phone. Keep
+        // its original bytes/key when only formatting or property order differs.
+        if (attempt) try {
+          const previous = JSON.parse(attempt.fingerprint);
+          if (typeof previous.phone === "string" && normalizeSignupPhone(previous.phone) === phone
+            && ["contactName", "email", "companyName", "priceCode"].every((field) => previous[field] === draft[field as keyof typeof draft])
+            && previous.legalAcceptance?.termsVersion === legalAcceptance.termsVersion
+            && previous.legalAcceptance?.privacyVersion === legalAcceptance.privacyVersion) {
+            draft.phone = previous.phone;
+            fingerprint = attempt.fingerprint;
+          }
+        } catch { /* An invalid stored draft cannot authorize a replay. */ }
         if (!attempt || attempt.fingerprint !== fingerprint) {
           attempt = { fingerprint, key: createIdempotencyKey(), acceptedAt: new Date().toISOString() };
           try {

@@ -172,7 +172,7 @@ async function account(options = {}) {
     "[data-acceptance='recurring']", "button[type='submit']", "[data-action='logout']", '#email',
     ...['tenant-name', 'principal-name', 'tenant-status', 'plan', 'price', 'subscription-status', 'period-end',
       'cancel-date', 'payment-source-current', 'wompi-terms', 'wompi-personal-data', 'recurring-consent',
-      'target-plan-name', 'plan-change-copy', 'recovery-amount', 'recovery-period', 'recovery-guidance', 'access-guidance',
+      'target-plan-name', 'plan-change-copy', 'recovery-heading', 'recovery-intro', 'recovery-amount', 'recovery-period', 'recovery-guidance', 'access-guidance',
       'renewal-issue-amount', 'renewal-issue-period', 'renewal-issue-reference', 'renewal-issue-recorded'].map(name => `[data-field='${name}']`)];
   for (const selector of selectors) h.elements.set(selector, h.element());
   const get = selector => h.elements.get(selector);
@@ -257,6 +257,7 @@ async function account(options = {}) {
     if (name === '../scripts/client-idempotency') return idempotency;
     if (name === '../lib/wompi-client') return { prepareWompiSession: h.prepareWompiSession };
     if (name === '../lib/subscription-recovery') return recovery;
+    if (name.endsWith('customer-billing')) return { bindCustomerBilling: () => ({ reset() {}, refresh() {} }) };
     if (name === '../lib/customer-support') return { bindCustomerSupport: () => ({ reset() {}, refresh() {} }) };
     if (name === '../lib/customer-contract') return { bindCustomerContract: () => ({ reset() {}, refresh() {}, beforeCheckout: async () => true, canContinue: () => true, beforeOperation: async () => true, canOperate: () => true }) };
     if (name === '../lib/account-plans') return h.module(plansCode);

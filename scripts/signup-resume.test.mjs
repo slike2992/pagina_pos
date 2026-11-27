@@ -25,7 +25,7 @@ const response = { checkoutSessionId: id, checkoutUrl: checkout.href,
   expiresAt: '2030-01-01T00:30:00Z', provider: 'wompi' };
 
 async function run(responses, { initialStorage = [], blockedStorage = false } = {}) {
-  const calls = [];
+  const calls = [], onboarding = [];
   const storage = new Map(initialStorage);
   const status = { textContent: '', dataset: {} };
   const actions = { hidden: true };
@@ -48,6 +48,7 @@ async function run(responses, { initialStorage = [], blockedStorage = false } = 
     sessionStorage,
     require: name => name.includes('client-idempotency') ? { createIdempotencyKey: () => 'fixture-idempotency-key' }
       : name.includes('checkout-return') ? helperExports
+      : name.includes('owner-onboarding') ? { showOwnerOnboarding: (_root, apiUrl, proof) => onboarding.push({apiUrl,proof}) }
       : name.includes('signup-verification') ? verificationExports : assert.fail('Unexpected import'),
     fetch: async (url, options) => {
       calls.push({ url, options });
@@ -57,7 +58,7 @@ async function run(responses, { initialStorage = [], blockedStorage = false } = 
     },
   });
   for (let i = 0; i < 5; i++) await new Promise(resolve => setImmediate(resolve));
-  return { calls, status, actions, link, storage };
+  return { calls, status, actions, link, storage, onboarding };
 }
 
 test('a consumed email link resumes only the existing checkout without creating an order', async () => {
@@ -134,8 +135,10 @@ test('trial_setup prepares access and never creates or resumes a charge checkout
   for (let repeat=0;repeat<2;repeat++) {
     const result=await run([{ok:true,body:{signupIntentId:id,status:'provisioning',nextAction:'trial_setup',tenantId:'77777777-7777-4777-8777-777777777777'}}]);
     assert.equal(result.calls.length,1); assert.match(result.calls[0].url,/verify-email$/);
-    assert.equal(result.link.href,'/cuenta'); assert.equal(result.link.textContent,'Revisar Mi cuenta');
-    assert.match(result.status.textContent,/15 días/); assert.equal(result.actions.hidden,false);
+    assert.equal(result.onboarding.length,1);
+    assert.equal(result.onboarding[0].proof.signupIntentId,id);
+    assert.equal(result.onboarding[0].proof.token,'a'.repeat(64));
+    assert.equal(result.actions.hidden,true);
   }
 });
 
@@ -144,4 +147,10 @@ test('unknown next action or malformed trial setup cannot fall through to a paid
     const result=await run([{ok:true,body}]); assert.equal(result.calls.length,1);
     assert.equal(result.status.dataset.state,'error'); assert.equal(result.actions.hidden,true);
   }
+});
+
+test('an already-used trial leads explicitly to Mi cuenta without checkout or password reset',async()=>{
+  const result=await run([{ok:false,status:409,body:{error:{code:'trial_not_eligible',message:'Ingresa a Mi cuenta para contratar.'}}}]);
+  assert.equal(result.calls.length,1);assert.equal(result.link.href,'/cuenta');assert.equal(result.link.textContent,'Ir a Mi cuenta');
+  assert.equal(result.actions.hidden,false);assert.equal(result.onboarding.length,0);
 });

@@ -78,7 +78,7 @@ export function showVerificationInbox(form: HTMLFormElement, apiUrl: string, pen
   const heading = document.createElement("h2");
   heading.id = "verification-inbox-heading";
   heading.tabIndex = -1;
-  heading.textContent = "Revisa tu bandeja";
+  heading.textContent = "Paso 1: verifica tu correo";
   const message = document.createElement("p");
   message.append("Solicitamos el enlace de verificación para ");
   const email = document.createElement("strong");
@@ -86,7 +86,7 @@ export function showVerificationInbox(form: HTMLFormElement, apiUrl: string, pen
   email.style.overflowWrap = "anywhere";
   message.append(email, ". Revisa también spam y correo no deseado. Continúa el registro desde el enlace del correo.");
   const help = document.createElement("p");
-  help.textContent = "Si no lo encuentras, solicita otro enlace después de un minuto. No necesitas volver a crear la cuenta.";
+  help.textContent = "Primero confirma tu correo. Después prepararemos el POS y, sólo si todavía no tienes contraseña, enviaremos un correo diferente para crearla. Si no encuentras la verificación, puedes solicitarla de nuevo después de un minuto; no vuelvas a crear la cuenta.";
   const actions = document.createElement("div");
   actions.className = "actions";
   const button = document.createElement("button");

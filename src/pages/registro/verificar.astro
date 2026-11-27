@@ -12,6 +12,7 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
     import { createIdempotencyKey } from "../../scripts/client-idempotency";
     import { clearPendingSignup } from "../../lib/signup-verification";
     import { withCheckoutReturn } from "../../lib/checkout-return";
+    import { showOwnerOnboarding } from "../../lib/owner-onboarding";
 
     const root = document.querySelector<HTMLElement>("#verification")!;
     const status = root.querySelector<HTMLElement>(".status")!;
@@ -72,11 +73,7 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
             throw new Error("Respuesta de verificación inválida");
           }
           clearPendingSignup(signupIntentId);
-          status.textContent = "Correo confirmado. Estamos preparando tu prueba gratis de 15 días. El plazo comienza cuando tu empresa esté lista. Recibirás las instrucciones de acceso por correo; si ya tienes contraseña, puedes ingresar a Mi cuenta.";
-          status.dataset.state = "success";
-          link.href = "/cuenta";
-          link.textContent = "Revisar Mi cuenta";
-          actions.hidden = false;
+          showOwnerOnboarding(root, apiUrl, { token, signupIntentId });
           return;
         }
         if (verification.ok && verified?.nextAction !== undefined && verified.nextAction !== "checkout") {
@@ -114,6 +111,11 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
         const message = typeof error === "object" && error && "error" in error ? (error as { error?: { message?: string } }).error?.message : null;
         const code = typeof error === "object" && error && "error" in error ? (error as { error?: { code?: string } }).error?.code : null;
         renew.hidden = !(import.meta.env.DEV && code === "invalid_or_expired_token");
+        if (code === "trial_not_eligible") {
+          link.href = "/cuenta";
+          link.textContent = "Ir a Mi cuenta";
+          actions.hidden = false;
+        }
         fail(message ?? "No pudimos validar el enlace. Puede haber vencido o ya fue utilizado.");
       }
     })();

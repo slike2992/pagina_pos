@@ -72,6 +72,7 @@ function browser(options = {}) {
   const vmContext = vm.createContext(sandbox), cache = new Map();
   const load = name => {
     const key = name.split('/').at(-1);
+    if (key === 'customer-billing') return { bindCustomerBilling: () => ({ reset() {}, refresh() {} }) };
     if (key === 'customer-contract') return { bindCustomerContract: () => ({ reset() {}, refresh() {}, beforeCheckout: async () => true, canContinue: () => true, beforeOperation: async () => true, canOperate: () => true }) };
     if (key === 'client-idempotency') return { createIdempotencyKey: () => sandbox.crypto.randomUUID() };
     if (key === 'wompi-client') return { prepareWompiSession() { assert.fail('No provider calls'); } };
