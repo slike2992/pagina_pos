@@ -82,8 +82,8 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         <button class="button secondary" data-action="refresh-plan-change" type="button">Actualizar estado del cambio</button>
       </section>
       <section class="recovery-management" data-section="recovery" hidden aria-labelledby="recovery-heading">
-        <h3 id="recovery-heading">Recuperar períodos pendientes</h3>
-        <p>La continuidad se cuenta desde el vencimiento anterior, no desde la fecha del nuevo pago. Cada checkout recupera un solo período.</p>
+        <h3 id="recovery-heading" data-field="recovery-heading">Recuperar períodos pendientes</h3>
+        <p data-field="recovery-intro">La continuidad se cuenta desde el vencimiento anterior, no desde la fecha del nuevo pago. Cada checkout corresponde a un solo período.</p>
         <dl class="subscription-data" data-recovery-summary hidden>
           <div><dt>Importe de este período</dt><dd data-field="recovery-amount"></dd></div>
           <div><dt>Período exacto</dt><dd data-field="recovery-period"></dd></div>
@@ -304,6 +304,10 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       && ["active", "restricted"].includes(accountLogin.tenant.status));
     const renewalScheduled = () => Boolean(currentSubscription?.cancelAtPeriodEnd || currentSubscription?.status === "cancel_at_period_end");
     const hasOpenTrial = () => Boolean(currentSubscription?.trial && currentSubscription.trial.status !== "converted");
+    const canQueryRecovery = () => Boolean(accessToken && accountLogin && currentSubscription && !hasOpenTrial()
+      && ["owner", "admin", "billing"].includes(accountLogin.tenant.role) && !renewalScheduled()
+      && ["active", "past_due", "grace", "restricted", "suspended"].includes(currentSubscription.status)
+      && (currentSubscription.status !== "active" || currentSubscription.renewalIssue || currentSubscription.autoRenew === false));
     const canManageRenewal = () => Boolean(accessToken && accountLogin && currentSubscription
       && !hasOpenTrial()
       && ["owner", "admin", "billing"].includes(accountLogin.tenant.role)
@@ -554,7 +558,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
           accountStatus.textContent = [accountStatus.textContent, "Suscripción actualizada."].filter(Boolean).join(" ");
           accountStatus.dataset.state = "success";
         }
-        if (recoverySection.hidden) return;
+        if (!canQueryRecovery()) return;
         const response = await fetch(`${apiUrl}/v1/me/subscription/recovery`, { headers: { authorization: `Bearer ${token}` } });
         if (stopOnUnauthorized(response, isCurrent)) return;
         const body = await response.json();
@@ -568,6 +572,8 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         }
         recoveryOffer = offer;
         if (offer.status === "blocked") {
+          if (offer.blockReason === "not_due") { recoverySection.hidden = true; return; }
+          recoverySection.hidden = false;
           const reasons: Record<string, string> = {
             not_due: "La recuperación de este período aún no está habilitada por el servidor. Actualiza la suscripción o contacta a soporte.",
             cancellation: "La renovación está cancelada. Este flujo no revoca la cancelación.",
@@ -583,6 +589,12 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
           return;
         }
         const snapshot = `${offer.subscriptionId.toLowerCase()}:${offer.periodStart}`;
+        const upcoming = Date.parse(offer.periodStart) > Date.now() && !currentSubscription!.renewalIssue;
+        recoverySection.hidden = false;
+        field("recovery-heading").textContent = upcoming ? "Renovar tu plan" : "Recuperar períodos pendientes";
+        field("recovery-intro").textContent = upcoming
+          ? "Puedes pagar el próximo período antes de que termine el actual. Conservas tu cobertura y no activas cobros automáticos."
+          : "La continuidad se cuenta desde el vencimiento anterior. Cada checkout corresponde a un solo período.";
         if (snapshot !== recoverySnapshot) { recoveryKey = ""; recoverySnapshot = snapshot; }
         field("recovery-amount").textContent = recoveryAmount(offer.amountMinor, offer.currency);
         field("recovery-period").textContent = recoveryPeriodText(offer);
@@ -591,7 +603,8 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
           : "El retorno de Wompi no habilita acceso. Espera la aplicación del período y revisa el estado confirmado en Mi cuenta.";
         recoverySummary.hidden = false;
         recoveryPrepare.disabled = false;
-        recoveryPrepare.textContent = offer.status === "pending_payment" ? "Continuar con este período pendiente" : "Preparar este pago";
+        recoveryPrepare.textContent = offer.status === "pending_payment" ? "Continuar con este período pendiente"
+          : upcoming ? "Preparar renovación" : "Preparar este pago";
         recoveryStatus.textContent = "Revisa el importe y las fechas antes de preparar el checkout.";
       } catch (error) {
         if (!isCurrent()) return;
@@ -768,7 +781,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         if (!subscriptionResponse.ok) throw subscription;
         renderAccount(login, subscription as Subscription);
         if (!paymentSourceSection.hidden) void preparePaymentSource();
-        if (!recoverySection.hidden) void loadRecoveryOffer();
+        if (canQueryRecovery()) void loadRecoveryOffer();
         loginForm.reset();
       } catch (error) {
         if (!isCurrent()) return;
@@ -1259,7 +1272,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         if (!subscriptionResponse.ok) throw subscription;
         renderAccount(login, subscription as Subscription);
         if (!paymentSourceSection.hidden) void preparePaymentSource();
-        if (!recoverySection.hidden) void loadRecoveryOffer();
+        if (canQueryRecovery()) void loadRecoveryOffer();
         if (callback.destination === "plans" && !planSection.hidden) {
           planSection.scrollIntoView({ block: "center" }); planSelect.focus({ preventScroll: true });
         } else if (callback.destination === "fiscal") {

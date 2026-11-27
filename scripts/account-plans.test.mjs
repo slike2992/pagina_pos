@@ -112,6 +112,7 @@ function browser(options = {}) {
       if (route === '/v1/auth/login') { loginCount++; tenant = { tenantId: `tenant-${loginCount}`, tenantKey: `qa-${loginCount}`, name: `Empresa ${loginCount}`, role: options.role || 'owner', status: 'active' };
         return reply({ accessToken: `synthetic-${loginCount}`, principal: { displayName: 'QA' }, tenant }); }
       if (route === '/v1/me/subscription') return options.readSubscription ? options.readSubscription(call, model, loginCount) : reply(structuredClone(model));
+      if (route === '/v1/me/subscription/recovery') return options.recovery ? options.recovery(call,model) : assert.fail('Unexpected recovery offer');
       if (route === '/v1/me/tenants') return reply({ activeTenantId: tenant.tenantId, tenants: [tenant] });
       if (route === '/v1/public/plans') return options.catalog ? options.catalog(call, loginCount) : reply(published());
       if (route === '/v1/me/billing/payment-sources') return reply({ paymentSource: null });
@@ -152,6 +153,23 @@ function browser(options = {}) {
   };
 }
 const changes = h => h.calls.filter(call => new URL(call.url).pathname === '/v1/me/subscription/change');
+
+for (const available of [true,false]) test(`manual renewal without a saved source uses the server offer: ${available?'available':'not due'}`,async()=>{
+  const h=browser({subscription:{autoRenew:false},recovery:(_call,model)=>reply({type:'recovery',
+    subscriptionId:model.subscriptionId,status:available?'available':'blocked',blockReason:available?null:'not_due',
+    periodStart:'2099-01-01T00:00:00.000Z',periodEnd:'2099-02-01T00:00:00.000Z',amountMinor:123451,
+    currency:'COP',needsFurtherRecovery:false,orderId:null,checkoutSessionId:null,expiresAt:null})});
+  await h.login();
+  assert.equal(h.calls.filter(c=>new URL(c.url).pathname==='/v1/me/subscription/recovery').length,1);
+  assert.equal(h.get("[data-section='recovery']").hidden,!available);
+  if(available){
+    assert.equal(h.get("[data-field='recovery-heading']").textContent,'Renovar tu plan');
+    assert.equal(h.get("[data-action='prepare-recovery']").textContent,'Preparar renovación');
+    assert.equal(h.get("[data-action='prepare-recovery']").disabled,false);
+    assert.match(h.get("[data-field='recovery-intro']").textContent,/no activas cobros automáticos/);
+  }
+  assert.ok(h.calls.every(c=>!new URL(c.url).pathname.endsWith('/checkout-sessions')));
+});
 
 test('real account groups six published options, keeps current FE, and confirms only the reviewed published code', async () => {
   const h = browser(); await h.login();
