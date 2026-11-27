@@ -228,6 +228,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     let recoverySnapshot = "";
     let recoveryBusy = false;
     let recoveryGeneration = 0;
+    let contractCheckoutContinuation: (() => Promise<void>) | null = null;
     let posBusy = false;
     let renewalBusy = false;
     let subscriptionRefreshing = false;
@@ -255,7 +256,11 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
           session: currentSubscription, canContract: ["owner", "admin", "billing"].includes(accountLogin.tenant.role) }
         : null,
       onUnauthorized: () => resetAccount("La sesión no es válida o expiró. Vuelve a iniciar sesión."),
-      onContinue: () => startTrialCheckout(true),
+      onContinue: async () => {
+        const continuation = contractCheckoutContinuation;
+        contractCheckoutContinuation = null;
+        await continuation?.();
+      },
       onOperate: () => openPos(null, posSetupIntent, true),
     });
     const customerBilling = bindCustomerBilling(root, {
@@ -525,6 +530,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       if (refreshSubscription && (renewalBusy || posBusy || paymentSourceBusy || planBusy)) return;
       const token = accessToken;
       const generation = ++recoveryGeneration;
+      contractCheckoutContinuation = null;
       const isCurrent = () => token === accessToken && generation === recoveryGeneration;
       recoveryBusy = true;
       const sourceControls = [paymentSourceButton, termsAcceptance, personalDataAcceptance, recurringAcceptance];
@@ -641,12 +647,17 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         }
       }
     };
-    recoveryPrepare.addEventListener("click", async () => {
-      if (recoveryBusy || recoveryCheckout || !accessToken || recoverySection.hidden || !recoveryOffer || recoveryOffer.status === "blocked") return;
+    const prepareRecoveryCheckout = async (afterAcceptance = false) => {
+      if (subscriptionRefreshing || renewalBusy || planBusy || posBusy || paymentSourceBusy || recoveryBusy || recoveryCheckout
+        || !canQueryRecovery() || recoverySection.hidden || !recoveryOffer || recoveryOffer.status === "blocked") return;
       const token = accessToken;
+      const login = accountLogin;
+      const subscription = currentSubscription;
       const generation = recoveryGeneration;
       const offer = recoveryOffer;
-      const isCurrent = () => token === accessToken && generation === recoveryGeneration;
+      const isCurrent = () => token === accessToken && login === accountLogin && subscription === currentSubscription
+        && generation === recoveryGeneration && offer === recoveryOffer;
+      if (afterAcceptance && !customerContract.canContinue()) return;
       if (!recoveryKey) recoveryKey = createIdempotencyKey();
       const key = recoveryKey;
       recoveryBusy = true;
@@ -655,6 +666,16 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       recoveryStatus.textContent = "Preparando el checkout de este período…";
       recoveryStatus.dataset.state = "";
       try {
+        if (!afterAcceptance) {
+          const continuation = async () => { if (isCurrent()) await prepareRecoveryCheckout(true); };
+          contractCheckoutContinuation = continuation;
+          if (!await customerContract.beforeCheckout()) {
+            if (isCurrent()) recoveryStatus.textContent = "Revisa el contrato y la oferta antes de preparar el pago de este período.";
+            return;
+          }
+          if (contractCheckoutContinuation === continuation) contractCheckoutContinuation = null;
+        }
+        if (!isCurrent() || !customerContract.canContinue()) return;
         const input = { type: "recovery", subscriptionId: offer.subscriptionId, expectedPeriodStart: offer.periodStart };
         const response = await fetch(`${apiUrl}/v1/me/billing/checkout-sessions`, {
           method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json", "idempotency-key": key },
@@ -688,9 +709,14 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         recoveryStatus.dataset.state = "error";
         recoveryPrepare.disabled = false;
       } finally {
-        if (isCurrent()) { recoveryBusy = false; renderAccountActions(); }
+        if (isCurrent()) {
+          recoveryBusy = false;
+          recoveryPrepare.disabled = Boolean(recoveryCheckout);
+          renderAccountActions();
+        }
       }
-    });
+    };
+    recoveryPrepare.addEventListener("click", () => prepareRecoveryCheckout());
     recoveryPay.addEventListener("click", event => {
       if (!accessToken || !recoveryCheckout || Date.parse(recoveryCheckout.expirationTime) <= Date.now()) {
         event.preventDefault();
@@ -1167,7 +1193,12 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       let navigating = false;
       const unconfirmed = "No pudimos confirmar la preparación del pago. Revisa tu conexión y actualiza Mi cuenta antes de reintentar.";
       try {
-        if (!afterAcceptance && !await customerContract.beforeCheckout()) return;
+        if (!afterAcceptance) {
+          const continuation = async () => { if (isCurrent()) await startTrialCheckout(true); };
+          contractCheckoutContinuation = continuation;
+          if (!await customerContract.beforeCheckout()) return;
+          if (contractCheckoutContinuation === continuation) contractCheckoutContinuation = null;
+        }
         if (!isCurrent() || !customerContract.canContinue()) return;
         if (!trialCheckoutKey) trialCheckoutKey = createIdempotencyKey();
         const response = await requestResult(() => fetch(`${apiUrl}/v1/me/subscription/trial-checkout`, {
@@ -1191,6 +1222,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     };
     trialContract.addEventListener("click", () => startTrialCheckout());
     const resetAccount = (message = "") => {
+      contractCheckoutContinuation = null;
       customerContract.reset(); customerSupport.reset(); customerBilling.reset();
       loginGeneration++;
       catalogGeneration++;

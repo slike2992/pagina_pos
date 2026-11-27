@@ -1,5 +1,19 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-27 — Acuerdo antes de preparar renovación o recuperación
+
+- La prueba real encontró que preparar una renovación sin contrato sólo mostraba
+  el rechazo correcto de la API. Mi cuenta abre ahora el mismo diálogo contractual
+  antes del POST y, después de aceptar, continúa exclusivamente la acción elegida:
+  conversión de prueba o renovación/recuperación del período revisado.
+- Conserva token, sesión, empresa, suscripción, generación de oferta, referencia
+  rechazada, validación de importe/fechas e idempotencia. Cancelar el diálogo,
+  actualizar la oferta, salir o cambiar de sesión no ejecuta una acción anterior.
+  Aceptar no paga ni registra tarjeta; sólo prepara el checkout para su revisión.
+- Contrato HTTP, versiones legales, aceptaciones, SQL, POS y Control no cambian.
+  Compatible con la API staging publicada. Regresiones con el diálogo y controlador
+  reales; despliegue y aceptación del resultado se registran en el informe SaaS.
+
 ## 2026-11-27 — Alta secuencial y comunicaciones de cobro
 
 - Registro exige teléfono E.164 válido para altas nuevas, sin consentimiento

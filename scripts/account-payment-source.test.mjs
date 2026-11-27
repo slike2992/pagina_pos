@@ -17,6 +17,7 @@ const plansCode = compile(await readFile(new URL('../src/lib/account-plans.ts', 
 const upgradeCode = compile(await readFile(new URL('../src/lib/subscription-upgrade.ts', import.meta.url), 'utf8'));
 const trialCode = compile(await readFile(new URL('../src/lib/subscription-trial.ts', import.meta.url), 'utf8'));
 const portalCode = compile(await readFile(new URL('../src/lib/portal-return.ts', import.meta.url), 'utf8'));
+const contractCode = compile(await readFile(new URL('../src/lib/customer-contract.ts', import.meta.url), 'utf8'));
 const page = await readFile(new URL('../src/pages/cuenta.astro', import.meta.url), 'utf8');
 const accountScript = page.match(/<script>([\s\S]*?)<\/script>/)?.[1];
 assert.ok(accountScript, 'account controller must exist');
@@ -52,7 +53,7 @@ function browser() {
     const listeners = new Map();
     const attributes = new Map();
     return {
-      textContent: '', hidden: false, disabled: false, checked: false, value: '', dataset: {},
+      textContent: '', hidden: false, disabled: false, checked: false, value: '', dataset: {}, ownerDocument: document, open: false,
       listeners, attributes, removed: false,
       addEventListener(name, callback) {
         const set = listeners.get(name) ?? new Set(); set.add(callback); listeners.set(name, set);
@@ -65,7 +66,9 @@ function browser() {
       getAttribute(name) { return attributes.get(name) ?? null; },
       removeAttribute(name) { attributes.delete(name); if (name === 'href') delete this.href; },
       remove() { this.removed = true; },
-      focus() { this.focused = true; }, showModal() { this.hidden = false; }, close() { this.hidden = true; },
+      focus() { this.focused = true; }, reportValidity() { return true; },
+      showModal() { this.hidden = false; this.open = true; },
+      close() { const wasOpen = this.open; this.hidden = true; this.open = false; if (wasOpen) void this.dispatch('close'); },
       replaceChildren(...children) { this.children = children; },
       appendChild(child) { (this.children ??= []).push(child); },
       querySelector(selector) {
@@ -81,7 +84,7 @@ function browser() {
       assert.equal(selector, '#account');
       return root;
     },
-    createElement(tag) { assert.ok(['script', 'optgroup'].includes(tag)); return element(); },
+    createElement(tag) { assert.ok(['script', 'optgroup', 'div', 'dl', 'dt', 'dd', 'details', 'summary', 'h3', 'h4', 'p', 'ul', 'li'].includes(tag)); return element(); },
     head: { append(script) { scripts.push(script); appended.push({ script, attributes: Object.fromEntries(script.attributes) }); } },
   };
   const root = element();
@@ -176,6 +179,26 @@ async function account(options = {}) {
       'renewal-issue-amount', 'renewal-issue-period', 'renewal-issue-reference', 'renewal-issue-recorded'].map(name => `[data-field='${name}']`)];
   for (const selector of selectors) h.elements.set(selector, h.element());
   const get = selector => h.elements.get(selector);
+  const contractFields = new Map();
+  if (options.contract) {
+    for (const selector of ['[data-customer-contract]', '[data-contract-dialog]', '[data-contract-form]', '[data-contract-status]',
+      '[data-contract-dialog-status]', '[data-contract-accept]', '[data-contract-receipt]', '[data-contract-retry]',
+      '[data-contract-evidence]', '[data-contract-acceptance]', '[data-contract-evidence-section]', '[data-contract-representative]',
+      '[data-contract-name-label]', '[data-contract-documents]', '[data-contract-offer]', '[data-contract-email]',
+      '[data-contract-version]', '#customer-contract-intro', '[data-contract-close]', '[data-contract-print]']) {
+      h.elements.set(selector, h.element());
+    }
+    for (const name of ['kind', 'name', 'documentType', 'documentNumber', 'address', 'city', 'phone', 'representativeName',
+      'representativeDocumentType', 'representativeDocumentNumber', 'serviceTerms', 'dataProcessingAnnex', 'ownDataAuthorization',
+      'adultAndAuthorized', 'truthfulDeclaredIdentity']) contractFields.set(name, h.element());
+    contractFields.get('documentType').options = ['CC', 'CE', 'NIT', 'PASSPORT', 'PPT'].map(value => ({ value }));
+    const form = get('[data-contract-form]');
+    form.elements = { namedItem: name => contractFields.get(name) };
+    form.reset = () => {
+      for (const field of contractFields.values()) { field.value = ''; field.checked = false; }
+      contractFields.get('kind').value = 'natural'; contractFields.get('documentType').value = 'CC'; form.values = [];
+    };
+  }
   const loginForm = get('#login-form');
   loginForm.reset = () => { loginForm.values = []; };
   get('#tenant-field').hidden = true;
@@ -191,7 +214,7 @@ async function account(options = {}) {
   const recurring = get("[data-acceptance='recurring']");
   const calls = [], widgets = [], navigations = [];
   h.window.location.assign = url => navigations.push(url);
-  let loginCount = 0, initCount = 0;
+  let loginCount = 0, initCount = 0, contractAccepted = false;
   let tenant = { tenantId: 'synthetic-tenant-1', name: 'QA', role: options.role ?? 'owner', status: options.tenantStatus ?? 'active' };
   let subscription = { subscriptionId: '11111111-1111-4111-8111-111111111111', status: 'active', plan: { code: 'basic', name: 'Básico' },
     price: { amountMinor: 7990000, currency: 'COP', billingInterval: 'monthly' },
@@ -221,6 +244,15 @@ async function account(options = {}) {
         tenant: { ...tenant } });
     }
     if (path === '/v1/me/subscription') return options.readSubscription ? options.readSubscription(call, subscription) : reply(subscription);
+    if (path === '/v1/me/customer-contract' && options.contract) {
+      if (call.method === 'POST') {
+        const response = options.acceptContract ? await options.acceptContract(call) : reply(contractAcceptanceFixture());
+        if (response.ok) contractAccepted = true;
+        return response;
+      }
+      return options.readContract ? options.readContract(call) : reply(contractFixture({ accepted: contractAccepted,
+        contractId: contractAccepted ? contractAcceptanceFixture().contractId : null }));
+    }
     if (path === '/v1/public/plans') return reply({ country: 'CO', currency: 'COP', plans:
       ['basic', 'professional', 'enterprise', 'basic-fe', 'professional-fe', 'enterprise-fe'].map((code, index) => ({
         code, name: ['Básico', 'Profesional', 'Empresarial', 'Básico FE', 'Profesional FE', 'Empresarial FE'][index],
@@ -259,7 +291,9 @@ async function account(options = {}) {
     if (name === '../lib/subscription-recovery') return recovery;
     if (name.endsWith('customer-billing')) return { bindCustomerBilling: () => ({ reset() {}, refresh() {} }) };
     if (name === '../lib/customer-support') return { bindCustomerSupport: () => ({ reset() {}, refresh() {} }) };
-    if (name === '../lib/customer-contract') return { bindCustomerContract: () => ({ reset() {}, refresh() {}, beforeCheckout: async () => true, canContinue: () => true, beforeOperation: async () => true, canOperate: () => true }) };
+    if (name === '../lib/customer-contract') return options.contract
+      ? h.module(contractCode, name => name === '../scripts/client-idempotency' ? idempotency : assert.fail(name))
+      : { bindCustomerContract: () => ({ reset() {}, refresh() {}, beforeCheckout: async () => true, canContinue: () => true, beforeOperation: async () => true, canOperate: () => true }) };
     if (name === '../lib/account-plans') return h.module(plansCode);
     if (name === '../lib/subscription-upgrade') return h.module(upgradeCode, name => assert.fail(name));
     if (name === '../lib/subscription-trial') return h.module(trialCode, name => assert.fail(name));
@@ -271,6 +305,14 @@ async function account(options = {}) {
     initCount: () => initCount,
     setSubscription(value) { subscription = { ...subscription, ...value }; },
     setTenant(value) { tenant = { ...tenant, ...value }; },
+    async acceptContract() {
+      const values = { kind: 'natural', name: 'QA Declarado', documentType: 'CC', documentNumber: '12345678', address: 'Calle QA',
+        city: 'Bogotá', phone: '+573000000000', serviceTerms: 'on', dataProcessingAnnex: 'on', ownDataAuthorization: 'on',
+        adultAndAuthorized: 'on', truthfulDeclaredIdentity: 'on' };
+      for (const [name, value] of Object.entries(values)) contractFields.get(name).value = value;
+      get('[data-contract-form]').values = Object.entries(values);
+      await get('[data-contract-form]').dispatch('submit'); await flush();
+    },
     posts: () => calls.filter(call => call.method === 'POST' && call.url.endsWith('/payment-sources')),
     consent(a = true, b = true, c = true) { terms.checked = a; data.checked = b; recurring.checked = c; },
     async login() {
@@ -714,6 +756,103 @@ const recoveryAccount = (options = {}) => account({
 const recoveryControl = (h, action) => h.get(`[data-action='${action}']`);
 const recoveryClick = async (h, action = 'prepare-recovery') => { await recoveryControl(h, action).dispatch('click'); await flush(); };
 const recoveryPosts = h => h.calls.filter(call => call.method === 'POST' && call.url.endsWith('/billing/checkout-sessions'));
+const contractPosts = h => h.calls.filter(call => call.method === 'POST' && call.url.endsWith('/customer-contract'));
+const contractAcceptanceFixture = () => ({ contractId: '55555555-5555-4555-8555-555555555555',
+  acceptedAt: '2026-11-10T00:00:00.000Z', evidenceSha256: 'c'.repeat(64) });
+const contractFixture = (changes = {}) => ({ required: true, accepted: false, contractId: null, canAccept: true,
+  package: { version: 'qa-contract', documents: ['service-terms', 'data-processing-annex', 'own-data-authorization']
+    .map(slug => ({ slug, title: slug, sections: [{ id: 'one', heading: 'Texto revisado', paragraphs: ['Contenido QA'] }] })) },
+  offer: { subscriptionId: recoverySubscriptionId, priceId: recoverySessionId, planCode: 'professional', planName: 'Profesional',
+    amountMinor: 7990017, currency: 'COP', billingInterval: 'monthly', automaticRenewal: false,
+    periodRule: 'trial_remainder_then_paid_or_payment_date' },
+  packageSha256: 'a'.repeat(64), offerSha256: 'b'.repeat(64), verifiedEmail: 'qa@example.invalid',
+  identityMethod: 'declared_and_verified_email', ...changes });
+
+test('preparing early renewal opens the real contract first and acceptance resumes that exact recovery once without paying', async () => {
+  const acceptance = deferred();
+  const offer = recoveryOfferFixture({ periodStart: '2026-11-10T02:00:00.000Z', periodEnd: '2026-12-10T02:00:00.000Z', needsFurtherRecovery: false });
+  const h = await account({ contract: true, subscription: { autoRenew: false, currentPeriodEnd: offer.periodStart },
+    recovery: () => reply(offer), checkout: () => reply(recoveryCheckoutFixture(offer, { reference: 'QA-EXACT-RENEWAL' })),
+    acceptContract: () => acceptance.promise });
+  await h.login(); await recoveryClick(h);
+  assert.equal(h.get('[data-contract-dialog]').open, true); assert.equal(recoveryPosts(h).length, 0);
+  const submit = h.acceptContract(); await flush(); await h.get('[data-contract-form]').dispatch('submit');
+  assert.equal(contractPosts(h).length, 1); assert.equal(recoveryPosts(h).length, 0);
+  acceptance.resolve(reply(contractAcceptanceFixture())); await submit;
+  assert.equal(recoveryPosts(h).length, 1);
+  assert.deepEqual(JSON.parse(recoveryPosts(h)[0].body), { type: 'recovery', subscriptionId: recoverySubscriptionId, expectedPeriodStart: offer.periodStart });
+  assert.equal(recoveryPosts(h)[0].headers.authorization, 'Bearer synthetic-auth-1');
+  assert.equal(new URL(recoveryControl(h, 'pay-recovery').href).searchParams.get('reference'), 'QA-EXACT-RENEWAL');
+  await recoveryClick(h); assert.equal(recoveryPosts(h).length, 1);
+  assert.equal(h.calls.some(call => call.url.endsWith('/trial-checkout') || call.url.endsWith('/pos-sso')), false);
+  assert.deepEqual(h.navigations, []); assert.equal(h.widgets.length, 0); assert.equal(h.appended.length, 0);
+});
+
+test('contract continuation retains the declined period and reference validation rather than starting a trial checkout', async () => {
+  for (const wrongReference of [false, true]) {
+    const h = await renewalAccount({ contract: true, checkout: () => reply(recoveryCheckoutFixture(renewalOfferFixture(),
+      { reference: wrongReference ? 'ANOTHER-REFERENCE' : renewalIssueFixture().reference })) });
+    await h.login(); await recoveryClick(h); assert.equal(recoveryPosts(h).length, 0);
+    await h.acceptContract(); assert.equal(recoveryPosts(h).length, 1);
+    assert.equal(JSON.parse(recoveryPosts(h)[0].body).expectedPeriodStart, renewalIssueFixture().periodStart);
+    assert.equal(recoveryControl(h, 'pay-recovery').hidden, wrongReference);
+    if (wrongReference) assert.match(h.get('.recovery-status').textContent, /orden no coincide/);
+    else assert.equal(new URL(recoveryControl(h, 'pay-recovery').href).searchParams.get('reference'), renewalIssueFixture().reference);
+    assert.equal(h.calls.some(call => call.url.endsWith('/trial-checkout')), false); assert.deepEqual(h.navigations, []);
+  }
+});
+
+test('closing the real contract cancels continuation and only an explicit new prepare can resume the same idempotent period', async () => {
+  const h = await recoveryAccount({ contract: true }); await h.login(); await recoveryClick(h);
+  await h.get('[data-contract-close]').dispatch('click'); await h.acceptContract();
+  assert.equal(contractPosts(h).length, 0); assert.equal(recoveryPosts(h).length, 0);
+  assert.equal(recoveryControl(h, 'prepare-recovery').disabled, false);
+  await recoveryClick(h); await h.acceptContract();
+  assert.equal(contractPosts(h).length, 1); assert.equal(recoveryPosts(h).length, 1);
+  assert.equal(recoveryPosts(h)[0].headers['idempotency-key'], '00000000-0000-4000-8000-000000000001');
+  assert.equal(JSON.parse(recoveryPosts(h)[0].body).expectedPeriodStart, historicalStart);
+});
+
+test('a late contract acceptance after logout and another tenant cannot prepare any recovery in the new session', async () => {
+  const acceptance = deferred(); const h = await recoveryAccount({ contract: true, acceptContract: () => acceptance.promise });
+  await h.login(); await recoveryClick(h); const submit = h.acceptContract(); await flush();
+  await h.logout(); await h.login(); acceptance.resolve(reply(contractAcceptanceFixture())); await submit;
+  assert.equal(recoveryPosts(h).length, 0); assert.equal(h.get('.account-panel').hidden, false);
+  assert.equal(h.get('[data-contract-dialog]').open, false); assert.deepEqual(h.navigations, []);
+  assert.equal(contractPosts(h)[0].headers.authorization, 'Bearer synthetic-auth-1');
+});
+
+test('refreshing the offer or scheduling cancellation invalidates a pending acceptance before it can prepare the old period', async () => {
+  for (const cancelled of [false, true]) {
+    const acceptance = deferred(); let updated = false;
+    const next = recoveryOfferFixture({ periodStart: historicalEnd, periodEnd: '2020-03-01T00:00:00.000Z' });
+    const h = await recoveryAccount({ contract: true, acceptContract: () => acceptance.promise,
+      recovery: () => reply(updated ? next : recoveryOfferFixture()), checkout: () => reply(recoveryCheckoutFixture(next)) });
+    await h.login(); await recoveryClick(h); const submit = h.acceptContract(); await flush();
+    updated = true; h.setSubscription({ currentPeriodEnd: historicalEnd, cancelAtPeriodEnd: cancelled });
+    await recoveryClick(h, 'refresh-recovery'); acceptance.resolve(reply(contractAcceptanceFixture())); await submit;
+    assert.equal(recoveryPosts(h).length, 0, 'refresh cannot resume either the old or new offer');
+    await recoveryClick(h);
+    assert.equal(recoveryPosts(h).length, cancelled ? 0 : 1);
+    if (!cancelled) assert.equal(JSON.parse(recoveryPosts(h)[0].body).expectedPeriodStart, next.periodStart);
+    assert.equal(h.calls.some(call => call.url.endsWith('/reactivate')), false);
+    assert.deepEqual(h.navigations, []);
+  }
+});
+
+test('an uncertain checkout after contract acceptance retries only explicitly with the same recovery body and key', async () => {
+  let attempts = 0;
+  const h = await recoveryAccount({ contract: true, checkout: () => {
+    if (++attempts === 1) throw new TypeError('Synthetic network failure'); return reply(recoveryCheckoutFixture());
+  } });
+  await h.login(); await recoveryClick(h); await h.acceptContract();
+  assert.equal(recoveryPosts(h).length, 1); assert.equal(recoveryControl(h, 'pay-recovery').hidden, true);
+  await flush(); assert.equal(recoveryPosts(h).length, 1);
+  await recoveryClick(h); assert.equal(recoveryPosts(h).length, 2); assert.equal(contractPosts(h).length, 1);
+  assert.equal(recoveryPosts(h)[0].body, recoveryPosts(h)[1].body);
+  assert.equal(recoveryPosts(h)[0].headers['idempotency-key'], recoveryPosts(h)[1].headers['idempotency-key']);
+  assert.deepEqual(h.navigations, []); assert.equal(h.widgets.length, 0);
+});
 
 test('recovery reads an authenticated server offer without creating a checkout or loading SDKs', async () => {
   const h = await recoveryAccount(); await h.login();
