@@ -2,6 +2,9 @@
 
 ## Desarrollo vigente
 
+- [Selección legal productiva](LEGAL_PRODUCTION_2026-11-28.md): fuentes SaaS
+  exactas, perfil de build, aislamiento de staging, pruebas y preview local.
+
 - [Recuperación de suscripciones](SUBSCRIPTION_RECOVERY.md): continuidad desde
   vencimiento previo, DTO opcional `renewalIssue`, aviso de renovación rechazada
   con cobertura vigente, contrato de oferta/checkout y límites de acceso.

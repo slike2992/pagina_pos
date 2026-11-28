@@ -290,7 +290,7 @@ test('production build hook replaces only the generated local payment page and n
 });
 
 
-test('legal index guidance preserves legacy links by default and follows the explicit staging legal selector', async () => {
+test('legal index guidance preserves defaults and follows the explicit staging or production legal selector', async () => {
   const legal = registrationLegalLinks(process.env);
   const html = await rendered('/legal/');
   const main = html.match(/<main\b[^>]*>[\s\S]*?<\/main>/)[0];
@@ -299,8 +299,8 @@ test('legal index guidance preserves legacy links by default and follows the exp
   assert.match(textContent(paragraph), /prueba gratis de 15 días sin tarjeta y los planes de pago/);
   assert.doesNotMatch(textContent(main), /\bdemo\b|demostraci[oó]n|demostraciones/i);
   assert.deepEqual(anchors(paragraph).map(link => link.href), ['mailto:servicioalcliente@cripton.com.co', 'mailto:ventas@cripton.com.co']);
-  const documents = anchors(main).filter(link => ['Leer términos vigentes', 'Leer política vigente', 'Leer términos de la prueba QA', 'Leer privacidad de la prueba QA', 'Consultar cookies y preferencias'].includes(link.label));
+  const documents = anchors(main).filter(link => ['Leer términos vigentes', 'Leer política vigente', 'Leer términos de la prueba QA', 'Leer privacidad de la prueba QA', 'Leer términos productivos', 'Leer privacidad productiva', 'Consultar cookies y preferencias'].includes(link.label));
   assert.deepEqual(documents.map(link => new URL(link.href, SITE_URL).pathname), [legal.termsHref, legal.privacyHref, '/legal/cookies/']);
-  const versionLabel = legal.stagingTrialQa ? `Versión para prueba en staging: ${legal.version}` : 'Versión publicada: 2026-09-01';
+  const versionLabel = 'production' in legal ? `Versión productiva: ${legal.version}` : legal.stagingTrialQa ? `Versión para prueba en staging: ${legal.version}` : 'Versión publicada: 2026-09-01';
   assert.equal(textContent(main).split(versionLabel).length - 1, 2);
 });

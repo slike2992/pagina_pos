@@ -11,12 +11,13 @@ interface Props {
 }
 const { version, scope, notice, packageSha256, document, kind, related, slaHref } = Astro.props;
 const termsHref = `/legal/versiones/${version}/terminos/`;
+const production = scope === 'production' || scope === 'production_signup';
 ---
-<EditorialLayout title={`${document.title} · ${version}`} description={`${document.title}. Versión ${version}, exclusiva de staging.`}
-  eyebrow={`Versión ${version} · QA staging`} heading={document.title} lead={notice}
+<EditorialLayout title={`${document.title} · ${version}`} description={`${document.title}. Versión ${version}, ${production ? 'del entorno productivo' : 'exclusiva de staging'}.`}
+  eyebrow={`Versión ${version} · ${production ? 'Producción' : 'QA staging'}`} heading={document.title} lead={notice}
   breadcrumbs={[{ name: 'Centro legal', href: '/legal/' }]} noindex={true}>
   <aside class="callout" aria-labelledby="legal-version-scope">
-    <h2 id="legal-version-scope">{kind === 'registration' ? 'Registro de prueba en staging' : 'Acuerdo de prueba en staging'}</h2>
+    <h2 id="legal-version-scope">{production ? (kind === 'registration' ? 'Registro y prueba en producción' : 'Acuerdo de servicio en producción') : (kind === 'registration' ? 'Registro de prueba en staging' : 'Acuerdo de prueba en staging')}</h2>
     {kind === 'sla'
       ? <p>Estas secciones forman parte de los <a href={termsHref}>términos completos del servicio</a>. No requieren una aceptación adicional. Consultarlas no cambia las versiones ni las constancias aceptadas anteriormente.</p>
       : <p>Esta consulta no registra una aceptación ni cambia tus constancias anteriores. La API identifica los documentos aplicables a tu registro o empresa.</p>}

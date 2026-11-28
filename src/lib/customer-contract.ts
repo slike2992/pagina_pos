@@ -316,6 +316,12 @@ export function bindCustomerContract(root: HTMLElement, options: {
         const body = await request(context, version);
         if (body === null || !current(context, version)) return null;
         const next = readCustomerContract(body, context.subscriptionId);
+        const expectedVersion = section.dataset.productionContractVersion;
+        if (expectedVersion && (next.package && (next.package.version !== expectedVersion
+          || next.packageSha256 !== section.dataset.productionContractSha256)
+          || next.operationalAccess?.packageVersion && next.operationalAccess.packageVersion !== expectedVersion)) {
+          throw new ContractError("El acuerdo recibido no corresponde a la versión productiva de esta web. Actualiza Mi cuenta o contacta a soporte.");
+        }
         state = next; render(); return next;
       } catch (error) {
         if (current(context, version)) {

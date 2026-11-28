@@ -1,5 +1,24 @@
 # Cripton — web comercial y portal de acceso
 
+Selección legal productiva preparada en [alcance y QA](docs/LEGAL_PRODUCTION_2026-11-28.md).
+`PUBLIC_REGISTRATION_LEGAL_VERSION=2026-11-28-registro-prod` exige
+`PUBLIC_SITE_URL=https://cripton.com.co` o `https://www.cripton.com.co`,
+`PUBLIC_SAAS_API_URL=https://api.cripton.com.co` y
+`PUBLIC_POS_URL=https://pos.cripton.com.co`. El build rechaza combinaciones con
+staging, hosts ajenos, endpoints ausentes y variantes no autorizadas. Las copias
+productivas son exactas del SaaS `5bd50d0`: registro `2026-11-28-registro-prod`
+y contrato `2026-11-28-minimo-prod`, con seis vistas públicas, incluido el ANS.
+Centro legal, registro, pie, cookies y consentimiento comparten la selección.
+El formulario no habilita registro con un catálogo QA/legacy/ajeno; Mi cuenta
+rechaza identidades contractuales discordantes. La API conserva la autoridad
+sobre adopción, aceptación y acceso. Cookies mantiene su versión independiente.
+Sin selector se conserva09-01; los selectores y fuentes de staging anteriores
+permanecen independientes. Preparación local: no publica, adopta condiciones,
+registra clientes ni acredita admisión, Wompi o emisión fiscal productiva.
+QA local: producción y staging753/753 cada uno, check90 sin incidencias y
+builds26/32 páginas en salidas separadas. Preview del HTML productivo propio:
+`http://127.0.0.1:44365/legal/`, sin callback API ni aceptación real.
+
 Recuperación de pagos al contratar la prueba:Mi cuenta distingue el intento
 anterior,permite consultar/actualizar y volver a Wompi. El resultado fallido tiene
 salida directa a Mi cuenta; al volver con Atrás se actualiza la sesión en memoria.

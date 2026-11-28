@@ -1,0 +1,52 @@
+name: web-ci
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main, develop, codex/pagina-pos-landing]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: verify-${{ matrix.profile.name }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        profile:
+          - name: staging
+            site: https://staging.cripton.com.co
+            api: https://api-staging.cripton.com.co
+            pos: https://pos-staging.cripton.com.co
+            legal: 2026-11-28-prueba-minima-qa
+          - name: production
+            site: https://cripton.com.co
+            api: https://api.cripton.com.co
+            pos: https://pos.cripton.com.co
+            legal: 2026-11-28-registro-prod
+    env:
+      ASTRO_TELEMETRY_DISABLED: '1'
+      PUBLIC_SITE_URL: ${{ matrix.profile.site }}
+      PUBLIC_SAAS_API_URL: ${{ matrix.profile.api }}
+      PUBLIC_POS_URL: ${{ matrix.profile.pos }}
+      PUBLIC_REGISTRATION_LEGAL_VERSION: ${{ matrix.profile.legal }}
+      PUBLIC_SITE_INDEXABLE: 'false'
+      PUBLIC_LEGAL_DRAFT_PREVIEW: 'false'
+      PUBLIC_WHATSAPP_NUMBER: '573219597077'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.25.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm qa:web
+
+# This workflow never publishes a site, writes DNS or deploys an application.
+# Release admission and the coordinated SaaS/web manifest are separate gates.

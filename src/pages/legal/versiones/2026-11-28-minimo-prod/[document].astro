@@ -1,0 +1,29 @@
+---
+import type { GetStaticPaths } from 'astro';
+import VersionedLegalDocument from '../../../../components/VersionedLegalDocument.astro';
+import { isProductionLegalSite, registrationLegalLinks, MINIMUM_PRODUCTION_SLA_HREF, SIGNUP_PRODUCTION_VERSION } from '../../../../lib/registration-legal';
+import { productionLegalPacket as packet, productionLegalDocuments as documents, productionLegalSha256,
+  productionTerms, productionSlaSections, type ProductionLegalDocument } from '../../../../lib/production-legal';
+
+export const getStaticPaths: GetStaticPaths = () => {
+  registrationLegalLinks({ PUBLIC_SITE_URL: import.meta.env.PUBLIC_SITE_URL,
+    PUBLIC_REGISTRATION_LEGAL_VERSION: import.meta.env.PUBLIC_REGISTRATION_LEGAL_VERSION });
+  if (!isProductionLegalSite(import.meta.env.PUBLIC_SITE_URL)) return [];
+  return [
+    ...documents.map(document => ({ params: { document: document.slug }, props: { document, isSla: false } })),
+    { params: { document: 'sla' }, props: { document: productionTerms, isSla: true } },
+  ];
+};
+interface Props { document: ProductionLegalDocument; isSla: boolean; }
+const { document, isSla } = Astro.props;
+const view = isSla ? { ...document, title: 'Acuerdo de nivel de servicio (SLA/ANS)', sections: productionSlaSections } : document;
+const related = [
+  ...documents.filter(item => isSla || item.slug !== document.slug).map(item => ({ title: item.title, href: `/legal/versiones/${packet.version}/${item.slug}/` })),
+  ...(!isSla ? [{ title: 'Acuerdo de nivel de servicio (SLA/ANS)', href: MINIMUM_PRODUCTION_SLA_HREF }] : []),
+  { title: 'Términos del registro y prueba gratuita', href: `/legal/versiones/${SIGNUP_PRODUCTION_VERSION}/terminos/` },
+  { title: 'Privacidad del registro y prueba gratuita', href: `/legal/versiones/${SIGNUP_PRODUCTION_VERSION}/privacidad/` },
+];
+---
+<VersionedLegalDocument version={packet.version} scope={packet.scope} notice={packet.notice}
+  packageSha256={productionLegalSha256} document={view} kind={isSla ? 'sla' : 'contract'} related={related}
+  slaHref={isSla ? undefined : MINIMUM_PRODUCTION_SLA_HREF} />

@@ -1,0 +1,26 @@
+---
+import type { GetStaticPaths } from 'astro';
+import VersionedLegalDocument from '../../../../components/VersionedLegalDocument.astro';
+import { isProductionLegalSite, registrationLegalLinks, MINIMUM_PRODUCTION_SLA_HREF, MINIMUM_PRODUCTION_VERSION } from '../../../../lib/registration-legal';
+import { productionSignupPacket as packet, productionSignupDocuments as documents,
+  productionSignupSha256, type ProductionSignupDocument } from '../../../../lib/production-legal';
+
+export const getStaticPaths: GetStaticPaths = () => {
+  registrationLegalLinks({ PUBLIC_SITE_URL: import.meta.env.PUBLIC_SITE_URL,
+    PUBLIC_REGISTRATION_LEGAL_VERSION: import.meta.env.PUBLIC_REGISTRATION_LEGAL_VERSION });
+  if (!isProductionLegalSite(import.meta.env.PUBLIC_SITE_URL)) return [];
+  return documents.map(document => ({ params: { document: document.slug }, props: { document } }));
+};
+interface Props { document: ProductionSignupDocument; }
+const { document } = Astro.props;
+const related = [
+  ...documents.filter(item => item.slug !== document.slug).map(item => ({ title: item.title, href: `/legal/versiones/${packet.version}/${item.slug}/` })),
+  { title: 'Acuerdo de nivel de servicio (SLA/ANS)', href: MINIMUM_PRODUCTION_SLA_HREF },
+  ...['terminos', 'privacidad', 'tratamiento-por-cuenta-del-cliente'].map(slug => ({
+    title: slug === 'terminos' ? 'Términos completos del servicio' : slug === 'privacidad' ? 'Privacidad del servicio' : 'Anexo de tratamiento por cuenta del cliente',
+    href: `/legal/versiones/${MINIMUM_PRODUCTION_VERSION}/${slug}/`,
+  })),
+];
+---
+<VersionedLegalDocument version={packet.version} scope={packet.scope} notice={packet.notice}
+  packageSha256={productionSignupSha256} document={document} kind="registration" related={related} slaHref={MINIMUM_PRODUCTION_SLA_HREF} />

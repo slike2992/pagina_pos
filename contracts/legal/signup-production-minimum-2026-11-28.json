@@ -1,0 +1,137 @@
+{
+  "version": "2026-11-28-registro-prod",
+  "scope": "production_signup",
+  "notice": "Condiciones de registro y prueba gratuita del entorno productivo Cripton, sujetas a publicación y adopción expresas. Quince días gratis, sin tarjeta ni renovación automática; encargo previo al acceso operativo y compra anticipada voluntaria.",
+  "documents": [
+    {
+      "type": "terms",
+      "slug": "terminos",
+      "title": "Términos del registro y prueba gratuita — producción",
+      "sections": [
+        {
+          "id": "proveedor",
+          "heading": "1. Quién presta la prueba",
+          "paragraphs": [
+            "Jonathan Santiago Murcia Peña, persona natural, NIT 1014234769-1, es el proveedor identificado comercialmente como Cripton. Dirección de notificaciones: Cl 78 C 130 55, Bogotá D.C., Colombia. Teléfono: +57 321 959 7077. Contacto legal y privacidad: legal@cripton.com.co. Soporte: servicioalcliente@cripton.com.co.",
+            "Estas condiciones identifican el registro del entorno productivo Cripton desde su publicación y adopción expresas. La prueba gratuita y su aceptación no ordenan un cobro. Los pagos voluntarios utilizan la integración productiva habilitada de Wompi y requieren una orden y aprobación propias. El registro no acredita autorización de facturación ante DIAN. Los datos personales suministrados se tratan conforme a la política identificada en este acto."
+          ]
+        },
+        {
+          "id": "prueba-gratuita",
+          "heading": "2. Quince días gratis, sin tarjeta",
+          "paragraphs": [
+            "El registro elegible da acceso a una prueba gratuita de 15 días. El plazo comienza cuando el espacio de la empresa queda aprovisionado y disponible, no al llenar el formulario. Mi cuenta informa el estado y las fechas de inicio y fin. El acceso requiere verificar el correo y completar la configuración de la cuenta.",
+            "No se exige tarjeta, no se activa renovación automática y terminar la prueba sin contratar no genera deuda. Al vencer sin cobertura pagada se restringe la operación. La elegibilidad y los límites del plan se verifican por cuenta y empresa; usar varios alias o crear empresas no garantiza nuevas pruebas gratuitas.",
+            "Un correo puede administrar varias empresas. Cada empresa conserva su propia suscripción, cobertura y límites: pagar una no habilita las demás. Las sucursales de una empresa consumen los límites de su plan.",
+            "Antes de abrir el POS, el representante habilitado acepta el acuerdo de servicio y el anexo de encargo del tratamiento de los datos que el negocio incorpore. Ese paso es gratuito y no obliga a comprar, aportar tarjeta ni activar renovación. Se informa su versión y se conserva la constancia por empresa; no deben cargarse datos reales de terceros antes de completarlo."
+          ]
+        },
+        {
+          "id": "registro",
+          "heading": "3. Registro, aceptación y seguridad",
+          "paragraphs": [
+            "Se solicitan nombre, correo, nombre de la empresa y teléfono obligatorio de contacto, con indicativo de país, para gestionar la cuenta, brindar soporte y comunicar el estado del servicio y sus pagos. Dar el teléfono no autoriza publicidad ni mensajes automáticos por WhatsApp. Quien se registra declara ser mayor de edad, actuar con facultades suficientes y aportar datos veraces. Verificar el correo acredita su control en ese momento; no equivale a una comprobación oficial de identidad ni a revisión de documentos.",
+            "La aceptación expresa de estas condiciones y de la política indicada se registra con su versión, huella de contenido y fecha. Los textos y aceptaciones anteriores se conservan: una versión nueva no altera retroactivamente lo aceptado. No se presume consentimiento por silencio ni se autoriza publicidad por verificar el correo.",
+            "Cada persona debe proteger sus credenciales, usar accesos individuales y comunicar incidentes. El servicio aplica permisos y separación por empresa y ambiente; no está permitido acceder a terceros, eludir límites, introducir código malicioso o cargar datos ajenos sin fundamento legítimo."
+          ]
+        },
+        {
+          "id": "contratacion",
+          "heading": "4. Contratar es un paso distinto",
+          "paragraphs": [
+            "Aceptar el acuerdo y el encargo para entrar al POS es un paso distinto de comprar. El representante declara su identidad y facultades, lee los documentos y acepta expresamente sin firma dibujada ni revisión documental. Puede comprar voluntariamente desde el primer minuto de la prueba o en cualquier día, sin esperar 15 días. El checkout muestra la oferta vigente y exige una nueva revisión si cambió; aceptar el acuerdo no ordena un cargo ni autoriza renovación automática. La activación fiscal conserva sus requisitos adicionales.",
+            "El checkout informa empresa, plan, período y total en COP. Los pagos reales requieren la integración productiva habilitada de Wompi; Sandbox no acredita un pago real. La aprobación se comprueba con el proveedor; volver del navegador o recibir un correo no basta para confirmar un pago. Un pago pendiente o incierto se concilia antes de repetirlo para evitar duplicados.",
+            "Si se paga durante la prueba, el período pagado comienza cuando esta termina; si se aprueba después, comienza al aprobarse. Cualquier autorización de renovación automática es separada y revocable en Mi cuenta. No se deben enviar números completos de tarjeta ni códigos de seguridad a Cripton por correo o soporte."
+          ]
+        },
+        {
+          "id": "electronica",
+          "heading": "5. Documentos internos y facturación electrónica",
+          "paragraphs": [
+            "Un documento interno del POS no es por su nombre una factura electrónica ni un Documento Equivalente Electrónico validado por DIAN. Sandbox sirve para familiarización y no sustituye la emisión productiva. Un plan sin electrónica tampoco exime a quien deba facturar de usar una solución legalmente habilitada.",
+            "El cliente determina sus obligaciones y suministra datos, impuestos e instrucciones veraces, con asesoría competente cuando la requiera. Antes de emitir en producción debe cumplir los requisitos aplicables de RUT, habilitación, modo de operación, emisor, credenciales y rangos autorizados. Pagar el plan no acredita esos requisitos. Cripton responde por el software y la integración a su cargo; estas condiciones no eliminan responsabilidades legales propias ni derechos irrenunciables.",
+            "La confirmación de un documento instruye su procesamiento técnico en la empresa y ambiente configurados. Se deben revisar pendientes, rechazos, validación y entrega. No se eliminan documentos aceptados para sustituirlos sin trazabilidad. La habilitación y cadena efectiva de Factus y DIAN deben acreditarse antes de ofrecer emisión productiva."
+          ]
+        },
+        {
+          "id": "soporte-y-salida",
+          "heading": "6. Ayuda, datos y finalización",
+          "paragraphs": [
+            "El soporte se solicita por WhatsApp +57 321 959 7077 o servicioalcliente@cripton.com.co, de lunes a viernes de 08:00 a 18:00, hora de Colombia, excluidos festivos nacionales. La primera respuesta humana se dará dentro de un día hábil de atención (diez horas dentro de ese horario); un recibo automático no cuenta como atención. No es un plazo garantizado de resolución ni soporte 24/7. El ANS completo y su forma de contar los plazos están disponibles en https://cripton.com.co/legal/versiones/2026-11-28-minimo-prod/sla/ y se incluyen en los términos del contrato previo al POS; no requieren una cuarta aceptación. El portal también permite registrar solicitudes y obtener un recibo.",
+            "Mi cuenta muestra las opciones habilitadas de exportación y salida. La finalización no suprime inmediatamente contratos, pagos, solicitudes abiertas ni documentos sujetos a conservación. Los plazos comerciales de exportación y conservación no sustituyen los deberes fiscales del cliente ni las bases legales aplicables a cada clase de dato. Las copias de seguridad siguen su rotación y los controles que evitan reintroducir bajas.",
+            "La prueba puede restringirse por vencimiento, seguridad o incumplimiento, con información y posibilidad de atención cuando proceda. No se pacta una exoneración total por fallas imputables a Cripton ni se impide acudir a las autoridades competentes. Se aplican la legislación colombiana y los derechos imperativos correspondientes."
+          ]
+        }
+      ]
+    },
+    {
+      "type": "privacy",
+      "slug": "privacidad",
+      "title": "Política de privacidad del registro y prueba — producción",
+      "sections": [
+        {
+          "id": "responsable",
+          "heading": "1. Responsable y contacto",
+          "paragraphs": [
+            "Jonathan Santiago Murcia Peña, persona natural, NIT 1014234769-1, identificado comercialmente como Cripton, es responsable de los datos de registro, cuenta, relación comercial, seguridad y atención que trata para sus propias finalidades. Dirección: Cl 78 C 130 55, Bogotá D.C., Colombia. Teléfono: +57 321 959 7077. Canal de privacidad y derechos: legal@cripton.com.co. Soporte: servicioalcliente@cripton.com.co.",
+            "Esta versión informa el tratamiento de los datos efectivamente suministrados para el registro y la prueba gratuita del entorno productivo. Respecto de los datos que el negocio incorpora para sus propias finalidades, el negocio es responsable y Cripton actúa como encargado conforme al acuerdo de servicio y su anexo de tratamiento, cuya aceptación se exige antes del acceso operativo de nuevos comercios. El anexo fija alcance, actividades, instrucciones, seguridad, confidencialidad, asistencia y salida, también durante la prueba. No es una autorización de los clientes finales del comercio ni permite una finalidad ajena a sus instrucciones."
+          ]
+        },
+        {
+          "id": "datos-finalidades",
+          "heading": "2. Qué datos se tratan y para qué",
+          "paragraphs": [
+            "El registro recoge nombre, correo, empresa y teléfono obligatorio de contacto. Se registran verificación, versiones y prueba de aceptación, fechas, acceso y eventos de seguridad necesarios. Se utilizan para comprobar el correo, crear y proteger la cuenta y la empresa, prestar la prueba, aplicar límites, impedir fraude, atender solicitudes y conservar evidencia del acto.",
+            "La contratación posterior solicita los datos de identificación, contacto y facultades declaradas necesarios para la oferta y el contrato. Se tratan referencias, estados, importes y períodos de pagos, y las autorizaciones específicas de renovación si se otorgan. Cripton no solicita por correo datos completos de tarjeta ni códigos de seguridad. Wompi trata los datos que se introduzcan en su formulario bajo sus propias condiciones.",
+            "Se envían correos indispensables de verificación, acceso, seguridad, soporte, contrato, pago y cobertura al destinatario correspondiente. La aceptación de esta política no autoriza publicidad ni cobranza por cualquier canal u horario. Las finalidades comerciales adicionales requieren su fundamento y autorización separada cuando corresponda. No se venden los datos."
+          ]
+        },
+        {
+          "id": "autorizacion",
+          "heading": "3. Información, autorización y elecciones",
+          "paragraphs": [
+            "La casilla no premarcada del registro expresa la aceptación de la política y autoriza el tratamiento informado que requiera autorización. La prueba se conserva y puede solicitarse copia. Los tratamientos que tengan otra base legal deben respetar igualmente los principios y deberes aplicables. El teléfono de contacto es obligatorio para gestionar la cuenta, brindar soporte y comunicar el estado del servicio y sus pagos; no autoriza publicidad ni mensajes automáticos por WhatsApp. El correo verificable también es necesario para completar esta alta.",
+            "No se solicitan datos sensibles ni datos de menores para este registro. No deben incluirse en campos libres, adjuntos o pruebas. Cuando excepcionalmente proceda tratarlos, se requiere el régimen específico y la información sobre el carácter facultativo de las respuestas; este formulario no sustituye esos requisitos."
+          ]
+        },
+        {
+          "id": "proveedores",
+          "heading": "4. Proveedores, acceso y seguridad",
+          "paragraphs": [
+            "Los servicios de infraestructura y correo utilizados se identifican en el registro de proveedores del entorno productivo. La intervención de Microsoft Azure y Microsoft 365 depende de la configuración documentada; Wompi interviene al utilizar pagos y Factus sólo en funciones fiscales activadas. Estos terceros no reciben por el solo registro toda la información del POS. El acceso se limita a la finalidad y a quienes lo necesitan; no se autoriza divulgar datos a cualquier tercero.",
+            "Los encargos, subencargos y eventuales transmisiones o transferencias internacionales requieren los soportes, instrucciones y garantías que correspondan. Este texto no acredita por sí mismo una autorización DIAN, una cadena de subencargados o un país de alojamiento que no se haya verificado. Su acreditación se mantiene como requisito propio antes de la apertura productiva.",
+            "Se aplican aislamiento por empresa y ambiente, control de acceso, cifrado cuando corresponde, registros y respaldos. No se promete riesgo cero. Los incidentes se gestionan según su naturaleza y los deberes de información o reporte aplicables. Las cookies necesarias y las opciones de consentimiento se explican en la sección de cookies del sitio; no se habilita publicidad por aceptar estas condiciones."
+          ]
+        },
+        {
+          "id": "conservacion",
+          "heading": "5. Conservación y disposición",
+          "paragraphs": [
+            "Los 30 y 90 días son plazos comerciales de salida del espacio del negocio y comienzan en la fecha de terminación registrada, no por cerrar una pestaña, cancelar una renovación o simplemente vencer la prueba. Durante los 30 días calendario siguientes, el representante autorizado puede solicitar exportación de los datos operativos disponibles. Una solicitud oportuna continúa hasta ser atendida aunque su entrega exceda esa ventana. Se verifican empresa, identidad, alcance y medio seguro; no se entregan datos de otros comercios, secretos ni código.",
+            "Los datos operativos se conservan durante 90 días calendario desde la terminación registrada para el cierre y recuperación controlada. Cumplido ese umbral se revisan las condiciones de baja y se ejecuta mediante el procedimiento privado la supresión o anonimización de lo que no tenga fundamento específico de conservación, registrando fecha, alcance y excepciones; no es un temporizador de borrado automático. Una solicitud de supresión anterior se evalúa conforme a la ley. Obligaciones fiscales, reclamaciones, exportaciones oportunas aún sin entregar y preservaciones identificadas pueden impedir una baja concreta; deben registrarse motivo, categorías, acceso restringido y revisión. No se promete borrar indiscriminadamente toda evidencia comercial, contractual, de seguridad o de derechos al día 90 ni conservarla indefinidamente sin justificación.",
+            "Los respaldos sirven exclusivamente para recuperación y tienen acceso restringido. La frecuencia, retención por categoría, destino externo y recuperación del entorno productivo deben quedar documentados y comprobados antes de su apertura. No se acredita una copia externa continua ni un plazo máximo universal de borrado por publicar este texto. Si falta una copia o recuperación necesaria, no se elimina una cadena indispensable; se registra la excepción y se revisa su retiro seguro. Las imágenes, las claves, la web y los diarios de bajas tienen inventarios y ciclos propios; las claves necesarias se mantienen mientras exista evidencia cifrada que deba conservarse.",
+            "Una restauración debe reaplicar el diario de bajas y las restricciones vigentes antes de habilitar acceso, para no reactivar datos suprimidos. La conservación de copias no permite un nuevo uso comercial de los datos. El comercio puede solicitar información sobre el estado de su salida, entrega, supresión y excepciones mediante los canales de privacidad y soporte."
+          ]
+        },
+        {
+          "id": "derechos",
+          "heading": "6. Derechos y solicitudes",
+          "paragraphs": [
+            "El titular puede conocer, actualizar y rectificar sus datos; solicitar prueba de autorización e información sobre su uso; acceder gratuitamente; y pedir revocatoria o supresión cuando proceda y no exista deber legal o contractual de permanencia. Puede presentar consultas o reclamos por legal@cripton.com.co o por los canales de datos de Mi cuenta. Se verifican identidad y facultades con medios proporcionales, sin exigir siempre documentos innecesarios.",
+            "Las consultas se atienden en hasta 10 días hábiles desde su recepción, con ampliación motivada de hasta 5 cuando proceda. Los reclamos completos se atienden en hasta 15 días hábiles desde el día siguiente a su recibo, con ampliación motivada de hasta 8 cuando proceda. Si falta información se solicita dentro de los 5 días siguientes; transcurridos 2 meses desde el requerimiento sin aportarla puede entenderse desistido. Se informa el traslado al competente y la anotación de reclamo en trámite cuando corresponda, conforme a los artículos 14 y 15 de la Ley 1581 de 2012.",
+            "Si quien recibe un reclamo no es competente para resolverlo, lo traslada a quien corresponda en un máximo de dos días hábiles desde la recepción e informa al interesado. Recibido el reclamo completo, incluye en la base de datos la leyenda «reclamo en trámite» y su motivo dentro de los dos días hábiles siguientes y la mantiene hasta decidirlo. Se documentan recepción, competencia, traslado, aviso, datos afectados, anotación y decisión. Registrar un evento en el portal no reemplaza ejecutar la actuación sobre los datos ni acreditar la remisión o entrega.",
+            "Tras agotar el trámite correspondiente ante el responsable o encargado, puede acudirse a la Superintendencia de Industria y Comercio. La solicitud no se condiciona a conservar un plan pagado ni a aceptar publicidad. Si no es posible acceder al portal, los correos y la dirección de notificaciones siguen siendo canales de atención."
+          ]
+        },
+        {
+          "id": "version",
+          "heading": "7. Versión y cambios",
+          "paragraphs": [
+            "Versión 2026-11-28-registro-prod. Su adopción rige para nuevos registros productivos desde la publicación y adopción expresas en el catálogo del servicio. El historial y las aceptaciones anteriores no se sustituyen. Las modificaciones se informan por los canales disponibles y, si se amplían finalidades que requieren autorización, se solicita la que corresponda antes de ese uso. Preparar estos textos no acredita la apertura productiva ni convierte aceptaciones QA en productivas.",
+            "El registro identifica la versión exacta de términos y privacidad que acepta la persona y conserva su contenido, huella y fecha. La política informada por el centro de cookies es la versión pública seleccionada para este entorno; la preferencia de cookies conserva su propio número de versión y no sustituye las aceptaciones del registro, encargo o contrato. Los enlaces históricos siguen disponibles con su fecha y alcance originales."
+          ]
+        }
+      ]
+    }
+  ]
+}

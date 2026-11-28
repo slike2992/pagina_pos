@@ -1,30 +1,36 @@
 ---
 import FlowLayout from "../../layouts/FlowLayout.astro";
+import { registrationLegalLinks, assertProductionLegalConfiguration } from "../../lib/registration-legal";
+const environment = { PUBLIC_SITE_URL: import.meta.env.PUBLIC_SITE_URL, PUBLIC_REGISTRATION_LEGAL_VERSION: import.meta.env.PUBLIC_REGISTRATION_LEGAL_VERSION,
+  PUBLIC_SAAS_API_URL: import.meta.env.PUBLIC_SAAS_API_URL, PUBLIC_POS_URL: import.meta.env.PUBLIC_POS_URL };
+const legalLinks = registrationLegalLinks(environment);
+assertProductionLegalConfiguration(environment);
 const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
 ---
 <FlowLayout title="Crear cuenta" eyebrow="Empieza con Cripton" heading="Prueba gratis durante 15 días" lead="Elige tu plan y verifica tu correo. No necesitas tarjeta para la prueba; no se cobra ni renueva automáticamente. Los 15 días empiezan cuando tu empresa esté lista.">
-  <form class="flow-form" id="signup-form" data-api-url={apiUrl}>
+  <form class="flow-form" id="signup-form" data-api-url={apiUrl} data-production-legal-version={'production' in legalLinks ? legalLinks.version : undefined}>
     <div class="field"><label for="contactName">Nombre completo (obligatorio)</label><input id="contactName" name="contactName" autocomplete="name" minlength="2" maxlength="180" required /></div>
     <div class="field"><label for="email">Correo (obligatorio)</label><input id="email" name="email" type="email" autocomplete="email" maxlength="320" required /></div>
     <div class="field"><label for="companyName">Empresa (obligatorio)</label><input id="companyName" name="companyName" autocomplete="organization" minlength="2" maxlength="200" required /></div>
     <div class="field"><label for="phone">Teléfono (obligatorio)</label><input id="phone" name="phone" type="tel" autocomplete="tel" minlength="8" maxlength="40" required aria-describedby="phone-help" /><p id="phone-help" class="status">Incluye el indicativo de país; en Colombia, +57 y diez dígitos. Dar tu teléfono no autoriza mensajes por WhatsApp.</p></div>
     <div class="field full"><label for="priceCode">Plan (obligatorio)</label><select id="priceCode" name="priceCode" required><optgroup label="Sin facturación electrónica"><option value="basic">Básico · $49.900/mes</option><option value="professional">Profesional · $79.900/mes</option><option value="enterprise">Empresarial · $129.900/mes</option></optgroup><optgroup label="Con facturación electrónica"><option value="basic-fe">Básico FE · $69.900/mes</option><option value="professional-fe">Profesional FE · $99.900/mes</option><option value="enterprise-fe">Empresarial FE · $159.900/mes</option></optgroup></select></div>
     <p>Puedes contratar el plan en cualquier momento, también durante la prueba, y conservar el tiempo gratis restante. La disponibilidad electrónica requiere configurar el emisor y el ambiente fiscal.</p>
-    <label class="legal-check"><input id="legal" type="checkbox" required disabled /><span>Acepto los <a id="terms-link" href="/legal/terminos" target="_blank" rel="noopener">términos</a> y la <a id="privacy-link" href="/legal/privacidad" target="_blank" rel="noopener">política de privacidad</a> vigentes. (obligatorio)</span></label>
+    <label class="legal-check"><input id="legal" type="checkbox" required disabled /><span>Acepto los <a id="terms-link" href={legalLinks.termsHref} target="_blank" rel="noopener">términos</a> y la <a id="privacy-link" href={legalLinks.privacyHref} target="_blank" rel="noopener">política de privacidad</a> vigentes. (obligatorio)</span></label>
     <div class="actions"><button class="button" type="submit" disabled>Continuar</button></div>
-    <p class="status" role="status" aria-live="polite">Consultando condiciones vigentes…</p>
+    <p id="signup-status" class="status" role="status" aria-live="polite">Consultando condiciones vigentes…</p>
   </form>
   <script>
     import { bindFormFeedback } from "../../lib/form-feedback";
     import { createIdempotencyKey } from "../../scripts/client-idempotency";
     import { normalizeSignupPhone } from "../../lib/signup-phone";
+    import { readProductionRegistrationDocuments } from "../../lib/registration-legal";
 
     import { readPendingSignup, createdPendingSignup, savePendingSignup, showVerificationInbox } from "../../lib/signup-verification";
 
     type LegalDocument = { type: "terms" | "privacy"; version: string; contentUrl: string };
     const form = document.querySelector<HTMLFormElement>("#signup-form");
     const feedback = form ? bindFormFeedback(form) : null;
-    const status = form?.querySelector<HTMLElement>(".status");
+    const status = form?.querySelector<HTMLElement>("#signup-status");
     const submit = form?.querySelector<HTMLButtonElement>('button[type="submit"]');
     const legal = form?.querySelector<HTMLInputElement>("#legal");
     const plan = form?.querySelector<HTMLSelectElement>("#priceCode");
@@ -76,7 +82,8 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
         const response = await fetch(`${apiUrl}/v1/public/legal-documents`, { cache: "no-store" });
         const body = await response.json();
         if (!response.ok) throw body;
-        const currentDocuments: LegalDocument[] = body.documents;
+        const currentDocuments: LegalDocument[] = form?.dataset.productionLegalVersion
+          ? readProductionRegistrationDocuments(body.documents, location.origin) : body.documents;
         if (!Array.isArray(currentDocuments)) throw new Error("missing legal documents");
         const terms = currentDocuments.find((item) => item.type === "terms");
         const privacy = currentDocuments.find((item) => item.type === "privacy");

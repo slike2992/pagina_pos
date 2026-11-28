@@ -5,7 +5,8 @@ import { createHash } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { registrationLegalLinks, isSignupTrialQaSite, SIGNUP_TRIAL_QA_VERSION, SIGNUP_MINIMUM_QA_VERSION, SIGNUP_MINIMUM_ADDRESS_QA_VERSION, SIGNUP_MINIMUM_SLA_QA_VERSION, MINIMUM_SLA_QA_HREF } from '../src/lib/registration-legal.ts';
+import { registrationLegalLinks, isSignupTrialQaSite, SIGNUP_TRIAL_QA_VERSION, SIGNUP_MINIMUM_QA_VERSION, SIGNUP_MINIMUM_ADDRESS_QA_VERSION, SIGNUP_MINIMUM_SLA_QA_VERSION, MINIMUM_SLA_QA_HREF,
+  SIGNUP_PRODUCTION_VERSION, MINIMUM_PRODUCTION_VERSION, MINIMUM_PRODUCTION_SLA_HREF, isProductionLegalSite, assertProductionLegalConfiguration } from '../src/lib/registration-legal.ts';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const read = relative => readFile(path.join(root, relative));
@@ -18,6 +19,8 @@ const addressPacket = JSON.parse(await read('contracts/legal/signup-minimum-qa-2
 const addressServicePacket = JSON.parse(await read('contracts/legal/staging-minimum-2026-11-27.json'));
 const slaSignupPacket = JSON.parse(await read('contracts/legal/signup-minimum-qa-2026-11-28.json'));
 const slaServicePacket = JSON.parse(await read('contracts/legal/staging-minimum-2026-11-28.json'));
+const productionPacket = JSON.parse(await read('contracts/legal/production-minimum-2026-11-28.json'));
+const productionSignup = JSON.parse(await read('contracts/legal/signup-production-minimum-2026-11-28.json'));
 const prefix = `/legal/versiones/${SIGNUP_TRIAL_QA_VERSION}`;
 const canonicalJson = value => value === null || typeof value !== 'object' ? JSON.stringify(value)
   : Array.isArray(value) ? `[${value.map(canonicalJson).join(',')}]`
@@ -35,12 +38,13 @@ const preserved = ['src/pages/legal/terminos.astro', 'src/pages/legal/privacidad
   'src/lib/signup-minimum-address-legal.ts', 'contracts/legal/signup-minimum-qa-2026-11-27.json',
   'contracts/legal/staging-minimum-2026-11-27.json', 'src/pages/registro/index.astro',
   'src/components/CustomerContract.astro', 'src/lib/customer-contract.ts', 'src/lib/signup-phone.ts'];
-let temporary, defaultOutput, qaOutput, minimumOutput, addressOutput, slaOutput;
+let temporary, defaultOutput, qaOutput, minimumOutput, addressOutput, slaOutput, productionOutput, wwwOutput;
 const beforeBytes = new Map();
 
 function build(output, overrides) {
   return new Promise((resolve, reject) => {
     const env = { ...process.env, PUBLIC_SITE_URL: 'https://staging.cripton.com.co', PUBLIC_SITE_INDEXABLE: 'false',
+      ASTRO_TELEMETRY_DISABLED: '1', PUBLIC_SAAS_API_URL:'https://api-staging.cripton.com.co', PUBLIC_POS_URL:'https://pos-staging.cripton.com.co',
       PUBLIC_LEGAL_DRAFT_PREVIEW: 'false', PUBLIC_ANALYTICS_REVIEWED: 'false', PUBLIC_GA_MEASUREMENT_ID: '',
       PUBLIC_REGISTRATION_LEGAL_VERSION: '', ...overrides };
     const child = spawn(process.execPath, [path.join(root, 'node_modules/astro/bin/astro.mjs'), 'build', '--outDir', output],
@@ -67,6 +71,12 @@ before(async () => {
   slaOutput = path.join(temporary, 'sla');
   const sla = await build(slaOutput, { PUBLIC_REGISTRATION_LEGAL_VERSION: SIGNUP_MINIMUM_SLA_QA_VERSION });
   assert.equal(sla.code, 0, sla.log);
+  productionOutput=path.join(temporary,'production');wwwOutput=path.join(temporary,'www');
+  for(const [output,site] of [[productionOutput,'https://cripton.com.co'],[wwwOutput,'https://www.cripton.com.co']]) {
+    const result=await build(output,{PUBLIC_SITE_URL:site,PUBLIC_REGISTRATION_LEGAL_VERSION:SIGNUP_PRODUCTION_VERSION,
+      PUBLIC_SAAS_API_URL:'https://api.cripton.com.co',PUBLIC_POS_URL:'https://pos.cripton.com.co'});
+    assert.equal(result.code,0,result.log);
+  }
 });
 after(async () => {
   for (const [file, bytes] of beforeBytes) assert.deepEqual(await read(file), bytes, `${file}: bytes changed during builds`);
@@ -311,6 +321,85 @@ test('28 November selector rejects non-staging origins and unknown versions with
 const contentLines = sections => sections.flatMap(section => [section.heading, ...(section.paragraphs ?? []), ...(section.items ?? []),
   ...(section.subsections ?? []).flatMap(part => [part.heading, ...(part.paragraphs ?? []), ...(part.items ?? [])])]).map(text);
 const articleLines = article => [...article.matchAll(/<(h2|h3|p|li)\b[^>]*>([\s\S]*?)<\/\1>/g)].map(match => text(match[2]));
+
+test('production selector is explicit and limited to the two exact HTTPS public hosts',()=>{
+  for(const site of ['https://cripton.com.co','https://www.cripton.com.co']) {
+    assert.equal(isProductionLegalSite(site),true);
+    assert.deepEqual(registrationLegalLinks({PUBLIC_SITE_URL:site,PUBLIC_REGISTRATION_LEGAL_VERSION:SIGNUP_PRODUCTION_VERSION}),{
+      version:SIGNUP_PRODUCTION_VERSION,production:true,stagingTrialQa:false,slaHref:MINIMUM_PRODUCTION_SLA_HREF,
+      termsHref:`/legal/versiones/${SIGNUP_PRODUCTION_VERSION}/terminos/`,privacyHref:`/legal/versiones/${SIGNUP_PRODUCTION_VERSION}/privacidad/`});
+  }
+  for(const site of [undefined,'','invalid','http://cripton.com.co','https://staging.cripton.com.co',
+    'https://api.cripton.com.co','https://cripton.com.co.evil.invalid','https://cripton.com.co@evil.invalid',
+    'https://user@cripton.com.co','https://cripton.com.co:444','https://cripton.com.co/path',
+    'https://cripton.com.co/?scope=production','https://cripton.com.co/#production']) {
+    assert.equal(isProductionLegalSite(site),false);
+    assert.throws(()=>registrationLegalLinks({PUBLIC_SITE_URL:site,PUBLIC_REGISTRATION_LEGAL_VERSION:SIGNUP_PRODUCTION_VERSION}));
+  }
+});
+test('production legal configuration rejects missing or cross-environment API/POS without changing staging selection',()=>{
+  const env={PUBLIC_SITE_URL:'https://cripton.com.co',PUBLIC_REGISTRATION_LEGAL_VERSION:SIGNUP_PRODUCTION_VERSION,
+    PUBLIC_SAAS_API_URL:'https://api.cripton.com.co',PUBLIC_POS_URL:'https://pos.cripton.com.co'};
+  assert.doesNotThrow(()=>assertProductionLegalConfiguration(env));
+  for(const patch of [{PUBLIC_SAAS_API_URL:undefined},{PUBLIC_POS_URL:undefined},{PUBLIC_SAAS_API_URL:'https://api-staging.cripton.com.co'},
+    {PUBLIC_POS_URL:'https://pos-staging.cripton.com.co'},{PUBLIC_SAAS_API_URL:'http://localhost:4100'},
+    {PUBLIC_SAAS_API_URL:'https://api.cripton.com.co.evil.invalid'},{PUBLIC_POS_URL:'https://user@pos.cripton.com.co'}]) {
+    assert.throws(()=>assertProductionLegalConfiguration({...env,...patch}));
+  }
+  assert.equal(registrationLegalLinks({PUBLIC_SITE_URL:'https://staging.cripton.com.co',PUBLIC_REGISTRATION_LEGAL_VERSION:SIGNUP_MINIMUM_SLA_QA_VERSION}).slaHref,MINIMUM_SLA_QA_HREF);
+});
+test('production files retain exact supplied SaaS bytes and independent canonical identities',async()=>{
+  for(const [filename,sourceHash,canonicalHash,version,scope] of [
+    ['production-minimum-2026-11-28.json','622d5b6b51f1dbc4b52668814f1936b2378c5bd85c829c638c22c20667a5f9ec','4806a0616ec5499009b15c80e0d989b8ad5765fdfbc1677e5ea1e29710c3aaf9',MINIMUM_PRODUCTION_VERSION,'production'],
+    ['signup-production-minimum-2026-11-28.json','9caffbfac1a48d11d06f0ed0b6a5337feecc8b225593ee73c9ba53e0adaa1ef7','82dbf9d30a27dbf9448671ff50818f6da9b003b20de703eb664ac2e04df9c0b7',SIGNUP_PRODUCTION_VERSION,'production_signup']]) {
+    const bytes=await read(`contracts/legal/${filename}`),packet=JSON.parse(bytes);
+    assert.equal(hash(bytes),sourceHash);assert.equal(hash(canonicalJson(packet)),canonicalHash);
+    assert.equal(packet.version,version);assert.equal(packet.scope,scope);
+  }
+  assert.notEqual(productionPacket.version,slaServicePacket.version);assert.notEqual(productionSignup.version,slaSignupPacket.version);
+});
+test('production and www render complete source documents and the SLA view without staging presentation or extra acceptance',async()=>{
+  for(const output of [productionOutput,wwwOutput]) {
+    for(const packet of [productionPacket,productionSignup])for(const document of packet.documents) {
+      const html=await rendered(output,`legal/versiones/${packet.version}/${document.slug}`);
+      const article=html.match(/<article\b[^>]*data-(?:registration|contract)-legal-copy[^>]*>([\s\S]*?)<\/article>/)?.[1];
+      assert.ok(article);assert.deepEqual(articleLines(article),contentLines(document.sections));
+      assert.ok(html.includes(hash(canonicalJson(document))));assert.ok(html.includes(hash(canonicalJson(packet))));
+      assert.match(html,/name="robots" content="noindex, follow"/);assert.doesNotMatch(html,/QA staging|Registro de prueba en staging|Acuerdo de prueba en staging|<form\b|type="checkbox"/);
+      for(const [,href] of html.matchAll(/href="(\/legal\/[^"?#]+)"/g))await access(path.join(output,href,'index.html'));
+    }
+    const sla=await rendered(output,MINIMUM_PRODUCTION_SLA_HREF),terms=productionPacket.documents[0];
+    const article=sla.match(/<article\b[^>]*data-sla-legal-copy[^>]*>([\s\S]*?)<\/article>/)?.[1];assert.ok(article);
+    assert.deepEqual(articleLines(article),contentLines(terms.sections.filter(section=>section.id==='soporte-y-continuidad'||section.id.startsWith('ans-'))));
+    assert.ok(sla.includes(hash(canonicalJson(terms))));assert.ok(sla.includes(hash(canonicalJson(productionPacket))));
+    await assert.rejects(access(path.join(output,`legal/versiones/${SIGNUP_MINIMUM_SLA_QA_VERSION}/terminos/index.html`)));
+    await assert.rejects(access(path.join(output,MINIMUM_SLA_QA_HREF,'index.html')));
+  }
+  for(const packet of [productionPacket,productionSignup])await assert.rejects(access(path.join(slaOutput,`legal/versiones/${packet.version}/terminos/index.html`)));
+});
+test('production registration, cookies, consent, center, footer and account point to one coherent production selection',async()=>{
+  const privacy=`/legal/versiones/${SIGNUP_PRODUCTION_VERSION}/privacidad/`;
+  for(const route of ['legal','legal/cookies','registro','cuenta']) {
+    const html=await rendered(productionOutput,route);assert.ok(html.includes(`href="${privacy}"`));
+    assert.ok(html.includes(`href="${MINIMUM_PRODUCTION_SLA_HREF}"`));
+    assert.doesNotMatch(html,/href="[^\"]*(?:staging\.cripton|2026-11-\d+-[^\"]*-qa)/);
+  }
+  const cookies=await rendered(productionOutput,'legal/cookies');
+  assert.match(text(cookies),/Versión de este aviso de cookies: 2026-11-23/);
+  assert.match(text(cookies),/Privacidad del registro: versión 2026-11-28-registro-prod/);
+  const signup=await rendered(productionOutput,'registro');assert.match(signup,/data-production-legal-version="2026-11-28-registro-prod"/);
+  const account=await rendered(productionOutput,'cuenta');assert.match(account,/data-production-contract-version="2026-11-28-minimo-prod"/);
+  assert.ok(account.includes('data-production-contract-sha256="4806a0616ec5499009b15c80e0d989b8ad5765fdfbc1677e5ea1e29710c3aaf9"'));
+});
+test('real builds reject production selector on staging and production selector with staging endpoint configuration',async()=>{
+  for(const [label,overrides,pattern] of [
+    ['host',{PUBLIC_SITE_URL:'https://staging.cripton.com.co'},/solo puede seleccionarse en https:\/\/cripton/],
+    ['api',{PUBLIC_SITE_URL:'https://cripton.com.co',PUBLIC_SAAS_API_URL:'https://api-staging.cripton.com.co'},/API y POS productivos/]]) {
+    const result=await build(path.join(temporary,`production-rejected-${label}`),{PUBLIC_REGISTRATION_LEGAL_VERSION:SIGNUP_PRODUCTION_VERSION,
+      PUBLIC_SAAS_API_URL:'https://api.cripton.com.co',PUBLIC_POS_URL:'https://pos.cripton.com.co',...overrides});
+    assert.notEqual(result.code,0);assert.match(result.log,pattern);
+  }
+});
 
 test('all five new public documents render complete canonical text, subsections and visible hashes, preserving every earlier version', async () => {
   for (const sourcePacket of [packet, minimumPacket, addressPacket, slaSignupPacket, slaServicePacket]) {

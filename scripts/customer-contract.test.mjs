@@ -46,6 +46,8 @@ function browser(options = {}) {
   const form = get('[data-contract-form]'); form.elements = { namedItem: name => fields.get(name) };
   form.reset = () => { for (const field of fields.values()) { field.value = ''; field.checked = false; } fields.get('kind').value = 'natural'; fields.get('documentType').value = 'CC'; fields.get('representativeDocumentType').value = 'CC'; };
   const root = get('#account'); root.dataset = { apiUrl: 'https://api.example.invalid', posUrl: 'https://pos.example.invalid' };
+  if(options.production)get('[data-customer-contract]').dataset={productionContractVersion:'2026-11-28-minimo-prod',
+    productionContractSha256:'4806a0616ec5499009b15c80e0d989b8ad5765fdfbc1677e5ea1e29710c3aaf9'};
   let tenant = { tenantId: 'tenant-1', name: 'Empresa 1', role: options.role ?? 'owner', status: 'active' };
   const subscription = { subscriptionId: id(1), status: 'trialing', plan: { code: 'professional', name: 'Profesional' }, price: { amountMinor: 1230017, currency: 'COP', billingInterval: 'monthly' }, currentPeriodStart: null, currentPeriodEnd: null, cancelAtPeriodEnd: false,
     trial: { status: 'active', durationDays: 15, startsAt: '2026-11-20T00:00:00Z', endsAt: '2026-12-05T00:00:00Z', convertedAt: null, canConvert: true }, ...options.subscription };
@@ -105,6 +107,26 @@ function browser(options = {}) {
 const contractCalls = (h, method) => h.calls.filter(call => new URL(call.url).pathname === '/v1/me/customer-contract' && (!method || call.method === method));
 const paymentCalls = h => h.calls.filter(call => new URL(call.url).pathname.endsWith('/trial-checkout'));
 const treeText = node => [node.textContent, ...node.children.map(treeText)].join('\n');
+
+test('production contract mismatch cannot display acceptance or continue to a payment',async()=>{
+  const h=browser({production:true});
+  assert.equal(await h.controller.refresh(),null);
+  assert.equal(h.get('[data-contract-accept]').disabled,true);
+  assert.equal(h.get('[data-contract-form]').hidden,true);
+  assert.equal(await h.controller.beforeOperation(),false);
+  assert.equal(h.continued,0);assert.equal(h.navigations.length,0);
+  assert.equal(contractCalls(h,'POST').length,0);assert.equal(paymentCalls(h).length,0);
+});
+
+test('production contract accepts its own packet identity without treating publication as acceptance',async()=>{
+  const packet=JSON.parse(await readFile(new URL('../contracts/legal/production-minimum-2026-11-28.json',import.meta.url),'utf8'));
+  const h=browser({production:true,contract:()=>reply(fixture({package:packet,
+    packageSha256:'4806a0616ec5499009b15c80e0d989b8ad5765fdfbc1677e5ea1e29710c3aaf9'}))});
+  assert.equal((await h.controller.refresh()).package.version,packet.version);
+  assert.equal(await h.controller.beforeCheckout(),false);
+  assert.equal(h.get('[data-contract-form]').hidden,false);
+  assert.equal(h.continued,0);assert.equal(contractCalls(h,'POST').length,0);
+});
 
 const linkedReceipts = h => h.calls.filter(call => new URL(call.url).pathname.endsWith('/receipt'));
 test('contract email link reads its exact historical receipt after login without acceptance, checkout or SSO', async () => {

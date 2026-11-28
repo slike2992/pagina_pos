@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 import test from 'node:test';
 import ts from 'typescript';
+import { readProductionRegistrationDocuments, SIGNUP_PRODUCTION_VERSION } from '../src/lib/registration-legal.ts';
 
 const helperSource = await readFile(new URL('../src/lib/form-feedback.ts', import.meta.url), 'utf8');
 const registration = await readFile(new URL('../src/pages/registro/index.astro', import.meta.url), 'utf8');
@@ -249,7 +250,8 @@ test('disabling an invalid control clears its feedback on validation', () => {
   assert.equal(page.fields[0].getAttribute('aria-invalid'), null);
 });
 
-async function signup({ ready = true, initialStorage = [], blockedStorage = false, transport, catalog, dev = false, documents = [
+async function signup({ ready = true, initialStorage = [], blockedStorage = false, transport, catalog, dev = false,
+  production = false, origin = 'https://web.example.invalid', documents = [
   { type: 'terms', version: '2026-09-01', contentUrl: '/legal/terminos' },
   { type: 'privacy', version: '2026-09-01', contentUrl: '/legal/privacidad' },
 ] } = {}) {
@@ -262,18 +264,21 @@ async function signup({ ready = true, initialStorage = [], blockedStorage = fals
     { id: 'legal', type: 'checkbox', required: true, checked: false, disabled: true, wrapLabel: true },
   ]);
   page.form.dataset.apiUrl = 'https://api.example.invalid';
+  if (production) page.form.dataset.productionLegalVersion = SIGNUP_PRODUCTION_VERSION;
   page.form.id = 'signup-form';
-  const status = new page.Element('p'); status.className = 'status';
+  const phoneHelp = new page.Element('p'); phoneHelp.id = 'phone-help'; phoneHelp.className = 'status';
+  phoneHelp.textContent = 'Incluye el indicativo de país; dar tu teléfono no autoriza WhatsApp.';
+  const status = new page.Element('p'); status.id = 'signup-status'; status.className = 'status';
   const submit = new page.Element('button'); submit.type = 'submit'; submit.disabled = true;
   const terms = new page.Element('a'); terms.id = 'terms-link';
   const privacy = new page.Element('a'); privacy.id = 'privacy-link';
-  page.form.append(status, submit, terms, privacy);
+  page.form.append(phoneHelp, status, submit, terms, privacy);
   const storage = new Map(initialStorage), calls = [], timers = new Map(), windowListeners = {};
   let now = Date.parse('2030-01-01T00:00:00Z');
   let sequence = 0;
   Object.assign(page.context, {
-    bindFormFeedback: page.bind, URL, URLSearchParams,
-    location: { origin: 'https://web.example.invalid', search: '' },
+    bindFormFeedback: page.bind, URL, URLSearchParams, readProductionRegistrationDocuments,
+    location: { origin, search: '' },
     Date: class extends Date { constructor(...args) { super(...(args.length ? args : [now])); } static now() { return now; } },
     window: {
       setInterval: callback => { timers.set(timers.size + 1, callback); return timers.size; },
@@ -305,7 +310,7 @@ async function signup({ ready = true, initialStorage = [], blockedStorage = fals
   Object.assign(page.context, page.context.exports);
   vm.runInContext(compile(script), page.context);
   await new Promise(resolve => setImmediate(resolve));
-  return { ...page, storage, calls, status, submit, legal: page.fields[5],
+  return { ...page, storage, calls, status, phoneHelp, submit, legal: page.fields[5],
     timers, windowListeners,
     advance: seconds => { now += seconds * 1000; for (const callback of timers.values()) callback(); },
     nodes: () => { const walk = root => root.children.flatMap(child => typeof child === 'string' ? [] : [child, ...walk(child)]); return walk(page.form); },
@@ -322,6 +327,39 @@ test('registration fallback retains constraints and required labels, without sta
   assert.match(markup, /vigentes\. \(obligatorio\)/);
   assert.match(markup, /contratar el plan en cualquier momento, también durante la prueba, y conservar el tiempo gratis restante/);
   assert.doesNotMatch(markup, /contratarlo después de la prueba/);
+});
+
+test('registration status updates preserve phone guidance and clear the loading notice on success and failure', async () => {
+  for (const ready of [true,false]) {
+    const page=await signup({ready});
+    assert.match(page.phoneHelp.textContent,/indicativo de país.*no autoriza WhatsApp/);
+    assert.match(page.status.textContent,ready?/Condiciones vigentes:/ : /No pudimos consultar/);
+    assert.doesNotMatch(page.status.textContent,/Consultando condiciones/);
+    assert.equal(page.legal.disabled,!ready);assert.equal(page.submit.disabled,!ready);
+  }
+});
+
+test('production registration consumes only its exact server catalog and sends the production versions', async () => {
+  const documents=['terms','privacy'].map(type=>({type,version:SIGNUP_PRODUCTION_VERSION,
+    contentUrl:`/legal/versiones/${SIGNUP_PRODUCTION_VERSION}/${type==='terms'?'terminos':'privacidad'}/`}));
+  const page=await signup({production:true,origin:'https://www.cripton.com.co',documents});
+  assert.equal(page.legal.disabled,false);page.legal.checked=true;
+  await page.form.emit('submit');assert.equal(page.posts().length,1);
+  const body=JSON.parse(page.posts()[0].options.body);
+  assert.equal(body.legalAcceptance.termsVersion,SIGNUP_PRODUCTION_VERSION);
+  assert.equal(body.legalAcceptance.privacyVersion,SIGNUP_PRODUCTION_VERSION);
+});
+for(const kind of ['qa-version','qa-url','external-url','duplicate','wrong-host'])test(`production registration fails closed for ${kind}`,async()=>{
+  const documents=['terms','privacy'].map(type=>({type,version:SIGNUP_PRODUCTION_VERSION,
+    contentUrl:`/legal/versiones/${SIGNUP_PRODUCTION_VERSION}/${type==='terms'?'terminos':'privacidad'}/`}));
+  if(kind==='qa-version')documents[0].version='2026-11-28-prueba-minima-qa';
+  if(kind==='qa-url')documents[1].contentUrl='https://staging.cripton.com.co/legal/privacidad/';
+  if(kind==='external-url')documents[1].contentUrl='https://evil.invalid/legal/privacidad/';
+  if(kind==='duplicate')documents[1]={...documents[0]};
+  const page=await signup({production:true,origin:kind==='wrong-host'?'https://staging.cripton.com.co':'https://cripton.com.co',documents});
+  assert.equal(page.legal.disabled,true);assert.equal(page.submit.disabled,true);
+  page.legal.checked=true;await page.form.emit('submit');assert.equal(page.posts().length,0);
+  assert.equal(page.storage.size,0);
 });
 
 test('registration never reaches the signup transport or storage on invalid values or unchecked legal', async () => {

@@ -11,3 +11,5 @@
 /contracts/legal/signup-minimum-qa-2026-11-27.json -text whitespace=cr-at-eol
 /contracts/legal/staging-minimum-2026-11-28.json -text whitespace=cr-at-eol
 /contracts/legal/signup-minimum-qa-2026-11-28.json -text whitespace=cr-at-eol
+/contracts/legal/production-minimum-2026-11-28.json -text whitespace=cr-at-eol
+/contracts/legal/signup-production-minimum-2026-11-28.json -text whitespace=cr-at-eol

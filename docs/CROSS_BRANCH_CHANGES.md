@@ -1,5 +1,47 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-28 — Revisión final y CI de perfiles separados
+
+- Registro: el aviso de estado usa su identificador propio; antes seleccionaba
+  la primera clase `.status`, sobrescribía la ayuda del teléfono y dejaba
+  «Consultando condiciones» al pie incluso tras un error. Se conserva la ayuda
+  y se informa el resultado en el estado accesible correcto, sin habilitar un
+  registro si falta el catálogo legal. Regresión de éxito y fallo incorporada.
+- Perfil productivo: check/build y754/754 pruebas; navegador Codex confirma
+  términos/huellas, enlace desde centro legal y error de API cerrada correctamente
+  presentado. No es una prueba de registro productivo, pago o envío de correo.
+- CI nueva con Node24/pnpm11.25.0 y lock congelado: valida staging y producción
+  por separado, sin secretos, indexación ni despliegue automático. Los gates de
+  proveedor y promoción coordinada SaaS/web siguen siendo independientes.
+
+## 2026-11-28 — Selección legal productiva aislada
+
+- Copias exactas desde SaaS `5bd50d0`, `production-minimum-2026-11-28.json` y
+  `signup-production-minimum-2026-11-28.json`, con scopes `production` y
+  `production_signup`. No se renombran paquetes QA ni se sustituyen fuentes,
+  huellas o aceptaciones anteriores; `.gitattributes -text` conserva sus bytes.
+- Selector explícito `2026-11-28-registro-prod` limitado a los orígenes HTTPS
+  `cripton.com.co` y `www.cripton.com.co`, sin credenciales, rutas, puertos ajenos,
+  query o fragmento. Registro exige API/POS productivos explícitos y concordantes.
+  Sin selector sigue09-01; QA sólo se genera en staging y producción sólo en
+  sus dos hosts. No se cambia el sitio de staging publicado.
+- Cinco documentos íntegros y ANS derivado de las siete secciones originales
+  de términos. Reutiliza layouts/estilos/render/digests, sin rediseño, otro
+  calendario ni cuarta aceptación. Enlaces de centro legal, pie, registro,
+  cookies, consentimiento y documentos relacionados coherentes por ambiente.
+- Registro comprueba versión y destinos del catálogo antes de habilitar su
+  casilla; Mi cuenta comprueba versión/huella del paquete productivo recibido
+  y versión operativa. Rechazo conserva campos y no registra ni paga. La API
+  sigue gobernando adopción, evidencia, acceso y elegibilidad de pago.
+- Consumidores: catálogo legal y contrato por empresa de la API SaaS productiva.
+  Mismos endpoints y payloads; sin migración, POS/admin, correo ni recursos nuevos.
+  No se habilita admisión, producción fiscal o Wompi por compilar estos textos.
+- Evidencia, comandos, fuentes y límites: [QA productiva](LEGAL_PRODUCTION_2026-11-28.md).
+  Producción y staging:753/753 cada uno, Astro check de90 archivos sin incidencias,
+  builds separados de26/32 páginas y matriz legal25/25. Navegador local confirma
+  centro legal, ANS, hashes/cookies y enlaces productivos; sin callback API real.
+  Sin VM, aceptación, proveedor, commit o push. El CI nuevo corresponde a main.
+
 ## 2026-11-28 — Recuperación de intento Nequi al contratar la prueba
 
 - Mi cuenta consume opcionalmente `trial.payment` del servidor:checkoutSessionId,

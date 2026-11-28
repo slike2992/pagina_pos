@@ -1,8 +1,14 @@
 ---
 import { contractPartyLimits } from "../lib/customer-contract";
+import { registrationLegalLinks, MINIMUM_PRODUCTION_VERSION } from "../lib/registration-legal";
+import { productionLegalSha256 } from "../lib/production-legal";
+const legal = registrationLegalLinks({ PUBLIC_SITE_URL: import.meta.env.PUBLIC_SITE_URL,
+  PUBLIC_REGISTRATION_LEGAL_VERSION: import.meta.env.PUBLIC_REGISTRATION_LEGAL_VERSION });
 const documentTypes = ["CC", "CE", "PASSPORT", "PPT"];
 ---
-<section class="customer-contract" data-customer-contract hidden aria-labelledby="customer-contract-heading">
+<section class="customer-contract" data-customer-contract hidden aria-labelledby="customer-contract-heading"
+  data-production-contract-version={'production' in legal ? MINIMUM_PRODUCTION_VERSION : undefined}
+  data-production-contract-sha256={'production' in legal ? productionLegalSha256 : undefined}>
   <h3 id="customer-contract-heading">Contratación del servicio</h3>
   <p data-contract-status role="status" aria-live="polite"></p>
   <div class="actions">
