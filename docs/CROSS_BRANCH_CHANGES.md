@@ -1,5 +1,14 @@
 # Cambios transversales de la web comercial
 
+### Corte publicado28/nov01:44:05 Colombia
+
+Weba226399/runtime9b719ab,89 archivos de manifiesto,check/buildLinux aprobados.
+Catálogo28 adoptado por operador privado con ensayo y replay;históricos intactos.
+Codex comprobó teléfono obligatorio,enlaces/ANS/textos y Mi cuenta existente sin
+reaceptar. No nueva cuenta,pago o correo. SQL13/36,soporte39,release94,web729.
+[Alcance y límites](LEGAL_SLA_2026-11-28.md#publicación-y-navegador--corte-posterior-de-integración).
+
+
 ## 2026-11-28 — SLA/ANS público derivado del contrato canónico
 
 - Copias exactas de `staging-minimum-2026-11-28.json` y
