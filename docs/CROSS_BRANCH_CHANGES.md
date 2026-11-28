@@ -20,6 +20,29 @@
 - Check limpio,buildstaging32 páginas,web737/737 (ocho casos nuevos). Navegador y
   proveedor se registran después de publicar; esta prueba local no los acredita.
 
+### Publicación y aceptación externa del mismo corte
+
+Web `1f61a5505e85` y runtime SaaS `aac06653f57f` publicados en staging. Check y
+build Linux correctos; manifiesto de 89 archivos verificado. Codex reprodujo y
+cerró la orden Nequi original, de $79.900 COP: ERROR → reabrir después de más de
+45 minutos → DECLINED → volver a Mi cuenta → reabrir → APPROVED → Plan contratado.
+Se conservaron referencia, checkout vigente, contraseña, empresa y aceptación
+contractual anterior. Mi cuenta mostró un soporte, el período pagado y el botón
+de reintento oculto; SSO abrió Facturar. No se activó renovación automática.
+
+Contraste de sólo lectura: tres pagos históricos intactos, uno aprobado, un
+checkout, un período y una conversión. La prueba original termina el 13 de
+diciembre de 2026 y el período pagado el 13 de enero de 2027; no se perdieron los
+días gratis. Los tres webhooks test tienen firma válida y están procesados.
+Correo de confirmación published en outbox; no nueva inspección de bandeja.
+
+Hubo DNS intermitente del navegador hacia Wompi; una pestaña nueva con el mismo
+checkout permitió continuar sin modificar red ni protecciones. Atrás/BFCache
+queda respaldado por la regresión automatizada, no por ese cambio de pestaña.
+La aprobación se confirmó al actualizar después del webhook, no desde el retorno.
+Sólo contratación de prueba y Sandbox: no certifica producción ni otros flujos.
+Evidencia completa en SaaS: `docs/QA_NEQUI_RECOVERY_2026-11-28.md`.
+
 
 ### Corte publicado28/nov01:44:05 Colombia
 
