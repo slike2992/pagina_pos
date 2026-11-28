@@ -113,5 +113,23 @@ selector27, manifiesto/capacidades compatibles y la adopción coordinada. Conser
 API/POS/worker/edge existentes y comprobar las páginas/huellas y el catálogo real
 después de publicar. Los flags no cambian HTML ya compilado.
 
-Esta entrega termina en un commit local revisable. Integración, push, Linux,
-activación web y adopción legal quedan pendientes del integrador.
+## Publicación y validación del integrador — 2026-11-28
+
+El commit web `bd6ac161b6e826e797eba345f32ec6e15ec22efd` se compiló limpio en
+Linux con los flags27: check sin incidencias y26 páginas. El paquete SaaS
+`2f1604259946` pasó sus gates canónicos y se activó únicamente en staging.
+La web quedó en `web-staging/releases/bd6ac161b6e8`,83 archivos y manifiesto
+`1050f8f3cafe27fb40ea27408b57017f348c6fdf22b82a9ca29487074c0e5c62`.
+Su tar fuente se verificó y custodió con SHA256
+`0856ef1174b3f80827106cfe844552addbaab95d1fc388cd9ff39a3349c56122`.
+
+El nuevo operador primero ensayó con rollback sobre staging y adoptó la revisión
+a las **2026-11-28 00:08:29 Colombia**, sin modificar las huellas de aceptaciones
+ni las cohortes. Los servicios permanecen sanos; no se tocaron datos productivos.
+
+En el navegador de Codex se comprobó `Cl 78 C 130 55` en los términos y privacidad
+publicados, sin el complemento anterior. El formulario obtuvo de la API la
+versión27 y actualizó ambos enlaces; cookies y pie usan también privacidad27.
+Se dejó abierto el documento nuevo, sin enviar registro, aceptación o pago.
+Las rutas25 y las constancias anteriores mantienen el contenido que se aceptó.
+No se atribuyen a esta revisión nuevos correos ni otra contratación de usuario.

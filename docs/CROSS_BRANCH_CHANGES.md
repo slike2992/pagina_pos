@@ -22,7 +22,11 @@
   comprobados;22 páginas PDF renderizadas y revisadas. Gate remoto previo al
   commit correcto sobre SaaS981649d, sin entrantes. Pruebas y límites en
   [informe de la revisión](LEGAL_ADDRESS_REVISION_2026-11-27.md).
-  No se despliega, integra ni publica la rama; Linux/staging/adopción quedan al integrador.
+  El integrador publicó runtime2f1604259946 y webbd6ac161b6e8 en staging;
+  Linux check/build26 correctos. Catálogo y contrato adoptados el28/nov00:08:29
+  Colombia con huellas y cohortes anteriores intactas. Codex confirmó dirección
+  corta en ambos textos, catálogo/API27 en registro y enlaces de cookies/pie.
+  Sin nuevas aceptaciones, registros, pagos o correos; producción intacta.
 
 ## 2026-11-27 — Acuerdo antes de preparar renovación o recuperación
 
