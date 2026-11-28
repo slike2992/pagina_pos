@@ -33,6 +33,8 @@ test('review bundle has three separately identified documents and complete secti
   assert.equal(bundle.version, '2026-11-24');
   assert.deepEqual(bundle.documents.map(doc => doc.slug), ['terminos', 'privacidad', 'tratamiento-por-cuenta-del-cliente']);
   assert.equal(bundle.provider.kind, 'Persona natural');
+  assert.equal(bundle.provider.address, 'Cl 78 C 130 55, Bogotá D.C., Colombia');
+  assert.doesNotMatch(JSON.stringify(bundle), /CL 78 C 130 55 T 4 507/);
   for (const doc of bundle.documents) {
     const ids = doc.sections.map(section => section.id);
     assert.equal(new Set(ids).size, ids.length);

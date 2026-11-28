@@ -1,22 +1,22 @@
 {
   "version": "2026-11-24",
   "status": "review-only",
-  "sourceSha256": "5e8b9219446980fd94f8bd2b2d480e63ca29d52ca7f758c8cfa5e176aa72af46",
+  "sourceSha256": "bf47db6798b0db14af09f7b84f323ccffdca6911e7d4b14d23ce4e7093a50611",
   "format": "Letter; 1 inch margins; 11.5 pt body",
   "files": [
     {
       "name": "01-Terminos-servicio-Cripton-2026-11-24.pdf",
-      "sha256": "7c8a0d617b0531d6f87633c5b7d3f1faf910e0016062e5c99745c36bb3dfd4a5",
+      "sha256": "9f9e4a799e72d59561097e398a2d0a702cdba7efcc5c14430ff82ca65ac5f461",
       "pages": 9
     },
     {
       "name": "02-Politica-datos-personales-Cripton-2026-11-24.pdf",
-      "sha256": "b5b4d899d822260311473bac6753e3545d3f6ea5cc63171e7463afdbc368bc75",
+      "sha256": "af7bad9e84a6c4d69f48ddc4d34694f38aea32a931b63344df97ef3c8e9041d0",
       "pages": 6
     },
     {
       "name": "03-Anexo-tratamiento-cliente-Cripton-2026-11-24.pdf",
-      "sha256": "ccbe1cdc38c254419eaf98f1728e19ebde7322de0a949431bb1608119cbc0ffe",
+      "sha256": "f4c67d833d3d0702692e09bef5e2caecbf7f6a03e3e2f119bdd2c3461f271070",
       "pages": 7
     }
   ]

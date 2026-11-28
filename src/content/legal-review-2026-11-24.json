@@ -17,7 +17,7 @@
           "id": "partes-y-contratacion",
           "heading": "1. Partes y contratación",
           "paragraphs": [
-            "Jonathan Santiago Murcia Peña, persona natural, identificado con NIT 1014234769-1, con domicilio en Bogotá D.C., Colombia, y dirección de notificaciones CL 78 C 130 55 T 4 507, Bogotá D.C., Colombia, es el proveedor del servicio identificado comercialmente como Cripton. Contacto: +57 321 959 7077; legal@cripton.com.co para asuntos legales y privacidad; servicioalcliente@cripton.com.co para soporte.",
+            "Jonathan Santiago Murcia Peña, persona natural, identificado con NIT 1014234769-1, con domicilio en Bogotá D.C., Colombia, y dirección de notificaciones Cl 78 C 130 55, Bogotá D.C., Colombia, es el proveedor del servicio identificado comercialmente como Cripton. Contacto: +57 321 959 7077; legal@cripton.com.co para asuntos legales y privacidad; servicioalcliente@cripton.com.co para soporte.",
             "El cliente es la persona natural o jurídica identificada en la orden de servicio y en el espacio de su negocio, denominado empresa o tenant. Quien actúe en su nombre declara tener facultades para contratar e instruir el tratamiento de datos. Los cajeros y demás usuarios autorizados no se convierten por ello en contratantes.",
             "La orden identifica al cliente, empresa, plan, prestaciones, límites, periodicidad, precio total, impuestos aplicables, fecha y alcance de activación. Estos términos, el anexo de tratamiento por cuenta del cliente y las condiciones particulares identificadas integran el contrato. La política de privacidad informa el tratamiento propio de Cripton; no es una autorización genérica para cualquier uso.",
             "La contratación electrónica exige una manifestación expresa, informada y verificable. Se conservarán versión, contenido, fecha, pedido y evidencia pertinente de aceptación conforme a la Ley 527 de 1999. Esta revisión no ha sido adoptada y no modifica contratos ni aceptaciones anteriores. Las condiciones particulares no pueden reducir derechos legales irrenunciables."
@@ -168,7 +168,7 @@
           "id": "identidad-y-alcance",
           "heading": "1. Identidad y alcance",
           "paragraphs": [
-            "Jonathan Santiago Murcia Peña, persona natural, identificado con NIT 1014234769-1, con domicilio en Bogotá D.C., Colombia, y dirección de notificaciones CL 78 C 130 55 T 4 507, Bogotá D.C., Colombia, es el proveedor del servicio identificado comercialmente como Cripton. Contacto: +57 321 959 7077; legal@cripton.com.co para asuntos legales y privacidad; servicioalcliente@cripton.com.co para soporte.",
+            "Jonathan Santiago Murcia Peña, persona natural, identificado con NIT 1014234769-1, con domicilio en Bogotá D.C., Colombia, y dirección de notificaciones Cl 78 C 130 55, Bogotá D.C., Colombia, es el proveedor del servicio identificado comercialmente como Cripton. Contacto: +57 321 959 7077; legal@cripton.com.co para asuntos legales y privacidad; servicioalcliente@cripton.com.co para soporte.",
             "El responsable del tratamiento propio es Jonathan Santiago Murcia Peña, quien atiende personalmente los asuntos de protección de datos mediante legal@cripton.com.co y su dirección de notificaciones. Esta política comprende datos de personas naturales vinculadas al registro, contratación, soporte, seguridad y relación comercial de Cripton.",
             "Los registros empresariales pueden contener datos personales de representantes, empleados y contactos. No pierden su protección por estar asociados a una empresa. El tratamiento por cuenta del comercio se rige además por las instrucciones lícitas y el anexo correspondiente."
           ]
@@ -327,7 +327,7 @@
           "id": "partes-y-objeto",
           "heading": "1. Partes, objeto y alcance",
           "paragraphs": [
-            "Jonathan Santiago Murcia Peña, persona natural, identificado con NIT 1014234769-1, con domicilio en Bogotá D.C., Colombia, y dirección de notificaciones CL 78 C 130 55 T 4 507, Bogotá D.C., Colombia, es el proveedor del servicio identificado comercialmente como Cripton. Contacto: +57 321 959 7077; legal@cripton.com.co para asuntos legales y privacidad; servicioalcliente@cripton.com.co para soporte.",
+            "Jonathan Santiago Murcia Peña, persona natural, identificado con NIT 1014234769-1, con domicilio en Bogotá D.C., Colombia, y dirección de notificaciones Cl 78 C 130 55, Bogotá D.C., Colombia, es el proveedor del servicio identificado comercialmente como Cripton. Contacto: +57 321 959 7077; legal@cripton.com.co para asuntos legales y privacidad; servicioalcliente@cripton.com.co para soporte.",
             "El comercio identificado en la orden es responsable de los datos operativos que incorpora al POS para sus finalidades lícitas. Jonathan Santiago Murcia Peña actúa como encargado al tratarlos por su cuenta e instrucciones para prestar el servicio. La orden individualiza comercio, identificación, representante y facultades, tenant, módulos, duración, titulares, categorías, operaciones, contactos y política o instrucciones del responsable.",
             "Este anexo comprende el tratamiento por cuenta del comercio y se incorpora por aceptación documentada al contrato del servicio, sin convertir el acceso técnico en autorización para fines propios. Los tratamientos propios de cuenta, cobro y seguridad de Cripton se distinguen en su política. Los roles corresponden a las actividades reales, no solo al nombre dado en el documento.",
             "La revisión 2026-11-24 no se ha adoptado ni se integra a aceptaciones anteriores. Cada orden debe permitir conocer el texto exacto incorporado. Sus condiciones no limitan derechos de los titulares ni deberes legales del responsable y encargado."
@@ -477,7 +477,7 @@
     "kind": "Persona natural",
     "nit": "1014234769-1",
     "domicile": "Bogotá D.C., Colombia",
-    "address": "CL 78 C 130 55 T 4 507, Bogotá D.C., Colombia",
+    "address": "Cl 78 C 130 55, Bogotá D.C., Colombia",
     "phone": "+57 321 959 7077",
     "legalEmail": "legal@cripton.com.co",
     "supportEmail": "servicioalcliente@cripton.com.co"

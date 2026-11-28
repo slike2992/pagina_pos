@@ -1,5 +1,29 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-27 — Revisión de dirección sin reemplazar documentos adoptados
+
+- Copias exactas de `signup-minimum-qa-2026-11-27.json` y
+  `staging-minimum-2026-11-27.json` entregadas desde SaaS. Sólo dirección
+  `Cl 78 C 130 55` y referencias internas de fecha/versión del27 respecto al25.
+  Paquetes, rutas y fuentes anteriores intactos; no se escriben aceptaciones.
+- Nuevo selector explícito `PUBLIC_REGISTRATION_LEGAL_VERSION=2026-11-27-prueba-minima-qa`
+  exclusivo del origen HTTPS de staging. Publica términos/privacidad nuevos en
+  `/legal/versiones/2026-11-27-prueba-minima-qa/` y reutiliza los enlaces centrales
+  de pie, centro legal, cookies y ConsentPanel. Sin selector permanece09-01;
+  las rutas QA viejas y nuevas siguen generándose en staging.
+- Consumidores: catálogo de registro API y contrato por empresa/SSO/primer pago.
+  API debe preservar la compatibilidad exacta por digest del paquete mínimo25;
+  el operador de adopción SaaS controla los cortes y la nueva política. Esta web
+  no aplica SQL, publica catálogos ni cambia el control de acceso.
+- El borrador24 sigue `review-only`: se corrige la misma dirección en su fuente
+  y se regeneran sus tres PDF y manifiesto, sin modificar `docs/legal/history`.
+- QA local con Node24.22.3/pnpm11.25.0: Astro check81 sin incidencias, build26
+  páginas y724/724 pruebas aprobadas, incluidas18 legales. JSON exactos/digest27
+  comprobados;22 páginas PDF renderizadas y revisadas. Gate remoto previo al
+  commit correcto sobre SaaS981649d, sin entrantes. Pruebas y límites en
+  [informe de la revisión](LEGAL_ADDRESS_REVISION_2026-11-27.md).
+  No se despliega, integra ni publica la rama; Linux/staging/adopción quedan al integrador.
+
 ## 2026-11-27 — Acuerdo antes de preparar renovación o recuperación
 
 - La prueba real encontró que preparar una renovación sin contrato sólo mostraba

@@ -1,5 +1,13 @@
 # Cripton — web comercial y portal de acceso
 
+Revisión de dirección preparada para staging: [alcance y QA del 27 de noviembre](docs/LEGAL_ADDRESS_REVISION_2026-11-27.md).
+`PUBLIC_REGISTRATION_LEGAL_VERSION=2026-11-27-prueba-minima-qa` selecciona los
+nuevos enlaces sólo con `PUBLIC_SITE_URL=https://staging.cripton.com.co`.
+Conserva los selectores, paquetes y rutas anteriores; no adopta condiciones ni
+modifica aceptaciones. Los JSON del 27 son copias exactas de SaaS. La compatibilidad
+por digest del contrato mínimo25 y la adopción del27 corresponden a la API/operador
+coordinados por el integrador antes de cambiar la política activa.
+
 Contratación por empresa y solicitudes de soporte/datos: ver
 [flujo y validación](docs/CUSTOMER_CONTRACTS_2026-11-25.md) y
 [compatibilidad con SaaS](docs/CROSS_BRANCH_CHANGES.md). La prueba gratuita, el

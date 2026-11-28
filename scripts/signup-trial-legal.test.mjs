@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { registrationLegalLinks, isSignupTrialQaSite, SIGNUP_TRIAL_QA_VERSION, SIGNUP_MINIMUM_QA_VERSION } from '../src/lib/registration-legal.ts';
+import { registrationLegalLinks, isSignupTrialQaSite, SIGNUP_TRIAL_QA_VERSION, SIGNUP_MINIMUM_QA_VERSION, SIGNUP_MINIMUM_ADDRESS_QA_VERSION } from '../src/lib/registration-legal.ts';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const read = relative => readFile(path.join(root, relative));
@@ -14,6 +14,8 @@ const sourceHash = 'be97e5efb921c9436532e9cf483d7d151d19693f1a8ba4b6c6f43ae28e6c
 const packet = JSON.parse(await read('src/content/signup-trial-qa-2026-11-25.json'));
 const minimumPacket = JSON.parse(await read('contracts/legal/signup-minimum-qa-2026-11-25.json'));
 const servicePacket = JSON.parse(await read('contracts/legal/staging-minimum-2026-11-25.json'));
+const addressPacket = JSON.parse(await read('contracts/legal/signup-minimum-qa-2026-11-27.json'));
+const addressServicePacket = JSON.parse(await read('contracts/legal/staging-minimum-2026-11-27.json'));
 const prefix = `/legal/versiones/${SIGNUP_TRIAL_QA_VERSION}`;
 const canonicalJson = value => value === null || typeof value !== 'object' ? JSON.stringify(value)
   : Array.isArray(value) ? `[${value.map(canonicalJson).join(',')}]`
@@ -23,8 +25,11 @@ const text = markup => markup.replace(/<!--[\s\S]*?-->/g, '').replace(/<[^>]+>/g
   .replace(/\s+/g, ' ').trim();
 const preserved = ['src/pages/legal/terminos.astro', 'src/pages/legal/privacidad.astro',
   'src/components/Brand.astro', 'src/pages/pago/demo.astro', 'src/content/signup-trial-qa-2026-11-25.json',
-  'src/pages/legal/versiones/2026-11-25-prueba-qa/[document].astro'];
-let temporary, defaultOutput, qaOutput, minimumOutput;
+  'src/pages/legal/versiones/2026-11-25-prueba-qa/[document].astro',
+  'src/pages/legal/versiones/2026-11-25-prueba-minima-qa/[document].astro',
+  'src/lib/signup-minimum-legal.ts', 'contracts/legal/signup-minimum-qa-2026-11-25.json',
+  'contracts/legal/staging-minimum-2026-11-25.json'];
+let temporary, defaultOutput, qaOutput, minimumOutput, addressOutput;
 const beforeBytes = new Map();
 
 function build(output, overrides) {
@@ -50,6 +55,9 @@ before(async () => {
   minimumOutput = path.join(temporary, 'minimum');
   const minimum = await build(minimumOutput, { PUBLIC_REGISTRATION_LEGAL_VERSION: SIGNUP_MINIMUM_QA_VERSION });
   assert.equal(minimum.code, 0, minimum.log);
+  addressOutput = path.join(temporary, 'address');
+  const address = await build(addressOutput, { PUBLIC_REGISTRATION_LEGAL_VERSION: SIGNUP_MINIMUM_ADDRESS_QA_VERSION });
+  assert.equal(address.code, 0, address.log);
 });
 after(async () => {
   for (const [file, bytes] of beforeBytes) assert.deepEqual(await read(file), bytes, `${file}: bytes changed during builds`);
@@ -127,8 +135,10 @@ test('both static QA documents exactly render source sections/paragraphs and can
   await assert.rejects(access(path.join(qaOutput, 'legal/versiones', packet.version, 'desconocido/index.html')));
 });
 test('actual production-origin build rejects QA selection rather than publishing links outside staging', async () => {
-  const denied = await build(path.join(temporary, 'rejected-production'), { PUBLIC_SITE_URL: 'https://cripton.com.co', PUBLIC_REGISTRATION_LEGAL_VERSION: SIGNUP_TRIAL_QA_VERSION });
-  assert.notEqual(denied.code, 0); assert.match(denied.log, /solo puede seleccionarse en https:\/\/staging\.cripton\.com\.co/);
+  for (const version of [SIGNUP_TRIAL_QA_VERSION, SIGNUP_MINIMUM_ADDRESS_QA_VERSION]) {
+    const denied = await build(path.join(temporary, `rejected-production-${version}`), { PUBLIC_SITE_URL: 'https://cripton.com.co', PUBLIC_REGISTRATION_LEGAL_VERSION: version });
+    assert.notEqual(denied.code, 0); assert.match(denied.log, /solo puede seleccionarse en https:\/\/staging\.cripton\.com\.co/);
+  }
 });
 
 test('minimum registration selector is explicit, staging-only, and preserves the previous QA selector', () => {
@@ -160,7 +170,7 @@ test('minimum documents render the exact canonical packet while every previous s
 });
 
 test('footer, legal center, cookie notice and consent panel point to the same selected registration privacy', async () => {
-  for (const [output, version] of [[defaultOutput, '2026-09-01'], [qaOutput, packet.version], [minimumOutput, minimumPacket.version]]) {
+  for (const [output, version] of [[defaultOutput, '2026-09-01'], [qaOutput, packet.version], [minimumOutput, minimumPacket.version], [addressOutput, addressPacket.version]]) {
     const links = registrationLegalLinks({ PUBLIC_SITE_URL: 'https://staging.cripton.com.co', PUBLIC_REGISTRATION_LEGAL_VERSION: version === '2026-09-01' ? '' : version });
     for (const route of ['legal', 'legal/cookies']) {
       const html = await rendered(output, route);
@@ -175,6 +185,79 @@ test('footer, legal center, cookie notice and consent panel point to the same se
     assert.match(text(cookies), /privacidad 2026-09-01/);
     assert.doesNotMatch(cookies, /href="\/legal\/privacidad\/">política de privacidad vigente/);
   }
+});
+
+test('27 November packets retain exact SaaS bytes and change only the address and internal version/date references', async () => {
+  const files = [
+    ['signup-minimum-qa', 'bf5fad10b5b1b845b4a01de19efd07796f6853f5febc08e2c3e18e81ee87379a', 'f99b8565b692c92eec515c8c8935f86c7f3aec37a5da2e47b9c1333ac63b2179'],
+    ['staging-minimum', 'b5c69ad10f804c640d80317173a7d0022b86918f12677eea835488ae6d616ac8', '5fd87a5b8ad7e337ad1edc9fd8f60a3074ddd13cc5f598a5c4742e9e5004ce30'],
+  ];
+  for (const [name, oldHash, newHash] of files) {
+    const oldBytes = await read(`contracts/legal/${name}-2026-11-25.json`);
+    const newBytes = await read(`contracts/legal/${name}-2026-11-27.json`);
+    assert.equal(hash(oldBytes), oldHash, 'published25 packet must remain byte-identical');
+    assert.equal(hash(newBytes), newHash, 'new packet must be the exact supplied SaaS file');
+    assert.deepEqual(JSON.parse(newBytes), JSON.parse(oldBytes.toString('utf8')
+      .replaceAll('CL 78 C 130 55 T 4 507', 'Cl 78 C 130 55').replaceAll('2026-11-25', '2026-11-27')));
+  }
+  assert.equal(addressPacket.version, SIGNUP_MINIMUM_ADDRESS_QA_VERSION);
+  assert.equal(addressServicePacket.version, '2026-11-27-minimo-qa');
+  assert.equal(hash(canonicalJson(addressServicePacket)), '855b1dbb49e3ee6d15bd52d4d39f5fb5d97f7074d4b9ec13ffb4b7abfd7a1bb8');
+});
+
+test('27 November selector preserves every earlier selector and rejects production, lookalikes and unknown versions', () => {
+  for (const version of [SIGNUP_TRIAL_QA_VERSION, SIGNUP_MINIMUM_QA_VERSION, SIGNUP_MINIMUM_ADDRESS_QA_VERSION]) {
+    const selected = registrationLegalLinks({ PUBLIC_SITE_URL: 'https://staging.cripton.com.co', PUBLIC_REGISTRATION_LEGAL_VERSION: version });
+    assert.equal(selected.version, version);
+    assert.equal(selected.termsHref, `/legal/versiones/${version}/terminos/`);
+    assert.equal(selected.privacyHref, `/legal/versiones/${version}/privacidad/`);
+  }
+  for (const site of [undefined, 'https://cripton.com.co', 'http://staging.cripton.com.co',
+    'https://staging.cripton.com.co.evil.example', 'https://staging.cripton.com.co:4321', 'https://user@staging.cripton.com.co']) {
+    assert.throws(() => registrationLegalLinks({ PUBLIC_SITE_URL: site, PUBLIC_REGISTRATION_LEGAL_VERSION: SIGNUP_MINIMUM_ADDRESS_QA_VERSION }));
+  }
+  for (const version of ['2026-11-27', '2026-11-27-minimo-qa', ` ${SIGNUP_MINIMUM_ADDRESS_QA_VERSION}`]) {
+    assert.throws(() => registrationLegalLinks({ PUBLIC_SITE_URL: 'https://staging.cripton.com.co', PUBLIC_REGISTRATION_LEGAL_VERSION: version }));
+  }
+});
+
+test('27 November HTML renders exact paragraphs and canonical hashes, keeps old documents and survives selector removal', async () => {
+  for (const sourcePacket of [packet, minimumPacket, addressPacket]) {
+    for (const document of sourcePacket.documents) {
+      const route = `legal/versiones/${sourcePacket.version}/${document.slug}`;
+      const html = await rendered(addressOutput, route);
+      const article = html.match(/<article\b[^>]*data-registration-legal-copy[^>]*>([\s\S]*?)<\/article>/)?.[1];
+      assert.ok(article);
+      assert.deepEqual([...article.matchAll(/<(h2|p)\b[^>]*>([\s\S]*?)<\/\1>/g)].map(match => text(match[2])),
+        document.sections.flatMap(section => [section.heading, ...section.paragraphs]).map(text));
+      const digest = hash(canonicalJson(document));
+      assert.ok(html.includes(digest));
+      assert.ok((await rendered(defaultOutput, route)).includes(digest));
+      assert.equal((html.match(/<h1\b/g) ?? []).length, 1);
+      assert.match(html, /name="robots" content="noindex, follow"/);
+      assert.doesNotMatch(html, /rel="canonical"|application\/ld\+json/);
+      if (sourcePacket === addressPacket) {
+        assert.match(text(article), /Cl 78 C 130 55, Bogotá D.C., Colombia/);
+        assert.doesNotMatch(text(article), /T 4 507/);
+        for (const earlier of [packet, minimumPacket]) for (const oldDocument of earlier.documents) {
+          assert.ok(html.includes(`href="/legal/versiones/${earlier.version}/${oldDocument.slug}/"`));
+        }
+      } else assert.match(text(article), /CL 78 C 130 55 T 4 507/);
+    }
+  }
+  await assert.rejects(access(path.join(addressOutput, 'legal/versiones', addressPacket.version, 'desconocido/index.html')));
+});
+
+test('production-origin build without a selector omits every staging-only legal version', async () => {
+  const output = path.join(temporary, 'production-default');
+  const production = await build(output, { PUBLIC_SITE_URL: 'https://cripton.com.co' });
+  assert.equal(production.code, 0, production.log);
+  for (const sourcePacket of [packet, minimumPacket, addressPacket]) {
+    await assert.rejects(access(path.join(output, 'legal/versiones', sourcePacket.version)));
+  }
+  const center = await rendered(output, 'legal');
+  assert.match(center, /href="\/legal\/terminos\/"/);
+  assert.match(center, /href="\/legal\/privacidad\/"/);
 });
 
 test('minimum source distinguishes free operational acceptance, early purchase, termination deadlines and conditional SQL backup rotation', () => {
