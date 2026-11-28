@@ -90,6 +90,7 @@ function browser() {
   const root = element();
   root.dataset = { apiUrl: 'https://api.example.invalid/', posUrl: 'https://pos.example.invalid/' };
   const window = {
+    addEventListener() {},
     setTimeout(callback, delay) { const id = ++nextTimer; timers.set(id, { callback, due: clock + delay }); return id; },
     clearTimeout(id) { timers.delete(id); },
     location: { href: 'https://staging.example.invalid/cuenta', origin: 'https://staging.example.invalid', assign() { assert.fail('unexpected navigation'); } },
@@ -164,7 +165,7 @@ async function account(options = {}) {
     } };
   }
   const selectors = ['#login-form', '.status', '#tenant-field', '#tenant', '.account-panel', '.account-status',
-    "[data-section='subscription-trial']", "[data-action='contract-trial']", "[data-field='trial-summary']", "[data-field='trial-guidance']", "[data-field='trial-start']", "[data-field='trial-end']",
+    "[data-section='subscription-trial']", "[data-action='contract-trial']", "[data-action='trial-payment-result']", "[data-action='refresh-trial-payment']", "[data-field='trial-payment']", "[data-field='trial-summary']", "[data-field='trial-guidance']", "[data-field='trial-start']", "[data-field='trial-end']",
     "[data-section='fiscal-onboarding']", "[data-action='configure-fiscal']", "[data-field='fiscal-plan-guidance']", "[data-field='fiscal-setup-steps']",
     "[data-action='open-pos']", "[data-action='cancel']", "[data-action='reactivate']", '#cancel-dialog',
     '#confirm-cancel', "[data-section='plan-management']", '#target-plan', "[data-action='change-plan']",

@@ -51,7 +51,7 @@ function browser(options = {}) {
     trial: { status: 'active', durationDays: 15, startsAt: '2026-11-20T00:00:00Z', endsAt: '2026-12-05T00:00:00Z', convertedAt: null, canConvert: true }, ...options.subscription };
   const sandbox = { URL, URLSearchParams, Date: options.now === undefined ? Date : class extends Date { constructor(...args) { super(...(args.length ? args : [options.now])); } static now() { return options.now; } }, Intl, Error, console, document,
     crypto: { randomUUID: () => `key-${++keys}` },
-    window: { location: { href: 'https://web.example.invalid/cuenta/' + (options.query ?? ''), origin: 'https://web.example.invalid', assign: value => navigations.push(value) }, print() { printed++; } },
+    window: { addEventListener() {}, location: { href: 'https://web.example.invalid/cuenta/' + (options.query ?? ''), origin: 'https://web.example.invalid', assign: value => navigations.push(value) }, print() { printed++; } },
     sessionStorage: { setItem() { assert.fail('No contract credentials or PII in session storage'); }, getItem() { return null; } },
     localStorage: { setItem() { assert.fail('No contract data in local storage'); }, getItem() { assert.fail('No local storage'); } },
     Option: class { constructor(text, value) { this.text = text; this.value = value; } },

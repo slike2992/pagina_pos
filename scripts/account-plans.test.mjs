@@ -76,7 +76,7 @@ const trialCode = compile(await readFile(new URL('../src/lib/subscription-trial.
 const portalCode = compile(await readFile(new URL('../src/lib/portal-return.ts', import.meta.url), 'utf8'));
 
 function browser(options = {}) {
-  const elements = new Map(), calls = [], navigations = [];
+  const elements = new Map(), calls = [], navigations = [], windowEvents = new Map();
   const get = selector => {
     if (!elements.has(selector)) elements.set(selector, element());
     return elements.get(selector);
@@ -101,7 +101,7 @@ function browser(options = {}) {
   let tenant;
   const sandbox = { URL, URLSearchParams, Intl, Error, Date, console,
     document: { querySelector: get, createElement: element },
-    window: { location: { href: 'https://web.example.invalid/cuenta', origin: 'https://web.example.invalid', search: '?targetPlanCode=basic', assign: url => navigations.push(url) } },
+    window: { addEventListener: (event, listener) => windowEvents.set(event, listener), location: { href: 'https://web.example.invalid/cuenta', origin: 'https://web.example.invalid', search: '?targetPlanCode=basic', assign: url => navigations.push(url) } },
     sessionStorage: { setItem() { assert.fail('Upgrade must not persist hidden checkout data'); }, getItem() { return null; } },
     crypto: { randomUUID: () => `synthetic-${++key}` },
     Option: class { constructor(text, value) { this.text = text; this.value = value; } },
@@ -148,6 +148,7 @@ function browser(options = {}) {
     assert.fail(name);
   });
   return { get, calls, navigations, model,
+    async restoreFromCheckout() { windowEvents.get('pageshow')?.({ persisted: true }); await flush(); },
     async login() { await get('#login-form').dispatch('submit'); await flush(); },
     async click(action) { await get(`[data-action='${action}']`).dispatch('click'); await flush(); },
     async confirm() { await get('#confirm-plan-change').dispatch('click'); await flush(); },
@@ -608,4 +609,53 @@ test('late plan change, upgrade checkout and trial checkout 401 cannot reset a n
     assert.equal(h.get('.account-panel').hidden, false); assert.equal(h.get('#login-form').hidden, true);
     assert.equal(h.get('.account-status').textContent, ''); assert.equal(h.navigations.length, 0);
   }
+});
+const payment = (status = 'declined', expiresAt = '2099-01-01T00:00:00Z') => ({
+  checkoutSessionId: '55555555-5555-4555-8555-555555555555', reference: 'SYNTHETIC-NEQUI-ORDER', status, expiresAt,
+});
+test('trial payment metadata validates session, reference, status and dates without trusting a return URL', () => {
+  assert.deepEqual(readSubscriptionTrial({ ...trial(), payment: payment() }).payment, payment());
+  assert.equal(readSubscriptionTrial({ ...trial(), payment: null }).payment, null);
+  for (const patch of [{checkoutSessionId:'https://evil.invalid'}, {status:'retry-anyway'}, {expiresAt:'invalid'}, {reference:''}]) {
+    assert.throws(() => readSubscriptionTrial({ ...trial(), payment:{...payment(),...patch} }));
+  }
+});
+test('failed trial shows a direct safe self-service path and preserves the single subscription request', async () => {
+  const h=browser({subscription:{...trialSubscription(),trial:{...trial(),payment:payment()}},trialCheckout:()=>reply(trialReceipt())});
+  await h.login();
+  assert.equal(h.get("[data-action='contract-trial']").textContent,'Reintentar pago en Wompi');
+  assert.match(h.get("[data-field='trial-payment']").textContent,/SYNTHETIC-NEQUI-ORDER.*no se completó/);
+  assert.equal(h.get("[data-action='trial-payment-result']").href,'/pago/resultado/?checkoutSessionId=55555555-5555-4555-8555-555555555555');
+  await h.click('contract-trial');
+  const request=h.calls.find(c=>c.url.endsWith('/trial-checkout'));
+  assert.deepEqual(JSON.parse(request.body),{subscriptionId:h.model.subscriptionId});
+  assert.deepEqual(h.navigations,[trialReceipt().checkoutUrl]);
+});
+test('expired checkout can refresh and prepare a new key, while ambiguous live failures retain their key', async () => {
+  for(const expired of [true,false]) {
+    let calls=0;
+    const h=browser({subscription:{...trialSubscription(),trial:{...trial(),payment:payment('declined',expired?'2020-01-01T00:00:00Z':'2099-01-01T00:00:00Z')}},
+      trialCheckout:()=>++calls===1?reply({error:{message:'El enlace venció. Prepara un nuevo intento desde Mi cuenta.'}},409):reply(trialReceipt())});
+    await h.login();await h.click('contract-trial');await h.click('refresh-trial-payment');await h.click('contract-trial');
+    const requests=h.calls.filter(c=>c.url.endsWith('/trial-checkout'));
+    assert.equal(requests.length,2);
+    assert.equal(requests[0].headers['idempotency-key']===requests[1].headers['idempotency-key'],!expired);
+  }
+});
+test('confirmed trial payment cannot submit another checkout even if its disabled action is invoked', async () => {
+  const h=browser({subscription:{...trialSubscription(),trial:{...trial(),payment:payment('approved')}}});await h.login();
+  assert.equal(h.get("[data-action='contract-trial']").disabled,true);
+  await h.click('contract-trial');assert.ok(h.calls.every(c=>!c.url.endsWith('/trial-checkout')));
+  assert.match(h.get("[data-field='trial-payment']").textContent,/no realices otro pago/);
+});
+test('restoring Mi cuenta from the Wompi back cache refreshes state and unlocks explicit retry once', async () => {
+  const h=browser({subscription:trialSubscription(),trialCheckout:()=>reply(trialReceipt())});await h.login();
+  const before=h.calls.length;await h.restoreFromCheckout();assert.equal(h.calls.length,before);
+  await h.click('contract-trial');assert.equal(h.get("[data-action='contract-trial']").disabled,true);
+  h.model.trial={...trial(),payment:payment()};await h.restoreFromCheckout();
+  assert.equal(h.get("[data-action='contract-trial']").disabled,false);
+  assert.equal(h.get("[data-action='contract-trial']").textContent,'Reintentar pago en Wompi');
+  await h.click('contract-trial');assert.equal(h.navigations.length,2);
+  const requests=h.calls.filter(c=>c.url.endsWith('/trial-checkout'));
+  assert.notEqual(requests[0].headers['idempotency-key'],requests[1].headers['idempotency-key']);
 });

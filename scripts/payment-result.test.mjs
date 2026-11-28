@@ -463,3 +463,10 @@ for (const state of ['pending','approved','fulfilled','declined','expired']) tes
   if(state==='fulfilled') {assert.equal(result.elements.get('#result-heading').textContent,'Plan contratado');assert.equal(result.timers.size,0);}
   if(state==='approved') assert.match(result.elements.get('#result-heading').textContent,/en proceso/);
 });
+for(const state of ['declined','expired','cancelled'])test(`trial ${state} offers self-service retry without creating another charge`,async()=>{
+ const result=await run({httpStatus:200,body:{status:state,purpose:'trial_conversion',reference:'SYNTHETIC-NEQUI',currency:'COP',amountInCents:7990000}});
+ assert.equal(result.elements.get('#password-link').textContent,'Volver a intentar desde Mi cuenta');
+ assert.equal(result.elements.get('#password-link').href,'/cuenta');
+ assert.match(result.elements.get('[data-detail]').textContent,/reabrir Wompi con Nequi u otro medio/);
+ assert.equal(result.calls.length,1);assert.equal(result.timers.size,0);
+});

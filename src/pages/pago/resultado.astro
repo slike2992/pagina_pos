@@ -56,7 +56,8 @@ const apiUrl = import.meta.env.PUBLIC_SAAS_API_URL ?? "http://localhost:4100";
         status.dataset.state = view.state;
         detail.textContent = view.detail;
         passwordLink.href = "/cuenta";
-        passwordLink.textContent = "Revisar Mi cuenta";
+        passwordLink.textContent = result.purpose === "trial_conversion" && ["declined", "expired", "cancelled"].includes(result.status)
+          ? "Volver a intentar desde Mi cuenta" : "Revisar Mi cuenta";
         passwordLink.hidden = false;
         return;
       }

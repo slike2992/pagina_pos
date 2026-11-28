@@ -1,5 +1,26 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-28 — Recuperación de intento Nequi al contratar la prueba
+
+- Mi cuenta consume opcionalmente `trial.payment` del servidor:checkoutSessionId,
+  referencia,estado público y vencimiento. Ausencia/null conserva APIs anteriores;
+  contenido inválido falla cerrado. Esta vista no autoriza un nuevo pago.
+- El representante ve Consultar este pago,Actualizar estado del pago y Reintentar
+  pago en Wompi según el resultado. Reutiliza el POSTtrial-checkout,contrato,
+  sesión y suscripción activos; jamás envía importe/tenant arbitrario ni cobra
+  desde el retorno. Confirmado bloquea otro checkout también en el controlador.
+- Volver de Wompi mediante Atrás/BFCache actualiza la cuenta y desbloquea el botón
+  que permanecía ocupado tras navegar. Una respuesta perdida conserva la clave;
+  volver de la navegación o actualizar un enlace vencido permite nueva clave,
+  con las guardas de historial/idempotencia de la API aún obligatorias.
+- Resultado de contratación fallida/vencida ofrece Volver a intentar desde Mi
+  cuenta; no manda al usuario a repetir registro,verificación o contraseña.
+- Sin estilos,SQL,documentos legales o cambios de otros módulos. API debe publicar
+  la recuperación certificada de ERROR antes de activar este corte coordinado.
+- Check limpio,buildstaging32 páginas,web737/737 (ocho casos nuevos). Navegador y
+  proveedor se registran después de publicar; esta prueba local no los acredita.
+
+
 ### Corte publicado28/nov01:44:05 Colombia
 
 Weba226399/runtime9b719ab,89 archivos de manifiesto,check/buildLinux aprobados.

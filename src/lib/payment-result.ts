@@ -54,7 +54,7 @@ export function accountPaymentResult(result: CheckoutResult): { heading: string;
     };
     const labels: Record<string, string> = { declined: "Pago rechazado", expired: "Orden vencida", cancelled: "Pago cancelado", refunded: "Pago reembolsado" };
     return { heading: labels[result.status], status: "Este resultado no confirma la contratación del plan.",
-      detail: "Revisa tu prueba y las opciones permitidas en Mi cuenta antes de reintentar. Conserva tu contraseña actual.", state: "error", poll: false };
+      detail: "Vuelve a Mi cuenta para consultar este intento y reabrir Wompi con Nequi u otro medio de pago. Si el enlace venció, podrás preparar otro. El servidor comprobará que no haya un pago pendiente o aprobado; conserva tu contraseña actual.", state: "error", poll: false };
   }
   const upgrade = result.purpose === "plan_change";
   const labels: Record<string, string> = { declined: "Pago rechazado", expired: "Orden vencida", cancelled: "Pago cancelado", refunded: "Pago reembolsado" };

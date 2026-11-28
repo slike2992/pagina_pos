@@ -43,7 +43,7 @@ function browser(options = {}) {
     trial: { status: 'active', durationDays: 15, startsAt: '2026-11-20T00:00:00Z', endsAt: '2026-12-05T00:00:00Z', convertedAt: null, canConvert: true } };
   const sandbox = { URL, URLSearchParams, Date, Intl, Error, console, document,
     crypto: { randomUUID: () => id(100 + ++keys) },
-    window: { location: { href: 'https://web.example.invalid/cuenta/' + (options.query ?? ''), origin: 'https://web.example.invalid', assign: url => navigations.push(url) } },
+    window: { addEventListener() {}, location: { href: 'https://web.example.invalid/cuenta/' + (options.query ?? ''), origin: 'https://web.example.invalid', assign: url => navigations.push(url) } },
     FormData: class { get(name) { return { email: 'qa@example.invalid', password: 'synthetic' }[name] ?? null; } },
     Option: class { constructor(text, value) { this.text = text; this.value = value; } },
     localStorage: { getItem() { assert.fail('No persistent support data'); }, setItem() { assert.fail('No PII storage'); } },

@@ -36,7 +36,12 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
           <div><dt>Fin de la prueba (UTC)</dt><dd data-field="trial-end"></dd></div>
         </dl>
         <p data-field="trial-guidance"></p>
-        <button class="button" data-action="contract-trial" type="button" hidden disabled>Contratar plan</button>
+        <p data-field="trial-payment" role="status" aria-live="polite" hidden></p>
+        <div class="actions">
+          <button class="button" data-action="contract-trial" type="button" hidden disabled>Contratar plan</button>
+          <a class="button secondary" data-action="trial-payment-result" hidden>Consultar este pago</a>
+          <button class="button secondary" data-action="refresh-trial-payment" type="button" hidden>Actualizar estado del pago</button>
+        </div>
       </section>
       <CustomerContract />
       <CustomerSupport />
@@ -153,7 +158,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     import { bindCustomerBilling } from "../lib/customer-billing";
     import { createIdempotencyKey } from "../scripts/client-idempotency";
     import { prepareWompiSession } from "../lib/wompi-client";
-    import { readSubscriptionTrial, readTrialCheckout, type SubscriptionTrial } from "../lib/subscription-trial";
+    import { readSubscriptionTrial, readTrialCheckout, trialPaymentPresentation, type SubscriptionTrial } from "../lib/subscription-trial";
     import { loadAccountPlans, selectAccountPlan, renderAccountPlans, type AccountPlanCatalog } from "../lib/account-plans";
     import { readPendingPlanChange, readPlanChange, readUpgradeCheckout, UpgradeValidationError, type PlanChange } from "../lib/subscription-upgrade";
     import { readRenewalIssue, readRecoveryOffer, readRecoveryCheckout, recoveryAmount, recoveryDate, recoveryPeriodText, rememberRecoveryCheckout, type RenewalIssue, type RecoveryOffer, type RecoveryCheckout } from "../lib/subscription-recovery";
@@ -176,6 +181,8 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     const panel = root.querySelector<HTMLElement>(".account-panel")!;
     const trialSection = root.querySelector<HTMLElement>("[data-section='subscription-trial']")!;
     const trialContract = root.querySelector<HTMLButtonElement>("[data-action='contract-trial']")!;
+    const trialPaymentResult = root.querySelector<HTMLAnchorElement>("[data-action='trial-payment-result']")!;
+    const trialPaymentRefresh = root.querySelector<HTMLButtonElement>("[data-action='refresh-trial-payment']")!;
     const accountStatus = panel.querySelector<HTMLElement>(".account-status")!;
     const posLink = panel.querySelector<HTMLAnchorElement>("[data-action='open-pos']")!;
     const fiscalOnboarding = panel.querySelector<HTMLElement>("[data-section='fiscal-onboarding']")!;
@@ -217,6 +224,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
     let changeIdempotencyKey = "";
     let checkoutIdempotencyKey = "";
     let trialCheckoutKey = "";
+    let trialCheckoutNavigated = false;
     let posSetupIntent = false;
     let paymentSourceConfig: PaymentSourceConfig | null = null;
     let paymentSourceBusy = false;
@@ -347,7 +355,17 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         : "La prueba no se cobra ni renueva automáticamente. Para continuar, contrata el plan de esta empresa mediante el pago seguro.";
       trialContract.hidden = !trial || !hasOpenTrial() || !trial.canConvert || !accountLogin
         || !["owner", "admin", "billing"].includes(accountLogin.tenant.role);
-      trialContract.disabled = trialContract.hidden || subscriptionRefreshing || planBusy || renewalBusy || paymentSourceBusy;
+      const paymentView = trialPaymentPresentation(trial?.payment);
+      trialContract.textContent = paymentView.label;
+      const trialPaymentConfirmed = trial?.payment?.status === "approved" || trial?.payment?.status === "fulfilled";
+      trialContract.disabled = trialContract.hidden || trialPaymentConfirmed || subscriptionRefreshing || planBusy || renewalBusy || paymentSourceBusy;
+      field("trial-payment").textContent = paymentView.detail;
+      field("trial-payment").hidden = !trial || !paymentView.detail;
+      trialPaymentResult.hidden = !trial || !paymentView.resultHref || !accountLogin || !["owner", "admin", "billing"].includes(accountLogin.tenant.role);
+      if (!trialPaymentResult.hidden) trialPaymentResult.href = paymentView.resultHref!;
+      else trialPaymentResult.removeAttribute("href");
+      trialPaymentRefresh.hidden = !trial || !trial.payment;
+      trialPaymentRefresh.disabled = subscriptionRefreshing || planBusy || recoveryBusy || renewalBusy || paymentSourceBusy || posBusy;
       const publishedPlan = planCatalog?.plans.find(plan => plan.code === currentSubscription?.plan.code);
       const fiscalVisible = Boolean(accountLogin && publishedPlan && ["owner", "admin", "billing"].includes(accountLogin.tenant.role));
       fiscalOnboarding.hidden = !fiscalVisible;
@@ -416,6 +434,8 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       // Validate before replacing any confirmed account state, including refresh
       // and renewal responses. Missing/null remains compatible with older APIs.
       const trial = readSubscriptionTrial(subscription.trial);
+      // A refreshed expired checkout is definitive; a new key can prepare its replacement.
+      if (trial?.payment && (trial.payment.status === "expired" || Date.parse(trial.payment.expiresAt) <= Date.now())) trialCheckoutKey = "";
       if (["trialing", "trial_expired"].includes(subscription.status) && (!trial || trial.status === "converted")) {
         throw new Error("Falta el estado de la prueba. Actualiza Mi cuenta antes de continuar.");
       }
@@ -1184,6 +1204,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
 
     const startTrialCheckout = async (afterAcceptance = false) => {
       if (subscriptionRefreshing || planBusy || !accessToken || !accountLogin || !currentSubscription
+        || ["approved", "fulfilled"].includes(currentSubscription.trial?.payment?.status ?? "")
         || !hasOpenTrial() || !currentSubscription.trial?.canConvert || trialContract.hidden) return;
       const token = accessToken, login = accountLogin, subscription = currentSubscription;
       const isCurrent = () => token === accessToken && login === accountLogin && subscription === currentSubscription;
@@ -1210,6 +1231,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
         if (!isCurrent()) return;
         if (!response.ok) throw body;
         const checkout = readTrialCheckout(body, location.origin);
+        trialCheckoutNavigated = true;
         navigating = true;
         location.assign(checkout.checkoutUrl);
       } catch (error) {
@@ -1221,6 +1243,14 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       }
     };
     trialContract.addEventListener("click", () => startTrialCheckout());
+    trialPaymentRefresh.addEventListener("click", () => { void loadRecoveryOffer(true); });
+    window.addEventListener("pageshow", (event) => {
+      if (!event.persisted || !trialCheckoutNavigated || !accessToken || !accountLogin) return;
+      trialCheckoutNavigated = false;
+      trialCheckoutKey = "";
+      planBusy = false;
+      void loadRecoveryOffer(true);
+    });
     const resetAccount = (message = "") => {
       contractCheckoutContinuation = null;
       customerContract.reset(); customerSupport.reset(); customerBilling.reset();
@@ -1265,6 +1295,7 @@ const posUrl = import.meta.env.PUBLIC_POS_URL ?? "http://localhost:3002";
       changeIdempotencyKey = "";
       checkoutIdempotencyKey = "";
       trialCheckoutKey = "";
+      trialCheckoutNavigated = false;
       paymentSourceConfig = null;
       paymentSourceBusy = false;
       paymentSourceAttempt = "";

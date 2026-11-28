@@ -1,5 +1,12 @@
 # Cripton — web comercial y portal de acceso
 
+Recuperación de pagos al contratar la prueba:Mi cuenta distingue el intento
+anterior,permite consultar/actualizar y volver a Wompi. El resultado fallido tiene
+salida directa a Mi cuenta; al volver con Atrás se actualiza la sesión en memoria.
+La API revalida el historial bajo locks; la web no declara elegible un pago por
+su retorno ni por un estado guardado localmente. Ver docs/CROSS_BRANCH_CHANGES.md.
+
+
 SLA/ANS versionado del 28 de noviembre: [fuentes, rutas y QA](docs/LEGAL_SLA_2026-11-28.md).
 `PUBLIC_REGISTRATION_LEGAL_VERSION=2026-11-28-prueba-minima-qa`, con el origen
 HTTPS exacto de staging, selecciona términos/privacidad28 y enlaza el SLA desde

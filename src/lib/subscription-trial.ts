@@ -1,3 +1,8 @@
+export type TrialPayment = Readonly<{
+  checkoutSessionId: string; reference: string;
+  status: "pending" | "approved" | "declined" | "expired" | "cancelled" | "fulfilled" | "refunded";
+  expiresAt: string;
+}>;
 export type SubscriptionTrial = Readonly<{
   status: "provisioning" | "active" | "expired" | "converted";
   durationDays: 15;
@@ -5,6 +10,7 @@ export type SubscriptionTrial = Readonly<{
   endsAt: string | null;
   convertedAt: string | null;
   canConvert: boolean;
+  payment?: TrialPayment | null;
 }>;
 const invalid = () => new Error("No pudimos verificar la prueba de tu suscripción. Actualiza Mi cuenta antes de continuar.");
 const date = (v: unknown): v is string => typeof v === "string" && /^\d{4}-\d\d-\d\dT.*(?:Z|[+-]\d\d:\d\d)$/.test(v) && Number.isFinite(Date.parse(v));
@@ -24,9 +30,36 @@ export function readSubscriptionTrial(value: unknown): SubscriptionTrial | null 
     || (row.status === "provisioning" && (row.startsAt !== null || row.convertedAt !== null || row.canConvert))
     || (["active", "expired", "converted"].includes(row.status as string) && row.startsAt === null)
     || (row.status === "converted" ? row.convertedAt === null || row.canConvert : row.convertedAt !== null)) throw invalid();
+  let payment: TrialPayment | null | undefined;
+  if (row.payment === null) payment = null;
+  else if (row.payment !== undefined) {
+    if (!row.payment || typeof row.payment !== "object" || Array.isArray(row.payment)) throw invalid();
+    const value = row.payment as Record<string, unknown>;
+    if (!uuid(value.checkoutSessionId) || typeof value.reference !== "string" || !value.reference.trim()
+      || value.reference.length > 80 || !date(value.expiresAt)
+      || !["pending", "approved", "declined", "expired", "cancelled", "fulfilled", "refunded"].includes(value.status as string)) throw invalid();
+    payment = { checkoutSessionId: value.checkoutSessionId, reference: value.reference,
+      status: value.status as TrialPayment["status"], expiresAt: value.expiresAt };
+  }
   return { status: row.status as SubscriptionTrial["status"], durationDays: 15,
     startsAt: row.startsAt as string | null, endsAt: row.endsAt as string | null,
-    convertedAt: row.convertedAt as string | null, canConvert: row.canConvert };
+    convertedAt: row.convertedAt as string | null, canConvert: row.canConvert,
+    ...(payment !== undefined ? { payment } : {}) };
+}
+
+// Presentation only: every opening is authorized again under the billing locks.
+export function trialPaymentPresentation(payment?: TrialPayment | null) {
+  if (!payment) return { label: "Contratar plan", detail: "", resultHref: null };
+  const resultHref = `/pago/resultado/?checkoutSessionId=${encodeURIComponent(payment.checkoutSessionId)}`;
+  if (payment.status === "declined") return { label: "Reintentar pago en Wompi",
+    detail: `El intento de pago ${payment.reference} no se completó. Puedes volver a Wompi y elegir Nequi u otro medio. Antes de abrirlo, el servidor comprobará que no haya otro pago pendiente o aprobado.`, resultHref };
+  if (payment.status === "expired") return { label: "Generar nuevo enlace de pago",
+    detail: `El enlace de pago ${payment.reference} venció. Puedes preparar otro enlace para la misma contratación; el servidor verificará el historial para evitar pagos duplicados.`, resultHref };
+  if (payment.status === "pending") return { label: "Continuar pago en Wompi",
+    detail: `Referencia ${payment.reference}. Si cerraste Wompi antes de autorizar el pago, puedes continuar. Si ya lo autorizaste, consulta su estado y espera la confirmación antes de intentar pagar de nuevo.`, resultHref };
+  if (payment.status === "approved" || payment.status === "fulfilled") return { label: "Consultar contratación",
+    detail: `El pago ${payment.reference} fue confirmado. Actualiza el estado para comprobar su aplicación; no realices otro pago.`, resultHref };
+  return { label: "Revisar contratación", detail: `Consulta el estado del pago ${payment.reference} antes de continuar.`, resultHref };
 }
 
 export function readTrialCheckout(value: unknown, origin: string): { checkoutSessionId: string; checkoutUrl: string } {
