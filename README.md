@@ -1,5 +1,9 @@
 # Cripton — web comercial y portal de acceso
 
+[Ramas y publicación del corte autorizado](docs/RELEASE_BRANCHES_2026-11-28.md):
+integración web y `develop` separados de `main`, que sigue como base histórica.
+Git y CI no despliegan ni abren producción automáticamente.
+
 Selección legal productiva preparada en [alcance y QA](docs/LEGAL_PRODUCTION_2026-11-28.md).
 `PUBLIC_REGISTRATION_LEGAL_VERSION=2026-11-28-registro-prod` exige
 `PUBLIC_SITE_URL=https://cripton.com.co` o `https://www.cripton.com.co`,

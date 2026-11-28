@@ -1,5 +1,19 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-28 — Corte público autorizado y ramas separadas
+
+- Autorización expresa del propietario para publicar en Git los datos del
+  proveedor de los documentos. `ece1bc5` ya está publicado; dejó de estar
+  bloqueado por la autorización de NIT/dirección.
+- Integración web y `develop` parten de ese corte; `main` se inicializa en la
+  raíz histórica de Astro y no se declara un release productivo desplegado.
+  El trabajo local ajeno se conservó byte a byte al hacer fast-forward.
+- CI separa ambos perfiles, sin despliegue. La candidata conjunta y los gates
+  operativos siguen pendientes. No cambios de UI, contratos, esquema, política
+  adoptada, POS/admin, infraestructura o sitio staging servido.
+- Detalles: RELEASE_BRANCHES_2026-11-28.md. Publicar estos metadatos no significa
+  haber probado registro/pagos productivos ni habilitado producción fiscal.
+
 ## 2026-11-28 — Revisión final y CI de perfiles separados
 
 - Registro: el aviso de estado usa su identificador propio; antes seleccionaba
