@@ -1,0 +1,29 @@
+---
+import type { GetStaticPaths } from 'astro';
+import VersionedLegalDocument from '../../../../components/VersionedLegalDocument.astro';
+import { isSignupTrialQaSite, registrationLegalLinks, MINIMUM_SLA_QA_HREF, SIGNUP_MINIMUM_SLA_QA_VERSION } from '../../../../lib/registration-legal';
+import { minimumSlaLegalPacket as packet, minimumSlaLegalDocuments as documents, minimumSlaLegalSha256,
+  minimumSlaTerms, minimumSlaSections, type MinimumSlaLegalDocument } from '../../../../lib/minimum-sla-legal';
+
+export const getStaticPaths: GetStaticPaths = () => {
+  registrationLegalLinks({ PUBLIC_SITE_URL: import.meta.env.PUBLIC_SITE_URL,
+    PUBLIC_REGISTRATION_LEGAL_VERSION: import.meta.env.PUBLIC_REGISTRATION_LEGAL_VERSION });
+  if (!isSignupTrialQaSite(import.meta.env.PUBLIC_SITE_URL)) return [];
+  return [
+    ...documents.map(document => ({ params: { document: document.slug }, props: { document, isSla: false } })),
+    { params: { document: 'sla' }, props: { document: minimumSlaTerms, isSla: true } },
+  ];
+};
+interface Props { document: MinimumSlaLegalDocument; isSla: boolean; }
+const { document, isSla } = Astro.props;
+const view = isSla ? { ...document, title: 'Acuerdo de nivel de servicio (SLA/ANS)', sections: minimumSlaSections } : document;
+const related = [
+  ...documents.filter(item => isSla || item.slug !== document.slug).map(item => ({ title: item.title, href: `/legal/versiones/${packet.version}/${item.slug}/` })),
+  ...(!isSla ? [{ title: 'Acuerdo de nivel de servicio (SLA/ANS)', href: MINIMUM_SLA_QA_HREF }] : []),
+  { title: 'Términos del registro y prueba gratuita', href: `/legal/versiones/${SIGNUP_MINIMUM_SLA_QA_VERSION}/terminos/` },
+  { title: 'Privacidad del registro y prueba gratuita', href: `/legal/versiones/${SIGNUP_MINIMUM_SLA_QA_VERSION}/privacidad/` },
+];
+---
+<VersionedLegalDocument version={packet.version} scope={packet.scope} notice={packet.notice}
+  packageSha256={minimumSlaLegalSha256} document={view} kind={isSla ? 'sla' : 'contract'} related={related}
+  slaHref={isSla ? undefined : MINIMUM_SLA_QA_HREF} />

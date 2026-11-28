@@ -1,0 +1,42 @@
+---
+import EditorialLayout from '../layouts/EditorialLayout.astro';
+import LegalSections from './LegalSections.astro';
+import type { ContractSection } from '../lib/customer-contract';
+interface Props {
+  version: string; scope: string; notice: string; packageSha256: string;
+  document: { slug: string; title: string; sections: readonly ContractSection[]; sha256: string };
+  kind: 'registration' | 'contract' | 'sla';
+  related: { title: string; href: string }[];
+  slaHref?: string;
+}
+const { version, scope, notice, packageSha256, document, kind, related, slaHref } = Astro.props;
+const termsHref = `/legal/versiones/${version}/terminos/`;
+---
+<EditorialLayout title={`${document.title} · ${version}`} description={`${document.title}. Versión ${version}, exclusiva de staging.`}
+  eyebrow={`Versión ${version} · QA staging`} heading={document.title} lead={notice}
+  breadcrumbs={[{ name: 'Centro legal', href: '/legal/' }]} noindex={true}>
+  <aside class="callout" aria-labelledby="legal-version-scope">
+    <h2 id="legal-version-scope">{kind === 'registration' ? 'Registro de prueba en staging' : 'Acuerdo de prueba en staging'}</h2>
+    {kind === 'sla'
+      ? <p>Estas secciones forman parte de los <a href={termsHref}>términos completos del servicio</a>. No requieren una aceptación adicional. Consultarlas no cambia las versiones ni las constancias aceptadas anteriormente.</p>
+      : <p>Esta consulta no registra una aceptación ni cambia tus constancias anteriores. La API identifica los documentos aplicables a tu registro o empresa.</p>}
+    <p>Versión: <strong>{version}</strong>. Alcance: <code>{scope}</code>.</p>
+    <p>SHA256 {kind === 'sla' ? 'de los términos completos' : 'del documento'} en JSON canónico: <code data-legal-document-sha256>{document.sha256}</code>.</p>
+    <p>SHA256 del paquete en JSON canónico: <code data-legal-package-sha256>{packageSha256}</code>.</p>
+  </aside>
+  <nav aria-labelledby="legal-version-contents">
+    <h2 id="legal-version-contents">Contenido del documento</h2>
+    <ol>{document.sections.map(section => <li><a href={`#${section.id}`}>{section.heading}</a></li>)}</ol>
+  </nav>
+  <article class="legal-copy" data-registration-legal-copy={kind === 'registration' || undefined}
+    data-contract-legal-copy={kind === 'contract' || undefined} data-sla-legal-copy={kind === 'sla' || undefined}>
+    <LegalSections sections={document.sections} slaHref={slaHref} />
+  </article>
+  <aside class="callout" aria-labelledby="legal-version-related">
+    <h2 id="legal-version-related">Documentos relacionados</h2>
+    <ul>{related.map(item => <li><a href={item.href}>{item.title}</a></li>)}</ul>
+  </aside>
+</EditorialLayout>
+<style>
+  [data-legal-document-sha256], [data-legal-package-sha256] { overflow-wrap: anywhere; }
+</style>

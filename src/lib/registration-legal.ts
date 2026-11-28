@@ -1,6 +1,9 @@
 export const SIGNUP_TRIAL_QA_VERSION = '2026-11-25-prueba-qa';
 export const SIGNUP_MINIMUM_QA_VERSION = '2026-11-25-prueba-minima-qa';
 export const SIGNUP_MINIMUM_ADDRESS_QA_VERSION = '2026-11-27-prueba-minima-qa';
+export const SIGNUP_MINIMUM_SLA_QA_VERSION = '2026-11-28-prueba-minima-qa';
+export const MINIMUM_SLA_QA_VERSION = '2026-11-28-minimo-qa';
+export const MINIMUM_SLA_QA_HREF = `/legal/versiones/${MINIMUM_SLA_QA_VERSION}/sla/`;
 export const LEGACY_REGISTRATION_LEGAL_VERSION = '2026-09-01';
 
 type LegalEnvironment = Readonly<{
@@ -26,11 +29,13 @@ export function registrationLegalLinks(environment: LegalEnvironment) {
       termsHref: '/legal/terminos/', privacyHref: '/legal/privacidad/' });
   }
   if (version !== SIGNUP_TRIAL_QA_VERSION && version !== SIGNUP_MINIMUM_QA_VERSION
-    && version !== SIGNUP_MINIMUM_ADDRESS_QA_VERSION) throw new Error('Versión de registro legal no admitida.');
+    && version !== SIGNUP_MINIMUM_ADDRESS_QA_VERSION
+    && version !== SIGNUP_MINIMUM_SLA_QA_VERSION) throw new Error('Versión de registro legal no admitida.');
   if (!isSignupTrialQaSite(environment.PUBLIC_SITE_URL)) {
     throw new Error('La versión legal de prueba QA solo puede seleccionarse en https://staging.cripton.com.co.');
   }
   const prefix = `/legal/versiones/${version}`;
   return Object.freeze({ version, stagingTrialQa: true,
+    ...(version === SIGNUP_MINIMUM_SLA_QA_VERSION ? { slaHref: MINIMUM_SLA_QA_HREF } : {}),
     termsHref: `${prefix}/terminos/`, privacyHref: `${prefix}/privacidad/` });
 }

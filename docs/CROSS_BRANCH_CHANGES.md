@@ -1,5 +1,38 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-28 — SLA/ANS público derivado del contrato canónico
+
+- Copias exactas de `staging-minimum-2026-11-28.json` y
+  `signup-minimum-qa-2026-11-28.json`, protegidas por `.gitattributes -text`.
+  Digests canónicos fijados y visibles: contrato
+  `9190257110fcc6112dbf9d7cec992ec1faf815dfd4733b0040824d71f0e4abfb`;
+  registro `69364980e64abaa00d281f7f4ce9d04828ea5b433c037620c5981201a5627467`.
+- Selector `2026-11-28-prueba-minima-qa` exclusivo del origen HTTPS staging.
+  Términos/privacidad de registro nuevos y tres documentos contractuales completos
+  en sus rutas versionadas. SLA independiente en
+  `/legal/versiones/2026-11-28-minimo-qa/sla/`, derivado sólo de las siete
+  secciones canónicas de soporte/ANS de términos, sin reescribirlas ni duplicar
+  un calendario. Primera respuesta humana: un día hábil de diez horas,
+  lunes a viernes08–18 Colombia, excluidos festivos nacionales. Mantiene
+  ejemplos, separación de resolución/urgencias legales y ausencia de soporte24/7.
+- Centro legal, pie, sección de soporte de términos del registro28 y documentos
+  afines enlazan el SLA. Éste enlaza términos íntegros, privacidad y anexo.
+  Mismo EditorialLayout/marca/estilos, noindex y huellas de documento/paquete;
+  la vista SLA identifica el hash de términos completos, sin crear otro documento.
+- Consumidores: registro y lectura previa del contrato por empresa de API SaaS.
+  Sin cambios HTTP, permisos, SQL, aceptación, UI de teléfono o calendario.
+  Tres documentos/cinco casillas; paquetes/rutas anteriores preservados. Las
+  fuentes28 definitivas corrigen las menciones opcionales del teléfono en ambas
+  políticas de privacidad y el título de elecciones del registro. El teléfono
+  obligatorio no implica publicidad ni mensajes automáticos por WhatsApp.
+- QA final Node24.22.3: check87 sin errores/advertencias/hints, build32 páginas,
+  729/729 pruebas aprobadas, incluidas las regresiones legales de las fuentes
+  definitivas. Fetch web previo al commit: base8b94839 sin entrantes; gate SaaS
+  remoto alineado sobre df3fa8d. Evidencia: [informe](LEGAL_SLA_2026-11-28.md).
+  Build Linux, navegador,
+  publicación y adopción a cargo del integrador. Esta preparación no registra
+  aceptaciones28 ni adopta condiciones productivas.
+
 ## 2026-11-27 — Revisión de dirección sin reemplazar documentos adoptados
 
 - Copias exactas de `signup-minimum-qa-2026-11-27.json` y

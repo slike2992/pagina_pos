@@ -1,5 +1,20 @@
 # Cripton — web comercial y portal de acceso
 
+SLA/ANS versionado del 28 de noviembre: [fuentes, rutas y QA](docs/LEGAL_SLA_2026-11-28.md).
+`PUBLIC_REGISTRATION_LEGAL_VERSION=2026-11-28-prueba-minima-qa`, con el origen
+HTTPS exacto de staging, selecciona términos/privacidad28 y enlaza el SLA desde
+el centro legal y el pie. Se publican los tres documentos completos del contrato
+en `/legal/versiones/2026-11-28-minimo-qa/`; `/sla/` es únicamente una vista de
+sus secciones `soporte-y-continuidad` y `ans-*`. Reutiliza EditorialLayout,
+estilos, validador contractual y huellas canónicas visibles. Todo es noindex.
+No añade aceptaciones: el contrato conserva tres documentos y cinco casillas.
+Los paquetes definitivos se copian exactamente de SaaS y declaran obligatorio
+el teléfono de contacto; la UI y la API existentes no cambian.
+Las versiones27/25/09 se conservan. La publicación y adopción corresponden al
+integrador; este commit no acredita Linux, navegador ni despliegue.
+QA final con Node24.22.3: Astro check87 sin incidencias, build32 páginas y
+729/729 pruebas aprobadas con las fuentes28 definitivas y el entorno de staging.
+
 Revisión de dirección preparada para staging: [alcance y QA del 27 de noviembre](docs/LEGAL_ADDRESS_REVISION_2026-11-27.md).
 `PUBLIC_REGISTRATION_LEGAL_VERSION=2026-11-27-prueba-minima-qa` selecciona los
 nuevos enlaces sólo con `PUBLIC_SITE_URL=https://staging.cripton.com.co`.
