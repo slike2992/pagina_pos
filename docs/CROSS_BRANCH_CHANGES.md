@@ -1,5 +1,15 @@
 # Cambios transversales de la web comercial
 
+## 2026-11-28 — Protección remota efectiva de main web
+
+- GitHub aceptó y devolvió la política de `main`: checks staging/producción
+  fijados a GitHub Actions, incluso administradores; historia lineal, sin
+  force-push ni borrado. No agrega revisores ni cambia ramas o default branch.
+- Código ece1bc5 y documentación07df80c pasan los dos perfiles en integración
+  y develop. La configuración no despliega y la base main sigue histórica.
+- Registro: WEB_MAIN_PROTECTION_2026-11-28.json. Evidencia de settings releídos;
+  sin push negativo. El límite del plan privado SaaS sigue separado.
+
 ## 2026-11-28 — Corte público autorizado y ramas separadas
 
 - Autorización expresa del propietario para publicar en Git los datos del

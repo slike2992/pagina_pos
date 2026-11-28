@@ -1,0 +1,30 @@
+{
+  "repository": "slike2992/pagina_pos",
+  "branch": "main",
+  "observedAtColombia": "2026-11-28 13:06:46",
+  "headAtConfiguration": "ee017aa14446d6b77e029ac850579a1c8ec777bc",
+  "reviewedChecksCommit": "ece1bc5b04aad258904d52f55a4e5caf49961b0d",
+  "policy": {
+    "required_status_checks": {
+      "strict": true,
+      "checks": [
+        { "context": "verify-production", "app_id": 15368 },
+        { "context": "verify-staging", "app_id": 15368 }
+      ]
+    },
+    "enforce_admins": true,
+    "required_pull_request_reviews": null,
+    "restrictions": null,
+    "required_linear_history": true,
+    "allow_force_pushes": false,
+    "allow_deletions": false
+  },
+  "evidence": {
+    "configuredThroughGitHubApi": true,
+    "effectiveSettingsReadbackVerified": true,
+    "negativePushAttempted": false,
+    "branchesMoved": false,
+    "productionDeployed": false,
+    "resourcesPurchased": false
+  }
+}

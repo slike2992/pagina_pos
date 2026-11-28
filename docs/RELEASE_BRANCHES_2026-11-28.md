@@ -38,6 +38,18 @@ checkouts limpios y los SHA exactos, bajo `check-release-promotion.mjs` de SaaS.
 No se ha escogido aquí una versión comercial ni creado una candidata estable.
 La creación de ramas no equivale a configurar protección efectiva en GitHub.
 
+Actualización posterior: la protección de `main` sí quedó aplicada por la API
+y releída del servidor. Exige `verify-staging` y `verify-production` de GitHub
+Actions, también para administradores, con historia lineal y sin force-push ni
+borrado. No añade revisores ajenos ni cambia el commit de la rama, el default
+branch o el sitio. [Política y alcance de la evidencia](WEB_MAIN_PROTECTION_2026-11-28.json).
+No se intentó un push negativo que pudiera mover la base histórica. El registro
+local de la política no sustituye una consulta futura a GitHub si cambia.
+
+La política se comprobó en este repositorio público. No se extrapola al SaaS
+privado: su plan actual rechazó esa configuración y se conserva privado, sin
+contratar otro plan ni afirmar que sus hooks locales sean enforcement remoto.
+
 Para publicar el primer producto aún se requieren el corte SaaS compatible,
 evidencia operativa/admisión, Wompi productivo, copias externas/recuperación,
 capacidad, DNS/HTTPS y validación real de registro, correo, contrato y POS.
